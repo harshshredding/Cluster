@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>808109337973-b0n6licd5uko730njlie41sre408lcc4.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.808109337973-b0n6licd5uko730njlie41sre408lcc4</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>808109337973-5hsmkr33kqdb9kdb2dentm2iiu51tftl.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDQ9kdRZOwpGGj1XuuR_BCIW5NSnDF713I</string>
+	<key>GCM_SENDER_ID</key>
+	<string>808109337973</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.cluster.android</string>
+	<key>PROJECT_ID</key>
+	<string>cluster-c7373</string>
+	<key>STORAGE_BUCKET</key>
+	<string>cluster-c7373.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:808109337973:ios:661786986b6c1820</string>
+	<key>DATABASE_URL</key>
+	<string>https://cluster-c7373.firebaseio.com</string>
+</dict>
+</plist>
