@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() => runApp(new MyApp());
 
@@ -10,16 +12,20 @@ class MyApp extends StatelessWidget
     return new MaterialApp(
       title: 'Flutter Demo',
       theme: new ThemeData(primarySwatch: Colors.blue),
-      home: new MyHomePage(),
+      home: new LoginPage(),
+      initialRoute: '/',
+      routes: {
+        '/second': (context) => SecondRoute()
+      },
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class LoginPage extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = new GoogleSignIn();
 
-  Future<FirebaseUser> _signIn() async {
+  Future<FirebaseUser> _signIn(BuildContext context) async {
     GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
     GoogleSignInAuthentication gSA = await googleSignInAccount.authentication;
 
@@ -30,6 +36,11 @@ class MyHomePage extends StatelessWidget {
 
     final FirebaseUser user = await _auth.signInWithCredential(credential);
     print("signed in " + user.displayName);
+    Navigator.pushNamed(
+        context,
+        '/second',
+        arguments: UserName(user.displayName)
+    );
     return user;
   }
 
@@ -50,8 +61,10 @@ class MyHomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             new RaisedButton(
-              onPressed: () => _signIn()
-              .then((FirebaseUser user) => print(user))
+              onPressed: () => _signIn(context)
+              .then((FirebaseUser user){
+                print(user);
+              })
               .catchError((e) => print(e)),
               child: new Text("Sign In"),
               color: Colors.green,
@@ -67,4 +80,29 @@ class MyHomePage extends StatelessWidget {
       ),
     );
   }
+}
+
+class SecondRoute extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final UserName arg = ModalRoute.of(context).settings.arguments;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(arg.name),
+      ),
+      body: Center(
+        child: RaisedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text('Go back!'),
+        ),
+      ),
+    );
+  }
+}
+
+class UserName {
+  final String name;
+  UserName(this.name);
 }
