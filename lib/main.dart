@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'helper.dart';
+import 'map.dart';
+import 'add_event.dart';
 
 void main() => runApp(new MyApp());
 
+/// This is our starting point to the app.
 class MyApp extends StatelessWidget 
 {
   Widget build(BuildContext context) {
@@ -15,12 +17,18 @@ class MyApp extends StatelessWidget
       home: new LoginPage(),
       initialRoute: '/',
       routes: {
-        '/second': (context) => SecondRoute()
+        '/map': (context) => MapScreen(),
+        '/addEvent': (context) => AddEventScreen()
       },
     );
   }
 }
 
+///
+/// This class represents the login page.
+/// We currently use Google Sign In with Firebase.
+/// FireBase is super convenient !
+///
 class LoginPage extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = new GoogleSignIn();
@@ -38,7 +46,7 @@ class LoginPage extends StatelessWidget {
     print("signed in " + user.displayName);
     Navigator.pushNamed(
         context,
-        '/second',
+        '/map',
         arguments: UserName(user.displayName)
     );
     return user;
@@ -80,29 +88,4 @@ class LoginPage extends StatelessWidget {
       ),
     );
   }
-}
-
-class SecondRoute extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final UserName arg = ModalRoute.of(context).settings.arguments;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(arg.name),
-      ),
-      body: Center(
-        child: RaisedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: Text('Go back!'),
-        ),
-      ),
-    );
-  }
-}
-
-class UserName {
-  final String name;
-  UserName(this.name);
 }
