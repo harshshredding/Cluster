@@ -1,32 +1,108 @@
 import 'package:flutter/material.dart';
-import 'helper.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 
-/// This represents the main screen of the app which
-/// shows a Map full of events. We can use this screen to:
-/// 1) make events
-/// 2) join events
-/// 3) join chats of events
-/// 4) call the same people again
-class MapScreen extends StatelessWidget {
 
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
-  @override
-  Widget build(BuildContext context) {
-    final UserName arg = ModalRoute.of(context).settings.arguments;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(arg.name),
-      ),
-      body: GoogleMap(initialCameraPosition: _kGooglePlex),
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => Navigator.pushNamed(context, '/addEvent'),
-          icon: Icon(Icons.add),
-          label: Text('Add event'),
-      ),
-    );
+class MapScreen extends StatefulWidget {
+  MapScreenState createState() {
+    return MapScreenState();
   }
+}
+
+class MapScreenState extends State<MapScreen> {
+
+    static final CameraPosition myHome = CameraPosition(
+      target: LatLng(47.663645, -122.286446),
+      zoom: 14.4746,
+    );
+
+    GoogleMapController mapController;
+    Firestore firestore = Firestore.instance;
+    Geoflutterfire geo = Geoflutterfire();
+    Stream<List<DocumentSnapshot>> stream;
+    List<GeoPoint> markerList = new List<GeoPoint>();
+
+
+    void initState() {
+      GeoFirePoint center = geo.point(latitude: 47.663645, longitude: -122.286446);
+      var collectionRef = firestore.collection('events');
+      double radius = 50;
+      String field = 'position';
+      stream = geo.collection(collectionRef: collectionRef).within(
+          center: center, radius: radius, field: field);
+      stream.listen(_updateMarkers);
+    }
+
+    Widget build(BuildContext context) {
+      return Stack(
+        children: <Widget>[
+          GoogleMap(
+            initialCameraPosition: myHome,
+            onMapCreated: _onMapCreated,
+            markers: markerList.map((GeoPoint p) {
+              print('hey');
+              print(p.latitude);
+              print(markerList.length);
+              return new Marker(
+                  markerId: MarkerId(p.latitude.toString() + "," + p.longitude.toString()),
+                  position: LatLng(p.latitude, p.longitude),
+                  icon: BitmapDescriptor.defaultMarker);
+              }).toSet(),
+          ),
+          Positioned(
+            bottom: 50,
+            right: 10,
+            child: FlatButton(
+                onPressed: _goToAddEventPage(context),
+                child: Icon(Icons.add)
+            ),
+          )
+        ],
+      );
+    }
+
+    void _onMapCreated(GoogleMapController controller) {
+      setState(() {
+        mapController = controller;
+      });
+    }
+
+    Function _goToAddEventPage(BuildContext context) {
+      return () {
+        Navigator.pushNamed(context, '/addEvent');
+      };
+    }
+
+    void _updateMarkers(List<DocumentSnapshot> documentList) {
+      print(documentList);
+      bool needToRebuild = false;
+      if (documentList.length != markerList.length) {
+        print('yo');
+        needToRebuild = true;
+      }
+      if (!needToRebuild) {
+        print('la');
+        for (int i = 0; i < documentList.length; i++) {
+          GeoPoint pos1 = documentList[i].data['position']['geopoint'];
+          GeoPoint pos2 = markerList[i];
+          if ((pos1.latitude != pos2.latitude)
+              || (pos1.longitude != pos2.longitude)) {
+            needToRebuild = true;
+            break;
+          }
+        }
+      }
+      if (needToRebuild) {
+        setState(() {
+          markerList.clear();
+          documentList.forEach((doc) {
+            double latitude = doc.data['position']['geopoint'].latitude;
+            double longitude = doc.data['position']['geopoint'].longitude;
+            markerList.add(GeoPoint(latitude, longitude));
+          });
+        });
+      }
+    }
+
 }

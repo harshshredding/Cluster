@@ -28,7 +28,9 @@ dependencies:
   google_maps_flutter:
   cloud_firestore:
   flutter_google_places:
-
+  google_maps_webservice:
+  geoflutterfire:
+    git: https://github.com/felipecesar42/GeoFlutterFire.git
 dev_dependencies:
   flutter_test:
     sdk: flutter
