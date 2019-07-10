@@ -1,14 +1,20 @@
 # Design Doc
 ## Business Requirements :
 1) (+) button(on the map) to add an event
-2) Search page to do complex search
+2) Search page to do complex search for events
 3) Click on event to view information and chat with group members. 
-   (Gotta figure out database for this).
-4) Profile 
+   (Gotta figure out database for this. Update Firestore should be sufficient.).
+4) View and edit your profile 
+5) Automatically send invitation for another duplicate meeting with same people.
+6) Feature Creep : Pay to improve visibility (maybe not a good idea)
+7) Feature Creep : Allow attendee to show distance from event.
+
 
 # What does my data look like ?
 Event :
     - Location
+        GeoLocation
+        GeoHash (used to only display events in the current field of view)
     - Title
     - Summary
     - Participants
@@ -35,7 +41,8 @@ I = Incomplete
     (I) - List all the events in a simple list
             - get image, description, time etc
     (I) - Show events on map
-            - Userclicks will reveal details of event
+            - (D) Simply show stuff on map
+            - (I) Userclicks will reveal details of event
     (I) - Integrate chat with events
             - Have a chat icon in the right corner
             - Seemless chatting with people in the group
