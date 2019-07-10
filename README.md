@@ -30,7 +30,6 @@ Pleeeeeeasse !!!!!!!!! Help me with this project. I want to develop this very qu
 I am working at a high speed right now, but I want to get this done quicker as I
 am excited by the potential.
 
-
 A few resources to get you started if this is your first Flutter project:
 
 - [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
@@ -39,3 +38,13 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter, view our 
 [online documentation](https://flutter.dev/docs), which offers tutorials, 
 samples, guidance on mobile development, and a full API reference.
+
+
+Also watch this below video to understand how easy it is to work with UI in flutter.
+- [Lab: Flutter Widget position](https://fireship.io/lessons/flutter-widget-positioning-guide/)
+Also watch the following series to understand Firestore. The Distributed NoSQL database
+we will be using:
+- [Firestore !!!](https://www.youtube.com/watch?v=v_hR4K4auoQ&t=22s)
+Read design_cod.md in root
+I think you are now ready to dive in. Simply ask me questions if you don't understand some
+concept.
