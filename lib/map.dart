@@ -23,14 +23,16 @@ class MapScreenState extends State<MapScreen> {
   Firestore firestore = Firestore.instance;
   Geoflutterfire geo = Geoflutterfire();
   Stream<List<DocumentSnapshot>> stream;
-  List<GeoPoint> markerList = new List<GeoPoint>();
+  // Stores all the current markers to show on the map.
+  Map<String, GeoPoint> idToGeoPoint = Map();
+  var collectionRef;
 
   void initState() {
     GeoFirePoint center =
         geo.point(latitude: 47.663645, longitude: -122.286446);
-    var collectionRef = firestore.collection('events');
     double radius = 50;
     String field = 'position';
+    collectionRef = firestore.collection('events');
     stream = geo
         .collection(collectionRef: collectionRef)
         .within(center: center, radius: radius, field: field);
@@ -59,23 +61,7 @@ class MapScreenState extends State<MapScreen> {
                 GoogleMap(
                     initialCameraPosition: myHome,
                     onMapCreated: _onMapCreated,
-                    markers: markerList.map((GeoPoint p) {
-                      print('hey');
-                      print(p.latitude);
-                      print(markerList.length);
-                      return new Marker(
-                          markerId: MarkerId(p.latitude.toString() +
-                              "," +
-                              p.longitude.toString()),
-                          position: LatLng(p.latitude, p.longitude),
-                          icon: BitmapDescriptor.defaultMarkerWithHue(20.0),
-                          flat: true,
-                          onTap: () {
-                            Navigator.of(context).push<void>(CupertinoPageRoute(
-                                builder: (context) => DetailsScreen(2),
-                                fullscreenDialog: true));
-                          });
-                    }).toSet(),
+                    markers: _getMarkers(),
                     gestureRecognizers: Set()
                       ..add(Factory<PanGestureRecognizer>(
                           () => PanGestureRecognizer()))),
@@ -107,31 +93,29 @@ class MapScreenState extends State<MapScreen> {
   }
 
   void _updateMarkers(List<DocumentSnapshot> documentList) {
-    print(documentList);
-    bool needToRebuild = false;
-    if (documentList.length != markerList.length) {
-      needToRebuild = true;
-    }
-    if (!needToRebuild) {
+    setState(() {
       for (int i = 0; i < documentList.length; i++) {
-        GeoPoint pos1 = documentList[i].data['position']['geopoint'];
-        GeoPoint pos2 = markerList[i];
-        if ((pos1.latitude != pos2.latitude) ||
-            (pos1.longitude != pos2.longitude)) {
-          needToRebuild = true;
-          break;
-        }
+        String id = documentList[i].documentID;
+        GeoPoint pos = documentList[i].data['position']['geopoint'];
+        idToGeoPoint[id] = pos;
       }
-    }
-    if (needToRebuild) {
-      setState(() {
-        markerList.clear();
-        documentList.forEach((doc) {
-          double latitude = doc.data['position']['geopoint'].latitude;
-          double longitude = doc.data['position']['geopoint'].longitude;
-          markerList.add(GeoPoint(latitude, longitude));
-        });
-      });
-    }
+    });
+  }
+
+  Set<Marker> _getMarkers() {
+    Set<Marker> result = Set();
+    idToGeoPoint.forEach((k, v) {
+      print(k);
+      result.add(Marker(
+          markerId: MarkerId(k),
+          position: LatLng(v.latitude, v.longitude),
+          icon: BitmapDescriptor.defaultMarkerWithHue(20.0),
+          onTap: () async {
+            Navigator.of(context).push<void>(CupertinoPageRoute(
+                builder: (context) => DetailsScreen(k, firestore),
+                fullscreenDialog: true));
+          }));
+    });
+    return result;
   }
 }
