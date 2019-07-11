@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/cupertino.dart';
+import 'event_details.dart';
 
 class MapScreen extends StatefulWidget {
   MapScreenState createState() {
@@ -47,8 +49,7 @@ class MapScreenState extends State<MapScreen> {
     return DefaultTabController(
         length: 3,
         child: Scaffold(
-          appBar:
-          AppBar(
+          appBar: AppBar(
             bottom: tabBar,
             title: Text('Cluster'),
           ),
@@ -63,13 +64,17 @@ class MapScreenState extends State<MapScreen> {
                       print(p.latitude);
                       print(markerList.length);
                       return new Marker(
-                        markerId: MarkerId(p.latitude.toString() +
-                            "," +
-                            p.longitude.toString()),
-                        position: LatLng(p.latitude, p.longitude),
-                        icon: BitmapDescriptor.defaultMarkerWithHue(20.0),
-                        flat: true,
-                      );
+                          markerId: MarkerId(p.latitude.toString() +
+                              "," +
+                              p.longitude.toString()),
+                          position: LatLng(p.latitude, p.longitude),
+                          icon: BitmapDescriptor.defaultMarkerWithHue(20.0),
+                          flat: true,
+                          onTap: () {
+                            Navigator.of(context).push<void>(CupertinoPageRoute(
+                                builder: (context) => DetailsScreen(2),
+                                fullscreenDialog: true));
+                          });
                     }).toSet(),
                     gestureRecognizers: Set()
                       ..add(Factory<PanGestureRecognizer>(
@@ -105,11 +110,9 @@ class MapScreenState extends State<MapScreen> {
     print(documentList);
     bool needToRebuild = false;
     if (documentList.length != markerList.length) {
-      print('yo');
       needToRebuild = true;
     }
     if (!needToRebuild) {
-      print('la');
       for (int i = 0; i < documentList.length; i++) {
         GeoPoint pos1 = documentList[i].data['position']['geopoint'];
         GeoPoint pos2 = markerList[i];
