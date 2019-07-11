@@ -30,6 +30,38 @@ Pleeeeeeasse !!!!!!!!! Help me with this project. I want to develop this very qu
 I am working at a high speed right now, but I want to get this done quicker as I
 am excited by the potential.
 
+# Setup
+
+- [Install Flutter](https://flutter.dev/docs/get-started/install)
+    - Follow all steps :
+        - Yes this means installing both Xcode and Android Studio
+- [Setup Android Studio As Editor](https://flutter.dev/docs/get-started/editor)
+- Run `flutter Doctor` and fix all bugs
+- Time to import stuff from Github.
+    - File -> New -> Project from Version Control -> Git
+    - Then enter the cloning url from Github
+    - When the project has been imported, there will be a suggestion on the top
+    saying `get dependencies`. Say yes to that. 
+    - Now open up IOS emulator(Don't try Android yet) and run project on that.
+    - If the project does not build, and you don't understand the error. Contact me asap.
+    - Look at the get up to speed section now. Build a simple app.
+    
+Below is the list of files that we should NEVER check into github primarily because 
+they are auto generated and some are just libraries. : 
+```
+.gradle/
+.idea/
+Cluster-test.iml
+build.gradle
+build/
+gradle/
+gradlew
+gradlew.bat
+ios/Pods/
+local.properties
+```
+
+# Get up to speed
 A few resources to get you started if this is your first Flutter project:
 
 I recommend using Android Studio. 
@@ -50,3 +82,6 @@ we will be using:
 Read design_cod.md in root
 I think you are now ready to dive in. Simply ask me questions if you don't understand some
 concept.
+
+
+ 
