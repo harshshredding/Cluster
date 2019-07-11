@@ -26,9 +26,7 @@ interested new-comers in a channel(room), encouraging them by saying "Don't worr
 , anyone through hard work can become good at the art. Excited to see you."
 
 # HELP ME!
-Pleeeeeeasse !!!!!!!!! Help me with this project. I want to develop this very quickly.
-I am working at a high speed right now, but I want to get this done quicker as I
-am excited by the potential.
+Every crumble is appreciated !
 
 # Setup
 
