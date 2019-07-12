@@ -31,6 +31,8 @@ dependencies:
   google_maps_webservice:
   geoflutterfire:
     git: https://github.com/felipecesar42/GeoFlutterFire.git
+  tuple:
+  flutter_lorem:
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -63,17 +65,16 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
+  fonts:
+     - family: Trajan Pro
+       fonts:
+         - asset: fonts/Heebo-Black.ttf
+         - asset: fonts/Heebo-Bold.ttf
+         - asset: fonts/Heebo-ExtraBold.ttf
+         - asset: fonts/Heebo-Light.ttf
+         - asset: fonts/Heebo-Medium.ttf
+         - asset: fonts/Heebo-Regular.ttf
+         - asset: fonts/Heebo-Thin.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

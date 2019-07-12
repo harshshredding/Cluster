@@ -7,7 +7,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 class InfoView extends StatelessWidget {
   final String id;
 
@@ -55,7 +54,6 @@ class DetailsScreen extends StatefulWidget {
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
-
   Widget _buildHeader(BuildContext context) {
     return SizedBox(
       height: 150,
@@ -74,8 +72,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             child: SafeArea(
               child: IconButton(
                   icon: Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.pop(context)
-              ),
+                  onPressed: () => Navigator.pop(context)),
             ),
           ),
         ],
@@ -85,22 +82,65 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    DocumentReference document = widget.firestore.collection('events')
-        .document(widget.id);
-    return
-      Scaffold (
-      body: FutureBuilder(
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return Center(
-                child: Text(snapshot.data['summary']),
-              );
-            } else {
-              return CircularProgressIndicator();
-            }
-          },
-          future: document.get(),
-      )
+    DocumentReference document =
+        widget.firestore.collection('events').document(widget.id);
+    return Scaffold(
+        body: FutureBuilder(
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Container(
+            padding: EdgeInsets.all(10),
+            child: ListView(
+              children: <Widget>[
+                Align(
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  alignment: Alignment.centerLeft,
+                ),
+                Card(
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.all(20.0),
+                        child: Text(
+                          snapshot.data['title'],
+                          style: TextStyle(
+                              fontSize: 25.0, fontFamily: 'Heebo-Black'),
+                        ),
+                        padding: EdgeInsets.all(10),
+                      ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.all(20.0),
+                        child: Text(snapshot.data['summary']),
+                        padding: EdgeInsets.all(10),
+                      ),
+                    ],
+                  ),
+                  color: Colors.white,
+                ),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  margin: EdgeInsets.all(20.0),
+                  child: Text(snapshot.data['location'].toString()),
+                  padding: EdgeInsets.all(10),
+                )
+              ],
+            ),
+            color: Colors.blueGrey,
+          );
+        } else {
+          return CircularProgressIndicator();
+        }
+      },
+      future: document.get(),
+    )
 //      Column(
 //        crossAxisAlignment: CrossAxisAlignment.stretch,
 //        mainAxisSize: MainAxisSize.min,
@@ -115,6 +155,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
 //          ),
 //        ],
 //      ),
-    );
+        );
   }
 }
