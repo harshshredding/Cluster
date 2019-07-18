@@ -54,32 +54,6 @@ class DetailsScreen extends StatefulWidget {
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
-  Widget _buildHeader(BuildContext context) {
-    return SizedBox(
-      height: 150,
-      child: Stack(
-        children: [
-          Positioned(
-            right: 0,
-            left: 0,
-            child: Image.network(
-              'https://picsum.photos/250?image=9',
-            ),
-          ),
-          Positioned(
-            top: 16,
-            left: 16,
-            child: SafeArea(
-              child: IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.pop(context)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     DocumentReference document =
@@ -113,31 +87,64 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.all(10.0),
-                        child: Text(
-                          snapshot.data['title'],
-                          style: TextStyle(
-                              fontSize: 25.0, fontFamily: 'Heebo-Black'),
-                        ),
+                        child: createIfFieldExists(snapshot, 'title', (snapshot) {
+                          return Text(
+                            snapshot.data['title'],
+                            style: TextStyle(
+                                fontSize: 25.0,
+                                fontFamily: 'Heebo-Black'),
+                          );
+                        }),
                         padding: EdgeInsets.all(10),
                       ),
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.all(20.0),
-                        child: Text(snapshot.data['summary'],
-                            style: TextStyle(
-                                fontSize: 15.0, fontFamily: 'Heebo-Black')),
+                        child: createIfFieldExists(snapshot, 'summary', (snapshot) {
+                          return Text(snapshot.data['summary'],
+                              style: TextStyle(
+                                  fontSize: 15.0,
+                                  fontFamily: 'Heebo-Black'));
+                        }),
                         padding: EdgeInsets.all(4),
                       ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.all(20.0),
+                        child: createIfFieldExists(snapshot, 'date', (snapshot) {
+                          return Text(snapshot.data['date'],
+                              style: TextStyle(
+                                  fontSize: 15.0,
+                                  fontFamily: 'Heebo-Black'));
+                        }),
+                        padding: EdgeInsets.all(4),
+                      ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.all(20.0),
+                        child: createIfFieldExists(snapshot, 'time', (snapshot) {
+                          return Text(snapshot.data['time'],
+                              style: TextStyle(
+                                  fontSize: 15.0,
+                                  fontFamily: 'Heebo-Black'));
+                        }),
+                        padding: EdgeInsets.all(4),
+                      ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.all(20.0),
+                        child: createIfFieldExists(snapshot, 'address', (snapshot) {
+                          return Text(snapshot.data['address'],
+                              style: TextStyle(
+                                  fontSize: 15.0,
+                                  fontFamily: 'Heebo-Black'));
+                        }),
+                        padding: EdgeInsets.all(4),
+                      )
                     ],
                   ),
                   color: Colors.white,
                 ),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  margin: EdgeInsets.all(20.0),
-                  child: Text(snapshot.data['position'].toString()),
-                  padding: EdgeInsets.all(10),
-                )
               ],
             ),
             color: Colors.blueGrey,
@@ -148,5 +155,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
       },
       future: document.get(),
     ));
+  }
+
+  Widget createIfFieldExists(snapshot, String field, factory) {
+    if (snapshot.data[field] != null) {
+      print(snapshot.data[field]);
+      return factory(snapshot);
+    } else {
+      return Container(width: 0, height: 0);
+    }
   }
 }
