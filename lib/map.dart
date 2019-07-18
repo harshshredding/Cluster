@@ -54,6 +54,18 @@ class MapScreenState extends State<MapScreen> {
           appBar: AppBar(
             bottom: tabBar,
             title: Text('Cluster'),
+            actions: <Widget>[
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+              child: IconButton(
+                icon: Icon(Icons.add_location),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/addEvent');
+                },
+              ),
+          )
+              ,
+            ],
           ),
           body: TabBarView(physics: NeverScrollableScrollPhysics(), children: [
             Stack(
@@ -65,13 +77,6 @@ class MapScreenState extends State<MapScreen> {
                     gestureRecognizers: Set()
                       ..add(Factory<PanGestureRecognizer>(
                           () => PanGestureRecognizer()))),
-                Positioned(
-                  bottom: 50,
-                  right: 10,
-                  child: FlatButton(
-                      onPressed: _goToAddEventPage(context),
-                      child: Icon(Icons.add)),
-                )
               ],
             ),
             Icon(Icons.directions_transit),
@@ -105,7 +110,7 @@ class MapScreenState extends State<MapScreen> {
   Set<Marker> _getMarkers() {
     Set<Marker> result = Set();
     idToGeoPoint.forEach((k, v) {
-      print(k);
+      //print(k);
       result.add(Marker(
           markerId: MarkerId(k),
           position: LatLng(v.latitude, v.longitude),
