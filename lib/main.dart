@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'helper.dart';
 import 'map.dart';
 import 'add_event.dart';
+import 'test.dart';
 
 void main() => runApp(new MyApp());
 
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget
     return new MaterialApp(
       title: 'Flutter Demo',
       theme: new ThemeData(primarySwatch: Colors.blue),
-      home: new LoginPage(),
+      home: LoginPage(),
       initialRoute: '/',
       routes: {
         '/map': (context) => MapScreen(),

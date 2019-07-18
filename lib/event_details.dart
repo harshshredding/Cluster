@@ -102,12 +102,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   ),
                   alignment: Alignment.centerLeft,
                 ),
+                Container(
+                  child: Image.asset("images/meWithLongHair.jpeg",
+                      height: 300, fit: BoxFit.cover),
+                  padding: EdgeInsets.all(10),
+                ),
                 Card(
                   child: Column(
                     children: <Widget>[
                       Container(
                         alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.all(20.0),
+                        margin: EdgeInsets.all(10.0),
                         child: Text(
                           snapshot.data['title'],
                           style: TextStyle(
@@ -118,8 +123,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.all(20.0),
-                        child: Text(snapshot.data['summary']),
-                        padding: EdgeInsets.all(10),
+                        child: Text(snapshot.data['summary'],
+                            style: TextStyle(
+                                fontSize: 15.0, fontFamily: 'Heebo-Black')),
+                        padding: EdgeInsets.all(4),
                       ),
                     ],
                   ),
@@ -128,7 +135,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 Container(
                   alignment: Alignment.centerLeft,
                   margin: EdgeInsets.all(20.0),
-                  child: Text(snapshot.data['location'].toString()),
+                  child: Text(snapshot.data['position'].toString()),
                   padding: EdgeInsets.all(10),
                 )
               ],
@@ -140,21 +147,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
         }
       },
       future: document.get(),
-    )
-//      Column(
-//        crossAxisAlignment: CrossAxisAlignment.stretch,
-//        mainAxisSize: MainAxisSize.min,
-//        children: [
-//          _buildHeader(context),
-//          Expanded(
-//            child: ListView(
-//              children: [
-//                 InfoView(widget.id),
-//              ],
-//            ),
-//          ),
-//        ],
-//      ),
-        );
+    ));
   }
 }
