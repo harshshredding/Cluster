@@ -77,7 +77,7 @@ Also watch this below video to understand how easy it is to work with UI in flut
 Also watch the following series to understand Firestore. The Distributed NoSQL database
 we will be using:
 - [Firestore !!!](https://www.youtube.com/watch?v=v_hR4K4auoQ&t=22s)
-Read design_cod.md in root
+Read design_doc.md in root
 I think you are now ready to dive in. Simply ask me questions if you don't understand some
 concept.
 
