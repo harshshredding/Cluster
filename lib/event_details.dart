@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
 
 class InfoView extends StatelessWidget {
   final String id;
@@ -54,6 +55,33 @@ class DetailsScreen extends StatefulWidget {
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
+
+  Widget getEventImage(snapshot) {
+    if (snapshot.data['download_url'] == null) {
+      return Container(
+        child: ClipRRect(
+          borderRadius: new BorderRadius.circular(10.0),
+          child: Image.asset("images/meWithLongHair.jpeg", fit: BoxFit.cover),
+        ),
+        padding: EdgeInsets.all(8),
+        height: 400,
+      );
+    } else {
+      String downloadUrl = snapshot.data['download_url'];
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        child: ClipRRect(
+          borderRadius: new BorderRadius.circular(10.0),
+          child: Image.network(
+            downloadUrl,
+            fit: BoxFit.cover,
+          ),
+        ),
+        height: 400,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     DocumentReference document =
@@ -76,23 +104,19 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   ),
                   alignment: Alignment.centerLeft,
                 ),
-                Container(
-                  child: Image.asset("images/meWithLongHair.jpeg",
-                      height: 300, fit: BoxFit.cover),
-                  padding: EdgeInsets.all(10),
-                ),
+                getEventImage(snapshot),
                 Card(
                   child: Column(
                     children: <Widget>[
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.all(10.0),
-                        child: createIfFieldExists(snapshot, 'title', (snapshot) {
+                        child:
+                            createIfFieldExists(snapshot, 'title', (snapshot) {
                           return Text(
                             snapshot.data['title'],
                             style: TextStyle(
-                                fontSize: 25.0,
-                                fontFamily: 'Heebo-Black'),
+                                fontSize: 25.0, fontFamily: 'Heebo-Black'),
                           );
                         }),
                         padding: EdgeInsets.all(10),
@@ -100,44 +124,44 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.all(20.0),
-                        child: createIfFieldExists(snapshot, 'summary', (snapshot) {
+                        child: createIfFieldExists(snapshot, 'summary',
+                            (snapshot) {
                           return Text(snapshot.data['summary'],
                               style: TextStyle(
-                                  fontSize: 15.0,
-                                  fontFamily: 'Heebo-Black'));
+                                  fontSize: 15.0, fontFamily: 'Heebo-Black'));
                         }),
                         padding: EdgeInsets.all(4),
                       ),
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.all(20.0),
-                        child: createIfFieldExists(snapshot, 'date', (snapshot) {
+                        child:
+                            createIfFieldExists(snapshot, 'date', (snapshot) {
                           return Text(snapshot.data['date'],
                               style: TextStyle(
-                                  fontSize: 15.0,
-                                  fontFamily: 'Heebo-Black'));
+                                  fontSize: 15.0, fontFamily: 'Heebo-Black'));
                         }),
                         padding: EdgeInsets.all(4),
                       ),
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.all(20.0),
-                        child: createIfFieldExists(snapshot, 'time', (snapshot) {
+                        child:
+                            createIfFieldExists(snapshot, 'time', (snapshot) {
                           return Text(snapshot.data['time'],
                               style: TextStyle(
-                                  fontSize: 15.0,
-                                  fontFamily: 'Heebo-Black'));
+                                  fontSize: 15.0, fontFamily: 'Heebo-Black'));
                         }),
                         padding: EdgeInsets.all(4),
                       ),
                       Container(
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.all(20.0),
-                        child: createIfFieldExists(snapshot, 'address', (snapshot) {
+                        child: createIfFieldExists(snapshot, 'address',
+                            (snapshot) {
                           return Text(snapshot.data['address'],
                               style: TextStyle(
-                                  fontSize: 15.0,
-                                  fontFamily: 'Heebo-Black'));
+                                  fontSize: 15.0, fontFamily: 'Heebo-Black'));
                         }),
                         padding: EdgeInsets.all(4),
                       )
