@@ -44,11 +44,12 @@ class LoginPage extends StatelessWidget {
     );
 
     final FirebaseUser user = await _auth.signInWithCredential(credential);
-    print("signed in " + user.displayName);
+
+    print("signed in " + user.displayName + " " + user.uid);
     Navigator.pushNamed(
         context,
         '/map',
-        arguments: UserName(user.displayName)
+        arguments: UserId(user.uid)
     );
     return user;
   }

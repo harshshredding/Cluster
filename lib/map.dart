@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/cupertino.dart';
 import 'event_details.dart';
+import 'helper.dart';
 
 class MapScreen extends StatefulWidget {
   MapScreenState createState() {
@@ -60,7 +61,7 @@ class MapScreenState extends State<MapScreen> {
               child: IconButton(
                 icon: Icon(Icons.add_location),
                 onPressed: () {
-                  Navigator.pushNamed(context, '/addEvent');
+                  Navigator.pushNamed(context, '/addEvent', arguments: ModalRoute.of(context).settings.arguments);
                 },
               ),
           )
@@ -89,12 +90,6 @@ class MapScreenState extends State<MapScreen> {
     setState(() {
       mapController = controller;
     });
-  }
-
-  Function _goToAddEventPage(BuildContext context) {
-    return () {
-      Navigator.pushNamed(context, '/addEvent');
-    };
   }
 
   void _updateMarkers(List<DocumentSnapshot> documentList) {
