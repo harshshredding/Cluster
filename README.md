@@ -1,5 +1,8 @@
 # cluster
 
+First things first :
+[Prototype demo video (very primitive)](https://youtu.be/lEjB8vTasqU) 
+
 Here is the deal.  
 
 Case 1: 
