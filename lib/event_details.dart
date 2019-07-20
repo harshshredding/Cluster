@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'chat.dart';
 
 class DetailsScreen extends StatefulWidget {
   final String id;
@@ -41,7 +42,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         TabBarView(physics: NeverScrollableScrollPhysics(), children: [
           DetailsInformationScreen(document),
           Center(
-            child: Text("haha"),
+            child: ChatScreen(widget.id),
           )
         ]),
       ),

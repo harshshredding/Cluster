@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/cupertino.dart';
 import 'event_details.dart';
-import 'helper.dart';
 
 class MapScreen extends StatefulWidget {
   MapScreenState createState() {
@@ -45,7 +44,6 @@ class MapScreenState extends State<MapScreen> {
       tabs: <Tab>[
         new Tab(icon: new Icon(Icons.map)),
         new Tab(icon: new Icon(Icons.chat)),
-        new Tab(icon: new Icon(Icons.person_pin_circle)),
       ],
     );
 

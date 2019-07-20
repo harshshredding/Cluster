@@ -59,6 +59,8 @@ class LoginPage extends StatelessWidget {
     print("User Signed out");
   }
 
+
+
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
