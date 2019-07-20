@@ -19,23 +19,25 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   GoogleSignIn _googleSignIn = GoogleSignIn();
   var fireBaseSubscription;
   Firestore firestore = Firestore.instance;
-  CollectionReference collectionRef;
   String eventId;
-
+  CollectionReference collectionReference;
+  ScrollController _scrollController;
+  Function _currentScrollListener;
   ChatScreenState(this.eventId);
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     _googleSignIn.signInSilently();
     firestore = Firestore.instance;
-    collectionRef = firestore
+    collectionReference = firestore
         .collection('events')
         .document(eventId)
         .collection('chat_room');
     fireBaseSubscription =
-        collectionRef.snapshots().listen((QuerySnapshot snapshot) {
-      for (DocumentSnapshot snapshot in snapshot.documents) {
+        collectionReference.limit(15).orderBy("timestamp", descending: true).snapshots().listen((QuerySnapshot snapshot) {
+      for (DocumentSnapshot snapshot in snapshot.documents.reversed) {
         Timestamp newMessageTimestamp = snapshot.data['timestamp'];
         if (_messages.isNotEmpty) {
           print('hellolalal' + _messages[0].toString());
@@ -62,6 +64,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         }
       }
     });
+  }
+
+
+  Function getScrollListener(context) {
+    return () {
+      if ((_scrollController.offset >= _scrollController.position.maxScrollExtent )&&
+          (!_scrollController.position.outOfRange)) {
+        setState(() {
+          _getOldMessages();
+        });
+      }
+    };
   }
 
   @override
@@ -97,6 +111,24 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     animationController?.forward();
   }
 
+  void _addMessageAtEnd(
+      {String name, String text, String senderImageUrl, Timestamp timestamp}) {
+    var animationController = AnimationController(
+      duration: Duration(milliseconds: 700),
+      vsync: this,
+    );
+    var sender = ChatUser(name: name, imageUrl: senderImageUrl);
+    var message = ChatMessage(
+        sender: sender,
+        text: text,
+        animationController: animationController,
+        timestamp: timestamp);
+    setState(() {
+      _messages.insert(_messages.length, message);
+    });
+    animationController?.forward();
+  }
+
   void _handleSubmitted(String text) {
     _textController.clear();
     _googleSignIn.signIn().then((user) {
@@ -105,11 +137,29 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         'text': text,
         'timestamp': Timestamp.now()
       };
-      collectionRef.add(message);
+      collectionReference.add(message);
     });
     setState(() {
       _isComposing = false;
     });
+  }
+  
+  void _getOldMessages() async {
+    final snackBar = SnackBar(
+        content: Text('Loading old messages'),
+        duration: Duration(milliseconds: 800),);
+
+    // Find the Scaffold in the widget tree and use it to show a SnackBar.
+    Scaffold.of(context).showSnackBar(snackBar);
+    Timestamp minTimestamp = _messages.reversed.first.timestamp;
+    QuerySnapshot querySnapshot = await collectionReference.limit(5).orderBy("timestamp", descending: true).startAfter([minTimestamp]).getDocuments();
+    for (DocumentSnapshot docSnapshot in querySnapshot.documents) {
+      _addMessageAtEnd(
+          name: docSnapshot.data['sender']['name'],
+          senderImageUrl: docSnapshot.data['sender']['imageUrl'],
+          text: docSnapshot.data['text'],
+          timestamp: docSnapshot.data['timestamp']);
+    }
   }
 
   Widget _buildTextComposer() {
@@ -143,18 +193,33 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         : null,
                     child: Text('Send'),
                   )),
-            ])));
+              Container(
+                  margin: EdgeInsets.symmetric(horizontal: 4.0),
+                  child: PlatformAdaptiveButton(
+                    icon: Icon(Icons.send),
+                    onPressed: _isComposing
+                        ? () => _getOldMessages()
+                        : null,
+                    child: Text('Old'),
+                  )),
+              ])));
   }
 
   Widget build(BuildContext context) {
+    if (_currentScrollListener != null) {
+      _scrollController.removeListener(_currentScrollListener);
+    }
+    _currentScrollListener = getScrollListener(context);
+    _scrollController.addListener(_currentScrollListener);
     return Column(children: [
       Flexible(
           child: ListView.builder(
-        padding: EdgeInsets.all(8.0),
-        reverse: true,
-        itemBuilder: (_, int index) => ChatMessageListItem(_messages[index]),
-        itemCount: _messages.length,
-      )),
+            controller: _scrollController,
+            padding: EdgeInsets.all(8.0),
+            reverse: true,
+            itemBuilder: (_, int index) => ChatMessageListItem(_messages[index]),
+            itemCount: _messages.length,
+          )),
       Divider(height: 1.0),
       Container(
           decoration: BoxDecoration(color: Theme.of(context).cardColor),

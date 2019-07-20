@@ -48,7 +48,7 @@ class MapScreenState extends State<MapScreen> {
     );
 
     return DefaultTabController(
-        length: 3,
+        length: 2,
         child: Scaffold(
           appBar: AppBar(
             bottom: tabBar,
@@ -78,8 +78,7 @@ class MapScreenState extends State<MapScreen> {
                           () => PanGestureRecognizer()))),
               ],
             ),
-            Icon(Icons.directions_transit),
-            Icon(Icons.directions_bike),
+            Center(child: Text('coming sooon'),),
           ]),
         ));
   }
