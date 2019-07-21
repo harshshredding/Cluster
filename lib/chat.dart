@@ -193,15 +193,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         : null,
                     child: Text('Send'),
                   )),
-              Container(
-                  margin: EdgeInsets.symmetric(horizontal: 4.0),
-                  child: PlatformAdaptiveButton(
-                    icon: Icon(Icons.send),
-                    onPressed: _isComposing
-                        ? () => _getOldMessages()
-                        : null,
-                    child: Text('Old'),
-                  )),
               ])));
   }
 
