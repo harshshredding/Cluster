@@ -28,6 +28,7 @@ class MapScreenState extends State<MapScreen> {
   var collectionRef;
 
   void initState() {
+    super.initState();
     GeoFirePoint center =
         geo.point(latitude: 47.663645, longitude: -122.286446);
     double radius = 50;
@@ -108,6 +109,8 @@ class MapScreenState extends State<MapScreen> {
           position: LatLng(v.latitude, v.longitude),
           icon: BitmapDescriptor.defaultMarkerWithHue(20.0),
           onTap: () async {
+            print(k);
+            print('yo whats up');
             Navigator.of(context).push<void>(CupertinoPageRoute(
                 builder: (context) => DetailsScreen(k, firestore),
                 fullscreenDialog: true));

@@ -12,113 +12,6 @@ import 'package:uuid/uuid.dart';
 import 'helper.dart';
 
 
-class MyGlobals {
-  GlobalKey _scaffoldKey;
-  MyGlobals() {
-    _scaffoldKey = GlobalKey();
-  }
-  GlobalKey get scaffoldKey => _scaffoldKey;
-}
-
-
-class UploadTaskListTile extends StatelessWidget {
-  const UploadTaskListTile({Key key, this.task, this.onDownload})
-      : super(key: key);
-
-  final StorageUploadTask task;
-  final Function onDownload;
-
-  String get status {
-    String result;
-    if (task.isComplete) {
-      if (task.isSuccessful) {
-        result = 'Complete';
-      } else if (task.isCanceled) {
-        result = 'Canceled';
-      } else {
-        result = 'Failed ERROR: ${task.lastSnapshot.error}';
-      }
-    } else if (task.isInProgress) {
-      result = 'Uploading';
-    } else if (task.isPaused) {
-      result = 'Paused';
-    }
-    return result;
-  }
-
-  String _bytesTransferred(StorageTaskSnapshot snapshot) {
-    return '${snapshot.bytesTransferred}/${snapshot.totalByteCount}';
-  }
-
-  void uploadToFireStore(StorageTaskSnapshot snapshot, context) async {
-    String downloadUrl = await snapshot.ref.getDownloadURL();
-    await onDownload(downloadUrl, context);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<StorageTaskEvent>(
-      stream: task.events,
-      builder: (BuildContext context,
-          AsyncSnapshot<StorageTaskEvent> asyncSnapshot) {
-        Widget subtitle;
-        if (asyncSnapshot.hasData) {
-          final StorageTaskEvent event = asyncSnapshot.data;
-          final StorageTaskSnapshot snapshot = event.snapshot;
-          subtitle = Text('$status: ${_bytesTransferred(snapshot)} bytes sent');
-          if (task.isComplete && task.isSuccessful) {
-            uploadToFireStore(snapshot, context);
-          }
-        } else {
-          subtitle = const Text('Starting...');
-        }
-        return Dismissible(
-          key: Key(task.hashCode.toString()),
-          child: ListTile(
-            title: Text('Upload Task #${task.hashCode}'),
-            subtitle: subtitle,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Offstage(
-                  offstage: !task.isInProgress,
-                  child: IconButton(
-                    icon: const Icon(Icons.pause),
-                    onPressed: () => task.pause(),
-                  ),
-                ),
-                Offstage(
-                  offstage: !task.isPaused,
-                  child: IconButton(
-                    icon: const Icon(Icons.file_upload),
-                    onPressed: () => task.resume(),
-                  ),
-                ),
-                Offstage(
-                  offstage: task.isComplete,
-                  child: IconButton(
-                    icon: const Icon(Icons.cancel),
-                    onPressed: () => task.cancel(),
-                  ),
-                ),
-                Offstage(
-                  offstage: !(task.isComplete && task.isSuccessful),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.cloud_done,
-                      color: Colors.green,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 class BasicDateField extends StatelessWidget {
   final format = DateFormat("yyyy-MM-dd");
 
@@ -171,15 +64,27 @@ class BasicTimeField extends StatelessWidget {
   }
 }
 
-class AddEventScreen extends StatefulWidget {
+
+class AddEventScreen extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Event'),
+      ),
+      body: AddEventForm(),
+    );
+  }
+}
+
+
+
+class AddEventForm extends StatefulWidget {
   AddEventState createState() {
     return AddEventState();
   }
 }
 
-class AddEventState extends State<AddEventScreen> {
-
-  MyGlobals myGlobals = MyGlobals();
+class AddEventState extends State<AddEventForm> {
   final TextEditingController _controllerPlace = TextEditingController();
   final TextEditingController _controllerTitle = TextEditingController();
   final TextEditingController _controllerSummary =
@@ -190,8 +95,7 @@ class AddEventState extends State<AddEventScreen> {
   Geoflutterfire geo = Geoflutterfire();
   Firestore _firestore = Firestore.instance;
   File _image;
-  StorageUploadTask _uploadTask;
-  Function _uploadToFirestore;
+  //bool _uploadingImageInProgress = false;
 
   void chooseImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
@@ -202,6 +106,7 @@ class AddEventState extends State<AddEventScreen> {
 
   void _pushEventToFirestoreWithoutImage(summary, geoPoint,
       title, date, time, place, context) async {
+    print("yaman");
     await _firestore.collection('events').add({
       'summary': summary,
       'position': geoPoint.data,
@@ -215,12 +120,7 @@ class AddEventState extends State<AddEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        key: myGlobals.scaffoldKey,
-        appBar: AppBar(
-          title: Text('Datetime Picker'),
-        ),
-        body: ListView(
+    return ListView(
           children: <Widget>[
             new ListTile(
               title: new TextField(
@@ -251,14 +151,11 @@ class AddEventState extends State<AddEventScreen> {
               ),
             ),
             _image == null ? Text("no image selected") : Image.file(_image),
-            _uploadTask == null
-                ? Container()
-                : UploadTaskListTile(
-                    task: _uploadTask, onDownload: _uploadToFirestore),
             Container(
               padding: const EdgeInsets.all(20),
               child: RaisedButton(
                 onPressed: () async {
+                  print("I got pressed nooooo");
                   final geocoding = new GoogleMapsGeocoding(
                       apiKey: "AIzaSyDYtG5xhm17OtZbEi1PJMLuRctVn43xvgs");
                   GeocodingResponse response =
@@ -272,7 +169,6 @@ class AddEventState extends State<AddEventScreen> {
                   String time = _controllerTime.text;
                   String place = _controllerPlace.text;
                   final String uuid = Uuid().v1();
-
                   StorageUploadTask uploadTask;
                   // If image is not null, upload it through UploadTaskListTile
                   // which shows upload progress
@@ -282,32 +178,44 @@ class AddEventState extends State<AddEventScreen> {
                     StorageReference storageRef =
                         FirebaseStorage.instance.ref().child(args.userId + uuid);
                     uploadTask = storageRef.putFile(_image);
-                    var uploadFunction = (String downloadUrl, contextChild) async {
-                      final snackbar = new SnackBar(
-                        duration: new Duration(seconds: 20),
-                        content: new Row(
-                          children: <Widget>[
-                            new CircularProgressIndicator(),
-                            new Text("Creating Event")
-                          ],
-                        ),
-                      );
-                      Scaffold.of(contextChild).showSnackBar(snackbar);
-                      await _firestore.collection('events').add({
-                        'summary': summary,
-                        'position': geoPoint.data,
-                        'title': title,
-                        'date': date,
-                        'time': time,
-                        'address': place,
-                        'download_url': downloadUrl,
-                      });
-                      Navigator.of(contextChild).pop();
-                    };
-                    setState(() {
-                      _uploadTask = uploadTask;
-                      _uploadToFirestore = uploadFunction;
+
+                    var snackbar = new SnackBar(
+                      duration: new Duration(seconds: 60),
+                      content: new Row(
+                        children: <Widget>[
+                          new CircularProgressIndicator(),
+                          new Text("Uploading Image")
+                        ],
+                      ),
+                    );
+                    Scaffold.of(context).showSnackBar(snackbar);
+
+
+                    StorageTaskSnapshot storageSnapshot = await uploadTask.onComplete;
+                    String downloadUrl = await storageSnapshot.ref.getDownloadURL();
+
+                    Scaffold.of(context).hideCurrentSnackBar();
+                    snackbar = new SnackBar(
+                      duration: new Duration(seconds: 60),
+                      content: new Row(
+                        children: <Widget>[
+                          new CircularProgressIndicator(),
+                          new Text("Publishing event")
+                        ],
+                      ),
+                    );
+
+
+                    await _firestore.collection('events').add({
+                      'summary': summary,
+                      'position': geoPoint.data,
+                      'title': title,
+                      'date': date,
+                      'time': time,
+                      'address': place,
+                      'download_url': downloadUrl,
                     });
+                    Navigator.of(context).pop();
                   } else {
                     // If image is null, do a straightforward upload
                     _pushEventToFirestoreWithoutImage(summary, geoPoint,
@@ -318,6 +226,6 @@ class AddEventState extends State<AddEventScreen> {
               ),
             ),
           ],
-        ));
+    );
   }
 }
