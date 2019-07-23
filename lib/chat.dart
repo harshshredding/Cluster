@@ -276,6 +276,15 @@ class ChatMessageContent extends StatelessWidget {
   final ChatMessage message;
 
   Widget build(BuildContext context) {
-    return Text(message.text);
+    double c_width = MediaQuery.of(context).size.width*0.8;
+    //80% of screen width
+    return new Container (
+      width: c_width,
+      child: new Column (
+        children: <Widget>[
+          new Text (message.text),
+        ],
+      ),
+    );
   }
 }

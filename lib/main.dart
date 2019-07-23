@@ -21,7 +21,6 @@ class MyApp extends StatelessWidget {
       routes: {
         '/map': (context) => MapScreen(),
         '/addEvent': (context) => AddEventScreen(),
-        '/test': (context) => Test(),
       },
     );
   }

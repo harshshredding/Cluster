@@ -139,7 +139,7 @@ class AddEventState extends State<AddEventForm> {
             new ListTile(title: BasicTimeField(_controllerTime)),
             new ListTile(
               title: PlacesAutocompleteField(
-                apiKey: "AIzaSyDYtG5xhm17OtZbEi1PJMLuRctVn43xvgs",
+                apiKey: "AIzaSyA4rqnzacOOLnpj9pM5WMMl-DO3Zr5IYqw",
                 controller: _controllerPlace,
                 hint: "Place",
               ),
@@ -157,7 +157,7 @@ class AddEventState extends State<AddEventForm> {
                 onPressed: () async {
                   print("I got pressed nooooo");
                   final geocoding = new GoogleMapsGeocoding(
-                      apiKey: "AIzaSyDYtG5xhm17OtZbEi1PJMLuRctVn43xvgs");
+                      apiKey: "AIzaSyA4rqnzacOOLnpj9pM5WMMl-DO3Zr5IYqw");
                   GeocodingResponse response =
                       await geocoding.searchByAddress(_controllerPlace.text);
                   Location location = response.results[0].geometry.location;
