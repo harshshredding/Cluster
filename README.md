@@ -29,7 +29,7 @@ interested new-comers in a channel(room), encouraging them by saying "Don't worr
 , anyone through hard work can become good at the art. Excited to see you."
 
 # HELP ME!
-Every crumble is appreciated !
+Every crumble of code is appreciated !
 
 # Setup
 
