@@ -1,7 +1,7 @@
 # cluster
 
 First things first :
-[Prototype demo video (very primitive)](https://www.youtube.com/watch?v=ZvY9nmb8nWY&feature=youtu.be) 
+[Prototype demo video](https://www.youtube.com/watch?v=ZvY9nmb8nWY&feature=youtu.be) 
 
 Here is the deal.  
 
