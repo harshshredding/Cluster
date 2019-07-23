@@ -2,6 +2,7 @@
 
 First things first :
 [Prototype demo video](https://www.youtube.com/watch?v=ZvY9nmb8nWY&feature=youtu.be) 
+[landing page](https://harshv5.wixsite.com/kluzter)
 
 Here is the deal.  
 
