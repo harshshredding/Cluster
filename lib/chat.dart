@@ -281,6 +281,7 @@ class ChatMessageContent extends StatelessWidget {
     return new Container (
       width: c_width,
       child: new Column (
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           new Text (message.text),
         ],
