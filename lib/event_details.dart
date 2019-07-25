@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
+import 'package:intl/intl.dart';
 
 class DetailsScreen extends StatefulWidget {
   final String id;
@@ -31,15 +32,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
       ],
     );
 
-
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar:  AppBar(
+        appBar: AppBar(
           bottom: tabBar,
         ),
-        body:
-        TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+        body: TabBarView(physics: NeverScrollableScrollPhysics(), children: [
           DetailsInformationScreen(document),
           Center(
             child: ChatScreen(widget.id),
@@ -50,9 +49,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 }
 
-
 class DetailsInformationScreen extends StatelessWidget {
-
   DocumentReference document;
 
   DetailsInformationScreen(this.document);
@@ -65,7 +62,7 @@ class DetailsInformationScreen extends StatelessWidget {
           child: Image.asset("images/default_event.jpg", fit: BoxFit.cover),
         ),
         padding: EdgeInsets.all(8),
-        height: 400,
+        height: 300,
       );
     } else {
       String downloadUrl = snapshot.data['download_url'];
@@ -78,7 +75,7 @@ class DetailsInformationScreen extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        height: 400,
+        height: 300,
       );
     }
   }
@@ -108,43 +105,75 @@ class DetailsInformationScreen extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         margin: EdgeInsets.all(10.0),
                         child:
-                        createIfFieldExists(snapshot, 'title', (snapshot) {
+                            createIfFieldExists(snapshot, 'title', (snapshot) {
                           return Text(
                             snapshot.data['title'],
                             style: TextStyle(
-                                fontSize: 25.0, fontFamily: 'Heebo-Black'),
+                                fontSize: 35.0, fontFamily: 'Heebo-Black'),
                           );
                         }),
                         padding: EdgeInsets.all(10),
                       ),
                       Container(
                         alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.all(20.0),
-                        child: createIfFieldExists(snapshot, 'summary',
-                                (snapshot) {
-                              return Text(snapshot.data['summary'],
-                                  style: TextStyle(
-                                      fontSize: 15.0, fontFamily: 'Heebo-Black'));
-                            }),
-                        padding: EdgeInsets.all(4),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.all(20.0),
+                        margin: EdgeInsets.fromLTRB(20, 2, 0, 2),
                         child:
-                        createIfFieldExists(snapshot, 'date', (snapshot) {
-                          return Text(snapshot.data['date'],
-                              style: TextStyle(
-                                  fontSize: 15.0, fontFamily: 'Heebo-Black'));
+                            createIfFieldExists(snapshot, 'date', (snapshot) {
+                          return Row(
+                            children: <Widget>[
+                              Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Icon(Icons.access_time),
+                                  ),
+                                  flex: 1,
+                              ),
+                              Expanded(
+                                  child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(getCustomDateFormat(snapshot.data['date']) + " - " + snapshot.data['time'],
+                                            style: TextStyle(
+                                                fontSize: 15.0,
+                                                fontFamily: 'Heebo-Black')
+                                          )
+                                        ),
+                                  flex: 7,
+                              )
+                            ],
+                          );
                         }),
                         padding: EdgeInsets.all(4),
                       ),
                       Container(
                         alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.all(20.0),
+                        margin: EdgeInsets.fromLTRB(20, 0, 0, 20),
                         child:
                         createIfFieldExists(snapshot, 'time', (snapshot) {
-                          return Text(snapshot.data['time'],
+                          return Text(getTimeRemaining(snapshot.data['date'], snapshot.data['time']),
+                              style: TextStyle(
+                                  fontSize: 15.0, fontFamily: 'Heebo-Black'));
+                        }),
+                        padding: EdgeInsets.fromLTRB(7, 0, 0, 0),
+                      ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                        child: createIfFieldExists(snapshot, 'summary',
+                            (snapshot) {
+                          return Text('SUMMARY',
+                              style: TextStyle(
+                                  fontSize: 12.0,
+                                  fontFamily: 'Heebo-Black',
+                                  color: Colors.grey));
+                        }),
+                        padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
+                      ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.fromLTRB(20, 2, 0, 10),
+                        child: createIfFieldExists(snapshot, 'summary',
+                            (snapshot) {
+                          return Text(snapshot.data['summary'],
                               style: TextStyle(
                                   fontSize: 15.0, fontFamily: 'Heebo-Black'));
                         }),
@@ -152,13 +181,27 @@ class DetailsInformationScreen extends StatelessWidget {
                       ),
                       Container(
                         alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.all(20.0),
-                        child: createIfFieldExists(snapshot, 'address',
+                        margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                        child: createIfFieldExists(snapshot, 'summary',
                                 (snapshot) {
-                              return Text(snapshot.data['address'],
+                              return Text('ADDRESS',
                                   style: TextStyle(
-                                      fontSize: 15.0, fontFamily: 'Heebo-Black'));
+                                      fontSize: 12.0,
+                                      fontFamily: 'Heebo-Black',
+                                      color: Colors.grey));
                             }),
+                        padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
+                      ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.fromLTRB(20, 2, 0, 30),
+                        child: createIfFieldExists(snapshot, 'address',
+                            (snapshot) {
+                          return Text(snapshot.data['address'],
+                              style: TextStyle(
+                                  fontSize: 15.0, fontFamily: 'Heebo-Black',
+                              ));
+                        }),
                         padding: EdgeInsets.all(4),
                       )
                     ],
@@ -176,5 +219,38 @@ class DetailsInformationScreen extends StatelessWidget {
       future: document.get(),
     );
   }
-}
 
+  String getCustomDateFormat(String date) {
+    DateTime dateTime = DateTime.parse(date);
+    DateFormat getMonth = new DateFormat('MMMM');
+    DateFormat getDay = new DateFormat('d');
+    String month = getMonth.format(dateTime);
+    String day_num = getDay.format(dateTime);
+    return month + " " + day_num;
+  }
+
+  String getTimeRemaining(String date, String time) {
+    DateTime now = DateTime.now();
+    DateTime _date = DateTime.parse(date);
+    int hours = int.parse(time.split(":")[0]);;
+    int minutes = int.parse(time.split(":")[1]);
+    DateTime givenDateTime = _date.add(Duration(hours: hours, seconds: minutes));
+    Duration diff = givenDateTime.difference(now);
+    if (diff.inDays < 0 || diff.inHours < 0 || diff.inSeconds < 0) {
+      int diffDaysAbsolute = -diff.inDays;
+      int diffHoursAbsolute = -diff.inHours;
+      if ((diffDaysAbsolute > 0)  && (diffDaysAbsolute < 8)) {
+        return (diffDaysAbsolute).toString() + " days ago";
+      } else if ((diffDaysAbsolute == 0) && (diffHoursAbsolute != 0)) {
+        return (diffHoursAbsolute).toString() + " hours ago";
+      }
+    } else {
+      if ((diff.inDays > 0)  && (diff.inDays < 8)) {
+        return "in " + (diff.inDays).toString() + " days";
+      } else if ((diff.inDays == 0) && (diff.inHours != 0)) {
+        return "in " + (diff.inHours).toString() + " hours";
+      }
+    }
+    return "";
+  }
+}

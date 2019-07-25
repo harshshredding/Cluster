@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:uuid/uuid.dart';
 import 'helper.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 /// This widget helps select date interactively.
 class BasicDateField extends StatelessWidget {
@@ -95,11 +96,18 @@ class AddEventState extends State<AddEventForm> {
       TextEditingController(text: "");
   final TextEditingController _controllerDate = TextEditingController();
   final TextEditingController _controllerTime = TextEditingController();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Geoflutterfire geo = Geoflutterfire();
   Firestore _firestore = Firestore.instance;
   // Current selected image
   File _image;
+
+  @override
+  void initState() {
+    super.initState();
+    _googleSignIn.signInSilently();
+  }
 
   /// choose an image and display it on the screen by changing state
   void chooseImage() async {
@@ -110,7 +118,8 @@ class AddEventState extends State<AddEventForm> {
   }
 
   Future<DocumentReference> _pushEventToFirestoreWithoutImage(
-      summary, geoPoint, title, date, time, place) async {
+      summary, geoPoint, title, date, time, place, userId, userPhotoUrl,
+      userDisplayName) async {
     return _firestore.collection('events').add({
       'summary': summary,
       'position': geoPoint.data,
@@ -118,11 +127,15 @@ class AddEventState extends State<AddEventForm> {
       'date': date,
       'time': time,
       'address': place,
+      'user_id': userId,
+      'user_photo_url': userPhotoUrl,
+      'user_display_name': userDisplayName
     });
   }
 
   Future<DocumentReference> _pushEventToFirestoreWithImage(
-      summary, geoPoint, title, date, time, place, downloadUrl) async {
+      summary, geoPoint, title, date, time, place, downloadUrl,
+      userId, userPhotoUrl, userDisplayName) async {
     return _firestore.collection('events').add({
       'summary': summary,
       'position': geoPoint.data,
@@ -131,6 +144,9 @@ class AddEventState extends State<AddEventForm> {
       'time': time,
       'address': place,
       'download_url': downloadUrl,
+      'user_id': userId,
+      'user_photo_url': userPhotoUrl,
+      'user_display_name': userDisplayName
     });
   }
 
@@ -184,6 +200,10 @@ class AddEventState extends State<AddEventForm> {
               String date = _controllerDate.text;
               String time = _controllerTime.text;
               String place = _controllerPlace.text;
+              GoogleSignInAccount user = await _googleSignIn.signIn();
+              String userId = user.id;
+              String userPhotoUrl = user.photoUrl;
+              String userDisplayName = user.displayName;
 
               // If image is not null, upload it through UploadTaskListTile
               // which shows upload progress
@@ -222,12 +242,13 @@ class AddEventState extends State<AddEventForm> {
                 );
 
                 Scaffold.of(context).showSnackBar(snackbar);
-                await _pushEventToFirestoreWithImage(summary, geoPoint, title, date, time, place, downloadUrl);
+                await _pushEventToFirestoreWithImage(summary, geoPoint, title,
+                    date, time, place, downloadUrl, userId, userPhotoUrl, userDisplayName);
 
               } else {
                 // If image is null, do a straightforward upload
                 await _pushEventToFirestoreWithoutImage(
-                    summary, geoPoint, title, date, time, place);
+                    summary, geoPoint, title, date, time, place, userId, userPhotoUrl, userDisplayName);
               }
 
               Navigator.of(context).pop();
