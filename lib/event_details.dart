@@ -54,6 +54,7 @@ class DetailsInformationScreen extends StatelessWidget {
 
   DetailsInformationScreen(this.document);
 
+
   Widget getEventImage(snapshot) {
     if (snapshot.data['download_url'] == null) {
       return Container(
@@ -80,6 +81,8 @@ class DetailsInformationScreen extends StatelessWidget {
     }
   }
 
+  /// If the field exists in the snapshot result,
+  /// create a widget using the given "factory" method.
   Widget createIfFieldExists(snapshot, String field, factory) {
     if (snapshot.data[field] != null) {
       print(snapshot.data[field]);
@@ -103,7 +106,7 @@ class DetailsInformationScreen extends StatelessWidget {
                     children: <Widget>[
                       Container(
                         alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.all(10.0),
+                        margin: EdgeInsets.fromLTRB(12, 10, 10, 10),
                         child:
                             createIfFieldExists(snapshot, 'title', (snapshot) {
                           return Text(
@@ -203,7 +206,65 @@ class DetailsInformationScreen extends StatelessWidget {
                               ));
                         }),
                         padding: EdgeInsets.all(4),
+                      ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.fromLTRB(20, 0, 0, 5),
+                        child: createIfFieldExists(snapshot, 'summary',
+                                (snapshot) {
+                              return Text('CREATED BY',
+                                  style: TextStyle(
+                                      fontSize: 12.0,
+                                      fontFamily: 'Heebo-Black',
+                                      color: Colors.blueAccent));
+                            }),
+                        padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
+                      ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin: EdgeInsets.fromLTRB(20, 0, 0, 20),
+                        child: Container(
+                            margin: EdgeInsets.only(left: 5),
+                            child: Row(
+                          children: <Widget>[
+                            FutureBuilder<DocumentSnapshot>(
+                                future: Firestore.instance.collection("users")
+                                    .document(snapshot.data['user_id']).get(),
+                                builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                                  switch (snapshot.connectionState) {
+                                    case ConnectionState.done: {
+                                      if (snapshot.hasError) {
+                                        return Container();
+                                      } else {
+                                        if (snapshot.data.exists) {
+                                          return CircleAvatar(
+                                            backgroundImage: NetworkImage(snapshot.data.data['photo_url']),
+                                            radius: 15,
+                                          );
+                                        } else {
+                                          return Container();
+                                        }
+                                      }
+                                    }
+                                    break;
+                                    case ConnectionState.active:
+                                    case ConnectionState.waiting:
+                                    case ConnectionState.none:
+                                      break;
+                                  }
+                                  return Container();
+                                }),
+                            createIfFieldExists(snapshot, 'user_display_name',
+                                    (snapshot) {
+                                  return Container(
+                                      margin: EdgeInsets.fromLTRB(10, 3, 0, 0),
+                                      child: Text(snapshot.data['user_display_name'])
+                                  );
+                                })
+                          ],
+                          )),
                       )
+
                     ],
                   ),
                   color: Colors.white,
@@ -220,8 +281,18 @@ class DetailsInformationScreen extends StatelessWidget {
     );
   }
 
+  /// Returns converts the given date into format
+  /// [Month] [Day]
+  /// Here month is not the numeric month
+  /// Day is the numeric day
   String getCustomDateFormat(String date) {
-    DateTime dateTime = DateTime.parse(date);
+    DateTime dateTime;
+    try {
+      dateTime = DateTime.parse(date);
+    } on FormatException catch (e) {
+      print("error parsing date");
+      print(e);
+    }
     DateFormat getMonth = new DateFormat('MMMM');
     DateFormat getDay = new DateFormat('d');
     String month = getMonth.format(dateTime);
@@ -229,11 +300,28 @@ class DetailsInformationScreen extends StatelessWidget {
     return month + " " + day_num;
   }
 
+  /// Returns the string representation of the amount
+  /// of time that remains (or has passed) till the start
+  /// of the event.
   String getTimeRemaining(String date, String time) {
-    DateTime now = DateTime.now();
-    DateTime _date = DateTime.parse(date);
-    int hours = int.parse(time.split(":")[0]);;
-    int minutes = int.parse(time.split(":")[1]);
+    if (date == null || time == null) {
+      return "";
+    }
+    DateTime now;
+    DateTime _date;
+    int hours;
+    int minutes;
+    try {
+      now = DateTime.now();
+      _date = DateTime.parse(date);
+      hours = int.parse(time.split(":")[0]);
+      minutes = int.parse(time.split(":")[1]);
+    } on FormatException catch (e) {
+      print("time ["+ time + "]" + " date [" + date + "] could not be parsed "
+          + " correctly.");
+      print(e);
+      return "";
+    }
     DateTime givenDateTime = _date.add(Duration(hours: hours, seconds: minutes));
     Duration diff = givenDateTime.difference(now);
     if (diff.inDays < 0 || diff.inHours < 0 || diff.inSeconds < 0) {

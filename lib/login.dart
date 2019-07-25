@@ -51,8 +51,17 @@ class Login extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             GoogleSignInButton(
-              onPressed: () => _signIn(context).then((FirebaseUser user) {
-                    print(user);
+              onPressed: () => _signIn(context).then((FirebaseUser user) async {
+                    DocumentReference document = firestore.collection("users").document(user.uid);
+                    DocumentSnapshot documentSnap = await document.get();
+                    if (!documentSnap.exists) {
+                      document.setData({
+                        "id" : user.uid,
+                        "name": user.displayName,
+                        "photo_url": user.photoUrl,
+                        "summary": ""
+                      });
+                    }
                   }).catchError((e) => print(e)),
               text: "Sign In",
               borderRadius: 10,

@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:uuid/uuid.dart';
 import 'helper.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// This widget helps select date interactively.
 class BasicDateField extends StatelessWidget {
@@ -201,7 +202,8 @@ class AddEventState extends State<AddEventForm> {
               String time = _controllerTime.text;
               String place = _controllerPlace.text;
               GoogleSignInAccount user = await _googleSignIn.signIn();
-              String userId = user.id;
+              FirebaseUser fireUser = await FirebaseAuth.instance.currentUser();
+              String userId = fireUser.uid;
               String userPhotoUrl = user.photoUrl;
               String userDisplayName = user.displayName;
 
