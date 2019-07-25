@@ -1,7 +1,10 @@
 # cluster
 
 First things first :
-[Prototype demo video (very primitive)](https://youtu.be/lEjB8vTasqU) 
+
+[Prototype demo video](https://www.youtube.com/watch?v=ZvY9nmb8nWY&feature=youtu.be) 
+
+[landing page](https://harshv5.wixsite.com/kluzter)
 
 Here is the deal.  
 
@@ -29,7 +32,7 @@ interested new-comers in a channel(room), encouraging them by saying "Don't worr
 , anyone through hard work can become good at the art. Excited to see you."
 
 # HELP ME!
-Every crumble is appreciated !
+Every crumble of code is appreciated !
 
 # Setup
 
