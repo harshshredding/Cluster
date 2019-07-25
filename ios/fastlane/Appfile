@@ -1,0 +1,8 @@
+app_identifier("com.cluster.android") # The bundle identifier of your app
+apple_id("harsh0503@icloud.com") # Your Apple email address
+
+itc_team_id("120287738") # App Store Connect Team ID
+team_id("9LY3FH8XK3") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile

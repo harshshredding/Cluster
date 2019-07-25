@@ -1,0 +1,5 @@
+osx_instance:
+  image: mojave-flutter
+
+task:
+  script: echo "Hello World from macOS!"
