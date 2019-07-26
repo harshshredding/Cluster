@@ -3,6 +3,7 @@ import 'map.dart';
 import 'add_event.dart';
 import 'login.dart';
 import 'test.dart';
+import 'user_profile.dart';
 
 void main() => runApp(new MyApp());
 
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/map': (context) => MapScreen(),
         '/addEvent': (context) => AddEventScreen(),
+        '/userProfile': (context) => UserProfileHeader(),
       },
     );
   }

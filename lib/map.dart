@@ -56,15 +56,25 @@ class MapScreenState extends State<MapScreen> {
             title: Text('Cluster'),
             actions: <Widget>[
               Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-              child: IconButton(
-                icon: Icon(Icons.add_location),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/addEvent', arguments: ModalRoute.of(context).settings.arguments);
-                },
+                margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
+                child: IconButton(
+                  icon: Icon(Icons.supervised_user_circle),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/userProfile',
+                        arguments: ModalRoute.of(context).settings.arguments);
+                  },
+                ),
               ),
-          )
-              ,
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                child: IconButton(
+                  icon: Icon(Icons.add_location),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/addEvent',
+                        arguments: ModalRoute.of(context).settings.arguments);
+                  },
+                ),
+              )
             ],
           ),
           body: TabBarView(physics: NeverScrollableScrollPhysics(), children: [
@@ -79,7 +89,9 @@ class MapScreenState extends State<MapScreen> {
                           () => PanGestureRecognizer()))),
               ],
             ),
-            Center(child: Text('coming sooon'),),
+            Center(
+              child: Text('coming sooon'),
+            ),
           ]),
         ));
   }
