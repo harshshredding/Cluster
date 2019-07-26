@@ -91,11 +91,14 @@ class UserProfileState extends State<UserProfile> {
                         _controllerSummary,
                         _controllerLinkedn,
                         _editMode),
-                      RaisedButton(onPressed: () {
-                            submitUserDetails(context);
-                          },
-                          child: Text("Save Changes"),
-                      )
+                      _editMode ?
+                          RaisedButton(onPressed: () {
+                                submitUserDetails(context);
+                              },
+                              child: Text("Save Changes"),
+                          )
+                          :
+                          Container()
                     ]
                     );
                   }
