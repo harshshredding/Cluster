@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/cupertino.dart';
 import 'event_details.dart';
+import 'favorite_events.dart';
 
 class MapScreen extends StatefulWidget {
   MapScreenState createState() {
@@ -44,7 +45,7 @@ class MapScreenState extends State<MapScreen> {
     final tabBar = new TabBar(
       tabs: <Tab>[
         new Tab(icon: new Icon(Icons.map)),
-        new Tab(icon: new Icon(Icons.chat)),
+        new Tab(icon: new Icon(Icons.star, color: Colors.white,)),
       ],
     );
 
@@ -89,11 +90,10 @@ class MapScreenState extends State<MapScreen> {
                           () => PanGestureRecognizer()))),
               ],
             ),
-            Center(
-              child: Text('coming sooon'),
-            ),
+            FavoritesList(),
           ]),
-        ));
+        )
+    );
   }
 
   void _onMapCreated(GoogleMapController controller) {

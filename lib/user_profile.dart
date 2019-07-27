@@ -69,38 +69,37 @@ class UserProfileState extends State<UserProfile> {
               case ConnectionState.done:
                 {
                   if (!_hasEdited) {
-                    _controllerSummary.text = snapshot.data.data["summary"];
-                    if (snapshot.data.data["linkedn"] != null) {
-                      _controllerLinkedn.text = snapshot.data.data["linkedn"];
-                    }
+                    _controllerSummary.text = (snapshot.data.data["summary"] ?? _controllerSummary.text);
+                    _controllerLinkedn.text = (snapshot.data.data["linkedn"] ?? _controllerLinkedn.text);
                   }
                   if (snapshot.hasError) {
                     return Center(child: Text("Error occured"));
                   } else {
-                    return Column(children: [
+                    return SingleChildScrollView(child: Column(children: [
                       Container(
-                        alignment: Alignment.topRight,
-                        child: IconButton(icon: _editMode ? Icon(Icons.edit, color: Colors.red,)
-                                                            :Icon(Icons.edit, color: Colors.black,),
-                                                      onPressed: switchEditMode,)
+                          alignment: Alignment.topRight,
+                          child: IconButton(icon: _editMode ? Icon(Icons.edit, color: Colors.red,)
+                              :Icon(Icons.edit, color: Colors.black,),
+                            onPressed: switchEditMode,)
                       ),
                       UserDetails(
-                        snapshot.data.data["name"],
-                        snapshot.data.data["photo_url"],
-                        snapshot.data.data["summary"],
-                        _controllerSummary,
-                        _controllerLinkedn,
-                        _editMode),
+                          snapshot.data.data['name'] ?? "",
+                          snapshot.data.data['photo_url'] ?? "",
+                          snapshot.data.data['summary'] ?? "",
+                          _controllerSummary,
+                          _controllerLinkedn,
+                          _editMode),
                       _editMode ?
-                          RaisedButton(onPressed: () {
-                                submitUserDetails(context);
-                              },
-                              child: Text("Save Changes"),
-                          )
+                      RaisedButton(onPressed: () {
+                        submitUserDetails(context);
+                      },
+                        child: Text("Save Changes"),
+                      )
                           :
-                          Container()
+                      Container()
                     ]
-                    );
+                    ))
+                    ;
                   }
                 }
                 break;
@@ -132,73 +131,73 @@ class UserDetails extends StatelessWidget {
 
   Widget build(BuildContext context) {
     return Column(
-      children: <Widget>[
-        Container(
-          color: Color.fromRGBO(232, 233, 233, 100),
-          child: Column(
-            children: <Widget>[
-              Container(
-                alignment: Alignment.center,
-                child: CircleAvatar(
-                  backgroundImage: NetworkImage(photoUrl),
-                  radius: 50,
+        children: <Widget>[
+          Container(
+            color: Color.fromRGBO(232, 233, 233, 100),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  alignment: Alignment.center,
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(photoUrl),
+                    radius: 50,
+                  ),
+                  margin: EdgeInsets.only(top: 20),
                 ),
-                margin: EdgeInsets.only(top: 20),
-              ),
-              Container(
-                alignment: Alignment.center,
-                child: Text(name,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontFamily: 'Heebo-Black',
-                    )),
-                margin: EdgeInsets.all(20),
-              ),
-            ],
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 35, left: 20),
-          alignment: Alignment.centerLeft,
-          child: Text('ABOUT ME',
-              style: TextStyle(
-                  fontSize: 12.0,
-                  fontFamily: 'Heebo-Black',
-                  color: Colors.grey.shade900)),
-        ),
-        Container(
-          alignment: Alignment.centerLeft,
-          child: TextField(
-            enabled: _editMode,
-            maxLines: null,
-            controller: _controllerSummary,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
+                Container(
+                  alignment: Alignment.center,
+                  child: Text(name,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontFamily: 'Heebo-Black',
+                      )),
+                  margin: EdgeInsets.all(20),
+                ),
+              ],
             ),
           ),
-          margin: EdgeInsets.all(20),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 20, left: 20),
-          alignment: Alignment.centerLeft,
-          child: Text('LINKEDN',
-              style: TextStyle(
-                  fontSize: 12.0,
-                  fontFamily: 'Heebo-Black',
-                  color: Colors.grey.shade900)),
-        ),
-        Container(
-          alignment: Alignment.centerLeft,
-          child: TextField(
-            enabled: _editMode,
-            controller: _controllerLinkedn,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-            ),
+          Container(
+            margin: EdgeInsets.only(top: 35, left: 20),
+            alignment: Alignment.centerLeft,
+            child: Text('ABOUT ME',
+                style: TextStyle(
+                    fontSize: 12.0,
+                    fontFamily: 'Heebo-Black',
+                    color: Colors.grey.shade900)),
           ),
-          margin: EdgeInsets.all(20),
-        ),
-      ],
-    );
+          Container(
+            alignment: Alignment.centerLeft,
+            child: TextField(
+              enabled: _editMode,
+              maxLines: null,
+              controller: _controllerSummary,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+            ),
+            margin: EdgeInsets.all(20),
+          ),
+          Container(
+            margin: EdgeInsets.only(top: 20, left: 20),
+            alignment: Alignment.centerLeft,
+            child: Text('LINKEDN',
+                style: TextStyle(
+                    fontSize: 12.0,
+                    fontFamily: 'Heebo-Black',
+                    color: Colors.grey.shade900)),
+          ),
+          Container(
+            alignment: Alignment.centerLeft,
+            child: TextField(
+              enabled: _editMode,
+              controller: _controllerLinkedn,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+            ),
+            margin: EdgeInsets.all(20),
+          ),
+        ],
+      );
   }
 }
