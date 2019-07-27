@@ -284,7 +284,7 @@ class DetailsInformationScreenState extends State<DetailsInformationScreen> {
                           children: <Widget>[
                             FutureBuilder<DocumentSnapshot>(
                                 future: Firestore.instance.collection("users")
-                                    .document(snapshot.data['user_id']).get(),
+                                    .document(snapshot.data.data['user_id']).get(),
                                 builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
                                   switch (snapshot.connectionState) {
                                     case ConnectionState.done:
@@ -298,11 +298,11 @@ class DetailsInformationScreenState extends State<DetailsInformationScreen> {
                                                 snapshot) {
                                               return CircleAvatar(
                                                 backgroundImage: NetworkImage(
-                                                    snapshot.data
-                                                        .data['photo_url']),
+                                                    snapshot.data['photo_url']),
                                                 radius: 15,
                                               );
-                                            });
+                                            }
+                                            );
                                           }
                                         }
                                       }
