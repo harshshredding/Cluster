@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/map': (context) => MapScreen(),
         '/addEvent': (context) => AddEventScreen(),
-        '/userProfile': (context) => UserProfileHeader(),
+        '/userProfile': (context) => UserProfileHeader(true),
       },
     );
   }

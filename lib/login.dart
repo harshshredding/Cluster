@@ -53,6 +53,13 @@ class Login extends StatelessWidget {
             GoogleSignInButton(
               onPressed: () => _signIn(context).then((FirebaseUser user) async {
                     DocumentReference document = firestore.collection("users").document(user.uid);
+                    Firestore.instance.runTransaction((Transaction t) async {
+                      t.update(document, {
+                        "id" : user.uid,
+                        "name": user.displayName,
+                        "photo_url": user.photoUrl,
+                      });
+                    });
                     DocumentSnapshot documentSnap = await document.get();
                     if (!documentSnap.exists) {
                       document.setData({

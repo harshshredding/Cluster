@@ -10,6 +10,7 @@ import 'chat.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cluster/helper.dart';
+import 'user_profile.dart';
 
 class DetailsScreen extends StatefulWidget {
   final String id;
@@ -133,6 +134,11 @@ class DetailsInformationScreenState extends State<DetailsInformationScreen> {
     });
   }
 
+  void viewProfile(BuildContext context) {
+
+  }
+  
+  
   Widget build(BuildContext context) {
     return FutureBuilder(
       builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
@@ -280,7 +286,7 @@ class DetailsInformationScreenState extends State<DetailsInformationScreen> {
                         margin: EdgeInsets.fromLTRB(20, 0, 0, 20),
                         child: Container(
                             margin: EdgeInsets.only(left: 5),
-                            child: Row(
+                            child: GestureDetector(child: Row(
                           children: <Widget>[
                             FutureBuilder<DocumentSnapshot>(
                                 future: Firestore.instance.collection("users")
@@ -322,7 +328,17 @@ class DetailsInformationScreenState extends State<DetailsInformationScreen> {
                                   );
                                 })
                             ],
-                          )
+                          ),
+                            // If user tapped on the creator section, we do the following.
+                            onTap: () {
+                                if (snapshot.data != null) {
+                                  if (snapshot.data.data['user_id'] != null) {
+                                    Navigator.of(context).push<void>(CupertinoPageRoute(
+                                        builder: (context) => UserProfileHeader(false, userDocumentId:snapshot.data.data['user_id']),
+                                        fullscreenDialog: true));
+                                  }
+                                }
+                            },)
                         ),
                       )
                     ],
@@ -356,8 +372,8 @@ class DetailsInformationScreenState extends State<DetailsInformationScreen> {
     DateFormat getMonth = new DateFormat('MMMM');
     DateFormat getDay = new DateFormat('d');
     String month = getMonth.format(dateTime);
-    String day_num = getDay.format(dateTime);
-    return month + " " + day_num;
+    String dayNum = getDay.format(dateTime);
+    return month + " " + dayNum;
   }
 
   /// Returns the string representation of the amount

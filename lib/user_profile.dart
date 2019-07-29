@@ -3,16 +3,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProfileHeader extends StatelessWidget {
+
+  final String userDocumentId;
+  final bool editable;
+
+  UserProfileHeader(this.editable, {this.userDocumentId});
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: AppBar(title: Text("Profile")),
-      body: UserProfile(),
+      body: UserProfile(userDocumentId, editable)
     );
   }
 }
 
 class UserProfile extends StatefulWidget {
+  final String userDocumentId;
+  final bool editable;
+  UserProfile(this.userDocumentId, this.editable);
   UserProfileState createState() => UserProfileState();
 }
 
@@ -28,7 +37,11 @@ class UserProfileState extends State<UserProfile> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getUserDetails();
+    if (widget.userDocumentId == null) {
+      getUserDetails();
+    } else {
+      getUserDetailsWithId(widget.userDocumentId);
+    }
   }
 
   void switchEditMode() {
@@ -43,6 +56,13 @@ class UserProfileState extends State<UserProfile> {
     setState(() {
       userDocument =
           Firestore.instance.collection("users").document(user.uid).get();
+    });
+  }
+
+  void getUserDetailsWithId(String userId) async {
+    setState(() {
+      userDocument =
+          Firestore.instance.collection("users").document(userId).get();
     });
   }
 
@@ -76,12 +96,16 @@ class UserProfileState extends State<UserProfile> {
                     return Center(child: Text("Error occured"));
                   } else {
                     return SingleChildScrollView(child: Column(children: [
-                      Container(
-                          alignment: Alignment.topRight,
-                          child: IconButton(icon: _editMode ? Icon(Icons.edit, color: Colors.red,)
-                              :Icon(Icons.edit, color: Colors.black,),
-                            onPressed: switchEditMode,)
-                      ),
+                      widget.editable?
+                        Container(
+                            alignment: Alignment.topRight,
+                            child: IconButton(icon: _editMode ? Icon(Icons.edit, color: Colors.red,)
+                                :Icon(Icons.edit, color: Colors.black,),
+                              onPressed: switchEditMode,)
+                        )
+                          :
+                        Container()
+                      ,
                       UserDetails(
                           snapshot.data.data['name'] ?? "",
                           snapshot.data.data['photo_url'] ?? "",
