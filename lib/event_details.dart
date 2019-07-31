@@ -35,20 +35,21 @@ class _DetailsScreenState extends State<DetailsScreen> {
       ],
     );
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          bottom: tabBar,
-        ),
-        body: TabBarView(physics: NeverScrollableScrollPhysics(), children: [
-          DetailsInformationScreen(document),
-          Center(
-            child: ChatScreen(widget.id),
-          )
-        ]),
-      ),
-    );
+//    return DefaultTabController(
+//      length: 1,
+//      child: Scaffold(
+//        appBar: AppBar(
+//          bottom: tabBar,
+//        ),
+//        body: TabBarView(physics: NeverScrollableScrollPhysics(), children: [
+//          DetailsInformationScreen(document),
+//          Center(
+//            child: ChatScreen(widget.id),
+//          )
+//        ]),
+//      ),
+//    );
+    return DetailsInformationScreen(document);
   }
 }
 
@@ -133,222 +134,214 @@ class DetailsInformationScreenState extends State<DetailsInformationScreen> {
       _isInterested = interestDocument.exists;
     });
   }
-
-  void viewProfile(BuildContext context) {
-
-  }
-  
   
   Widget build(BuildContext context) {
     return FutureBuilder(
       builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          return Container(
-            padding: EdgeInsets.all(10),
-            child: ListView(
-              children: <Widget>[
-                getEventImage(snapshot),
-                Card(
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.only(right: 20),
-                        alignment: Alignment.topRight,
-                        child: (!_isInterested) ?
-                        RaisedButton(
-                            onPressed: showInterest,
-                            child: Text('GOING'),
-                        ):
-                        RaisedButton(
-                          onPressed: showNotInterested,
-                          child: Text('GOING'),
-                          color: Colors.green,
-                        )
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(12, 10, 10, 10),
-                        child:
-                            createIfFieldExists(snapshot.data, ['title'], (snapshot) {
-                          return Text(
-                            snapshot.data['title'],
-                            style: TextStyle(
-                                fontSize: 35.0, fontFamily: 'Heebo-Black'),
-                          );
-                        }),
-                        padding: EdgeInsets.all(10),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(20, 2, 0, 2),
-                        child:
-                            createIfFieldExists(snapshot.data, ['date'], (snapshot) {
-                          return Row(
-                            children: <Widget>[
-                              Expanded(
+          return ListView(
+                shrinkWrap: true,
+                children: <Widget>[
+                  getEventImage(snapshot),
+                  Card(
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                            margin: EdgeInsets.only(right: 20),
+                            alignment: Alignment.topRight,
+                            child: (!_isInterested) ?
+                            RaisedButton(
+                              onPressed: showInterest,
+                              child: Text('GOING'),
+                            ):
+                            RaisedButton(
+                              onPressed: showNotInterested,
+                              child: Text('GOING'),
+                              color: Colors.green,
+                            )
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.fromLTRB(12, 10, 10, 10),
+                          child:
+                          createIfFieldExists(snapshot.data, ['title'], (snapshot) {
+                            return Text(
+                              snapshot.data['title'],
+                              style: TextStyle(
+                                  fontSize: 35.0, fontFamily: 'Heebo-Black'),
+                            );
+                          }),
+                          padding: EdgeInsets.all(10),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.fromLTRB(20, 2, 0, 2),
+                          child:
+                          createIfFieldExists(snapshot.data, ['date'], (snapshot) {
+                            return Row(
+                              children: <Widget>[
+                                Expanded(
                                   child: Align(
                                     alignment: Alignment.centerLeft,
                                     child: Icon(Icons.access_time),
                                   ),
                                   flex: 1,
-                              ),
-                              Expanded(
+                                ),
+                                Expanded(
                                   child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(getCustomDateFormat(snapshot.data['date']) + " - " + snapshot.data['time'],
-                                            style: TextStyle(
-                                                fontSize: 15.0,
-                                                fontFamily: 'Heebo-Black')
-                                          )
-                                        ),
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(getCustomDateFormat(snapshot.data['date']) + " - " + snapshot.data['time'],
+                                          style: TextStyle(
+                                              fontSize: 15.0,
+                                              fontFamily: 'Heebo-Black')
+                                      )
+                                  ),
                                   flex: 7,
-                              )
-                            ],
-                          );
-                        }),
-                        padding: EdgeInsets.all(4),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(20, 0, 0, 20),
-                        child:
-                        createIfFieldExists(snapshot.data, ['time'], (snapshot) {
-                          return Text(getTimeRemaining(snapshot.data['date'], snapshot.data['time']),
-                              style: TextStyle(
-                                  fontSize: 15.0, fontFamily: 'Heebo-Black'));
-                        }),
-                        padding: EdgeInsets.fromLTRB(7, 0, 0, 0),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                        child: createIfFieldExists(snapshot.data, ['summary'],
-                            (snapshot) {
-                          return Text('SUMMARY',
-                              style: TextStyle(
-                                  fontSize: 12.0,
-                                  fontFamily: 'Heebo-Black',
-                                  color: Colors.grey));
-                        }),
-                        padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(20, 2, 0, 10),
-                        child: createIfFieldExists(snapshot.data, ['summary'],
-                            (snapshot) {
-                          return Text(snapshot.data['summary'],
-                              style: TextStyle(
-                                  fontSize: 15.0, fontFamily: 'Heebo-Black'));
-                        }),
-                        padding: EdgeInsets.all(4),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                        child: createIfFieldExists(snapshot.data, ['summary'],
-                                (snapshot) {
-                              return Text('ADDRESS',
-                                  style: TextStyle(
-                                      fontSize: 12.0,
-                                      fontFamily: 'Heebo-Black',
-                                      color: Colors.grey));
-                            }),
-                        padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(20, 2, 0, 30),
-                        child: createIfFieldExists(snapshot.data, ['address'],
-                            (snapshot) {
-                          return Text(snapshot.data['address'],
-                              style: TextStyle(
-                                  fontSize: 15.0, fontFamily: 'Heebo-Black',
-                              ));
-                        }),
-                        padding: EdgeInsets.all(4),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(20, 0, 0, 5),
-                        child: createIfFieldExists(snapshot.data, ['summary'],
-                                (snapshot) {
-                              return Text('CREATED BY',
-                                  style: TextStyle(
-                                      fontSize: 12.0,
-                                      fontFamily: 'Heebo-Black',
-                                      color: Colors.blueAccent));
-                            }),
-                        padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(20, 0, 0, 20),
-                        child: Container(
-                            margin: EdgeInsets.only(left: 5),
-                            child: GestureDetector(child: Row(
-                          children: <Widget>[
-                            FutureBuilder<DocumentSnapshot>(
-                                future: Firestore.instance.collection("users")
-                                    .document(snapshot.data.data['user_id']).get(),
-                                builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-                                  switch (snapshot.connectionState) {
-                                    case ConnectionState.done:
-                                      {
-                                        if (snapshot.hasError) {
-                                          return Container();
-                                        } else {
-                                          if (snapshot.data.exists) {
-                                            return createIfFieldExists(
-                                                snapshot.data, ['photo_url'], (
-                                                snapshot) {
-                                              return CircleAvatar(
-                                                backgroundImage: NetworkImage(
-                                                    snapshot.data['photo_url']),
-                                                radius: 15,
-                                              );
-                                            }
-                                            );
-                                          }
-                                        }
-                                      }
-                                    break;
-                                    case ConnectionState.active:
-                                    case ConnectionState.waiting:
-                                    case ConnectionState.none:
-                                      break;
-                                  }
-                                  return Container();
-                                }),
-                            createIfFieldExists(snapshot.data, ['user_display_name'],
-                                    (snapshot) {
-                                  return Container(
-                                      margin: EdgeInsets.fromLTRB(10, 3, 0, 0),
-                                      child: Text(snapshot.data['user_display_name'])
-                                  );
-                                })
-                            ],
-                          ),
-                            // If user tapped on the creator section, we do the following.
-                            onTap: () {
-                                if (snapshot.data != null) {
-                                  if (snapshot.data.data['user_id'] != null) {
-                                    Navigator.of(context).push<void>(CupertinoPageRoute(
-                                        builder: (context) => UserProfileHeader(false, userDocumentId:snapshot.data.data['user_id']),
-                                        fullscreenDialog: true));
-                                  }
-                                }
-                            },)
+                                )
+                              ],
+                            );
+                          }),
+                          padding: EdgeInsets.all(4),
                         ),
-                      )
-                    ],
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.fromLTRB(20, 0, 0, 20),
+                          child:
+                          createIfFieldExists(snapshot.data, ['time'], (snapshot) {
+                            return Text(getTimeRemaining(snapshot.data['date'], snapshot.data['time']),
+                                style: TextStyle(
+                                    fontSize: 15.0, fontFamily: 'Heebo-Black'));
+                          }),
+                          padding: EdgeInsets.fromLTRB(7, 0, 0, 0),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                          child: createIfFieldExists(snapshot.data, ['summary'],
+                                  (snapshot) {
+                                return Text('SUMMARY',
+                                    style: TextStyle(
+                                        fontSize: 12.0,
+                                        fontFamily: 'Heebo-Black',
+                                        color: Colors.grey));
+                              }),
+                          padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.fromLTRB(20, 2, 0, 10),
+                          child: createIfFieldExists(snapshot.data, ['summary'],
+                                  (snapshot) {
+                                return Text(snapshot.data['summary'],
+                                    style: TextStyle(
+                                        fontSize: 15.0, fontFamily: 'Heebo-Black'));
+                              }),
+                          padding: EdgeInsets.all(4),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                          child: createIfFieldExists(snapshot.data, ['summary'],
+                                  (snapshot) {
+                                return Text('ADDRESS',
+                                    style: TextStyle(
+                                        fontSize: 12.0,
+                                        fontFamily: 'Heebo-Black',
+                                        color: Colors.grey));
+                              }),
+                          padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.fromLTRB(20, 2, 0, 30),
+                          child: createIfFieldExists(snapshot.data, ['address'],
+                                  (snapshot) {
+                                return Text(snapshot.data['address'],
+                                    style: TextStyle(
+                                      fontSize: 15.0, fontFamily: 'Heebo-Black',
+                                    ));
+                              }),
+                          padding: EdgeInsets.all(4),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.fromLTRB(20, 0, 0, 5),
+                          child: createIfFieldExists(snapshot.data, ['summary'],
+                                  (snapshot) {
+                                return Text('CREATED BY',
+                                    style: TextStyle(
+                                        fontSize: 12.0,
+                                        fontFamily: 'Heebo-Black',
+                                        color: Colors.blueAccent));
+                              }),
+                          padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
+                        ),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          margin: EdgeInsets.fromLTRB(20, 0, 0, 20),
+                          child: Container(
+                              margin: EdgeInsets.only(left: 5),
+                              child: GestureDetector(child: Row(
+                                children: <Widget>[
+                                  FutureBuilder<DocumentSnapshot>(
+                                      future: Firestore.instance.collection("users")
+                                          .document(snapshot.data.data['user_id']).get(),
+                                      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                                        switch (snapshot.connectionState) {
+                                          case ConnectionState.done:
+                                            {
+                                              if (snapshot.hasError) {
+                                                return Container();
+                                              } else {
+                                                if (snapshot.data.exists) {
+                                                  return createIfFieldExists(
+                                                      snapshot.data, ['photo_url'], (
+                                                      snapshot) {
+                                                    return CircleAvatar(
+                                                      backgroundImage: NetworkImage(
+                                                          snapshot.data['photo_url']),
+                                                      radius: 15,
+                                                    );
+                                                  }
+                                                  );
+                                                }
+                                              }
+                                            }
+                                            break;
+                                          case ConnectionState.active:
+                                          case ConnectionState.waiting:
+                                          case ConnectionState.none:
+                                            break;
+                                        }
+                                        return Container();
+                                      }),
+                                  createIfFieldExists(snapshot.data, ['user_display_name'],
+                                          (snapshot) {
+                                        return Container(
+                                            margin: EdgeInsets.fromLTRB(10, 3, 0, 0),
+                                            child: Text(snapshot.data['user_display_name'])
+                                        );
+                                      })
+                                ],
+                              ),
+                                // If user tapped on the creator section, we do the following.
+                                onTap: () {
+                                  if (snapshot.data != null) {
+                                    if (snapshot.data.data['user_id'] != null) {
+                                      Navigator.of(context).push<void>(CupertinoPageRoute(
+                                          builder: (context) => UserProfileHeader(false, userDocumentId:snapshot.data.data['user_id']),
+                                          fullscreenDialog: true));
+                                    }
+                                  }
+                                },)
+                          ),
+                        )
+                      ],
+                    ),
+                    color: Colors.white,
                   ),
-                  color: Colors.white,
-                ),
-              ],
-            ),
-            color: Colors.blueGrey,
-          );
+                ],
+              );
         } else {
           return CircularProgressIndicator();
         }

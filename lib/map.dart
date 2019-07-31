@@ -27,6 +27,8 @@ class MapScreenState extends State<MapScreen> {
   // Stores all the current markers to show on the map.
   Map<String, GeoPoint> idToGeoPoint = Map();
   var collectionRef;
+  bool eventTapped = false;
+  String selectedEventId;
 
   void initState() {
     super.initState();
@@ -45,7 +47,11 @@ class MapScreenState extends State<MapScreen> {
     final tabBar = new TabBar(
       tabs: <Tab>[
         new Tab(icon: new Icon(Icons.map)),
-        new Tab(icon: new Icon(Icons.star, color: Colors.white,)),
+        new Tab(
+            icon: new Icon(
+          Icons.star,
+          color: Colors.white,
+        )),
       ],
     );
 
@@ -88,12 +94,37 @@ class MapScreenState extends State<MapScreen> {
                     gestureRecognizers: Set()
                       ..add(Factory<PanGestureRecognizer>(
                           () => PanGestureRecognizer()))),
+                selectedEventId != null
+                    ? Positioned.fill(
+                        child: Align(
+                        alignment: FractionalOffset.bottomCenter,
+                        child: AnimatedContainer(
+                          height: eventTapped
+                              ? MediaQuery.of(context).size.height * 9 / 10
+                              : MediaQuery.of(context).size.height / 6,
+                          width: MediaQuery.of(context).size.width,
+                          margin: EdgeInsets.all(20),
+                          child: Container(
+                              child: GestureDetector(
+                                child: DetailsScreen(selectedEventId, firestore),
+                            onTap: () {
+                              setState(() {
+                                eventTapped = !eventTapped;
+                              });
+                            },
+                          )),
+                          duration: Duration(milliseconds: 200),
+                        ),
+                      ))
+                    : Container(
+                        height: 0,
+                        width: 0,
+                      )
               ],
             ),
             FavoritesList(),
           ]),
-        )
-    );
+        ));
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -121,12 +152,11 @@ class MapScreenState extends State<MapScreen> {
           position: LatLng(v.latitude, v.longitude),
           icon: BitmapDescriptor.defaultMarkerWithHue(20.0),
           onTap: () async {
-            print(k);
-            print('yo whats up');
-            Navigator.of(context).push<void>(CupertinoPageRoute(
-                builder: (context) => DetailsScreen(k, firestore),
-                fullscreenDialog: true));
-          }));
+            setState(() {
+              selectedEventId = k;
+            });
+          })
+      );
     });
     return result;
   }
