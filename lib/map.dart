@@ -5,8 +5,9 @@ import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/cupertino.dart';
-import 'event_details.dart';
+import 'event_details_static.dart';
 import 'favorite_events.dart';
+import 'helper.dart';
 
 class MapScreen extends StatefulWidget {
   MapScreenState createState() {
@@ -25,7 +26,7 @@ class MapScreenState extends State<MapScreen> {
   Geoflutterfire geo = Geoflutterfire();
   Stream<List<DocumentSnapshot>> stream;
   // Stores all the current markers to show on the map.
-  Map<String, GeoPoint> idToGeoPoint = Map();
+  Map<String, Event> idToEvent = Map();
   var collectionRef;
   bool eventTapped = false;
   String selectedEventId;
@@ -106,7 +107,15 @@ class MapScreenState extends State<MapScreen> {
                           margin: EdgeInsets.all(20),
                           child: Container(
                               child: GestureDetector(
-                                child: DetailsScreen(selectedEventId, firestore),
+                                child: DetailsScreen(idToEvent[selectedEventId], firestore),
+//                                child: Column(
+//                                  children: <Widget>[
+//                                    Text(idToEvent[selectedEventId].title),
+//                                    Text(idToEvent[selectedEventId].summary),
+//                                    Text(idToEvent[selectedEventId].date),
+//                                    Text(idToEvent[selectedEventId].time),
+//                                  ],
+//                                ),
                             onTap: () {
                               setState(() {
                                 eventTapped = !eventTapped;
@@ -138,18 +147,29 @@ class MapScreenState extends State<MapScreen> {
       for (int i = 0; i < documentList.length; i++) {
         String id = documentList[i].documentID;
         GeoPoint pos = documentList[i].data['position']['geopoint'];
-        idToGeoPoint[id] = pos;
+        String title = documentList[i].data['title'];
+        String summary = documentList[i].data['summary'];
+        String date = documentList[i].data['date'];
+        String time = documentList[i].data['time'];
+        String userDisplayName = documentList[i].data['user_display_name'];
+        String userPhotoUrl = documentList[i].data['user_photo_url'];
+        String eventImageUrl = documentList[i].data['download_url'];
+        String address = documentList[i].data['address'];
+        String creatorId = documentList[i].data['user_id'];
+        Event event = Event(id, pos, title, summary, date,
+            time, userDisplayName, userPhotoUrl, eventImageUrl, address, creatorId);
+        idToEvent[id] = event;
       }
     });
   }
 
   Set<Marker> _getMarkers() {
     Set<Marker> result = Set();
-    idToGeoPoint.forEach((k, v) {
+    idToEvent.forEach((k, v) {
       //print(k);
       result.add(Marker(
           markerId: MarkerId(k),
-          position: LatLng(v.latitude, v.longitude),
+          position: LatLng(v.geoPoint.latitude, v.geoPoint.longitude),
           icon: BitmapDescriptor.defaultMarkerWithHue(20.0),
           onTap: () async {
             setState(() {

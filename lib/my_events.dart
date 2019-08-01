@@ -32,7 +32,8 @@ class MyEvents extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push<void>(CupertinoPageRoute(
               builder: (context) => DetailsScreen(documentId, Firestore.instance),
-              fullscreenDialog: true));
+              fullscreenDialog: true)
+          );
         },),
       decoration: new BoxDecoration(boxShadow: [
         new BoxShadow(

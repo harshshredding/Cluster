@@ -83,6 +83,15 @@ flutter:
          - asset: fonts/Heebo-Medium.ttf
          - asset: fonts/Heebo-Regular.ttf
          - asset: fonts/Heebo-Thin.ttf
+     - family: PermanentMarker
+       fonts:
+         - asset: fonts/PermanentMarker-Regular.ttf
+     - family: SairaStencilOne
+       fonts:
+         - asset: fonts/SairaStencilOne-Regular.ttf
+     - family: CarterOne
+       fonts:
+         - asset: fonts/CarterOne-Regular.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

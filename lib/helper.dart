@@ -8,6 +8,24 @@ class UserId {
   UserId(this.userId);
 }
 
+/// Event Without Image
+class Event {
+  final String id;
+  final GeoPoint geoPoint;
+  final String title;
+  final String summary;
+  final String date;
+  final String time;
+  final String userDisplayName;
+  final String userPhotoUrl;
+  final String eventImageUrl;
+  final String address;
+  final String creatorId;
+
+  Event(this.id, this.geoPoint, this.title, this.summary, this.date, this.time,
+    this.userDisplayName, this.userPhotoUrl, this.eventImageUrl, this.address, this.creatorId);
+}
+
 /// If the field exists in the snapshot result,
 /// create a widget using the given "factory" method.
 Widget createIfFieldExists(DocumentSnapshot snapshot, List<String> fields, factory) {
