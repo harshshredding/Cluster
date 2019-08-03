@@ -14,6 +14,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
 import 'tag_selector.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 /// scaffolding of the add event screen
 class AddEventScreen extends StatelessWidget {
@@ -44,6 +45,7 @@ class AddEventState extends State<AddEventForm> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   Firestore _firestore = Firestore.instance;
   List<String> categoriesSelected = new List();
+  bool submitting = false;
 
   @override
   void initState() {
@@ -68,6 +70,7 @@ class AddEventState extends State<AddEventForm> {
         child:  Chip(
           label: Text(category),
           backgroundColor: Colors.blueGrey,
+          elevation: 4,
         )
       ),
       onTap: () {
@@ -128,13 +131,30 @@ class AddEventState extends State<AddEventForm> {
             makeChips(),
             Container(
               padding: const EdgeInsets.all(20),
-              child: RaisedButton(
+              child: submitting ? SpinKitFadingCircle(
+                itemBuilder: (_, int index) {
+                  return DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: index.isEven ? Colors.brown : Colors.grey,
+                    ),
+                  );
+                },
+              ): RaisedButton(
                 color: brownBackgroud,
-                onPressed: () async {},
-                child: Icon(
-                  Icons.chevron_right,
-                  size: 30,
-                ),
+                onPressed: () async {
+                  setState(() {
+                    submitting = true;
+                  });
+                  Map<String, dynamic> map = Map();
+                  for (String category in categoriesSelected) {
+                    map[category] = true;
+                  }
+                  map["title"] = _controllerTitle.text;
+                  map["summary"] = _controllerSummary.text;
+                  await _firestore.collection("proposals").add(map);
+                  Navigator.pop(context);
+                },
+                child: Text("CREATE"),
                 elevation: 6,
                 shape: BeveledRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
