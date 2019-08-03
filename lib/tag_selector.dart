@@ -37,7 +37,8 @@ class TagSelectorState extends State<TagSelector> {
     "Physics",
     "Mathematics",
     "Applied Mathematics",
-    "Philosophy"
+    "Philosophy",
+    "Startups"
   ];
 
   initState() {
