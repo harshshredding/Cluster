@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'proposals.dart';
 
+
 class Home extends StatefulWidget {
   HomeState createState() {
     return HomeState();
@@ -9,6 +10,7 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home> {
   int _currentIndex = 0;
+
   final List<Widget> _children = [
     Proposals(),
     Center(child: Text("lo", style: TextStyle(color: Colors.white)))

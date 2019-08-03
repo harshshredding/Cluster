@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'colors.dart';
 import 'tag_selector.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 
 class Proposals extends StatefulWidget {
   ProposalsState createState() {
@@ -13,6 +14,7 @@ class ProposalsState extends State<Proposals> {
   List<String> _filters = [];
   final Firestore _firestore = Firestore.instance;
   List<DocumentSnapshot> _proposals = new List();
+  List<StreamSubscription<QuerySnapshot>> _subscriptions = new List();
 
   List<Widget> createChips() {
     List<Widget> result = List();
@@ -157,17 +159,28 @@ class ProposalsState extends State<Proposals> {
                             builder: (context) => TagSelector(_filters)));
                     _filters.clear();
                     _proposals.clear();
+                    _subscriptions.clear();
                     for (String filter in chosenFilters) {
                       _filters.add(filter);
-                      QuerySnapshot queryResult = await _firestore
+                      var subscription = _firestore
                           .collection("proposals")
-                          .where(filter, isEqualTo: true)
-                          .getDocuments();
-                      for (DocumentSnapshot propSnap in queryResult.documents) {
-                        _proposals.add(propSnap);
-                      }
+                          .where(filter, isEqualTo: true).snapshots().listen((QuerySnapshot snapshot) {
+                            List<DocumentSnapshot> newDocuments = snapshot.documents;
+                            List<DocumentSnapshot> thingsToAdd = List();
+                            for (DocumentSnapshot proposal in newDocuments) {
+                              bool proposalDoesntExist = _proposals.every((DocumentSnapshot oldProposal) {
+                                return (oldProposal.documentID != proposal.documentID);
+                              });
+                              if (proposalDoesntExist) {
+                                thingsToAdd.add(proposal);
+                              }
+                            }
+                            setState(() {
+                              _proposals.addAll(thingsToAdd);
+                            });
+                      });
+                      _subscriptions.add(subscription);
                     }
-                    setState(() {});
                   },
                   child: Text(
                     "Filter",
