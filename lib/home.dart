@@ -24,6 +24,18 @@ class HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Kluzter"),
+        actions: <Widget>[
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+            child: IconButton(
+              icon: Icon(Icons.add_box, color: Colors.white,),
+              onPressed: () {
+                Navigator.pushNamed(context, '/addEvent',
+                    arguments: ModalRoute.of(context).settings.arguments);
+              },
+            ),
+          )
+        ],
       ),
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(

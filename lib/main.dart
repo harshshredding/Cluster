@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'map.dart';
-import 'add_event.dart';
+import 'add_proposal.dart';
 import 'login_uw.dart';
 import 'home.dart';
 import 'user_profile.dart';
