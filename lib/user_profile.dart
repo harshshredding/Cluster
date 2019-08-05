@@ -3,29 +3,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'my_events.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'webview_page.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:image_cropper/image_cropper.dart';
 
-class UserProfileHeader extends StatelessWidget {
-  final String userDocumentId;
-  final bool editable;
-
-  UserProfileHeader(this.editable, {this.userDocumentId});
-
-  @override
-  Widget build(BuildContext context) {
-    return new Scaffold(
-        appBar: AppBar(title: Text("Profile")),
-        body: UserProfile(userDocumentId, editable));
-  }
-}
 
 class UserProfile extends StatefulWidget {
   final String userDocumentId;
   final bool editable;
-  UserProfile(this.userDocumentId, this.editable);
+  UserProfile(this.editable, {this.userDocumentId});
   UserProfileState createState() => UserProfileState();
 }
 
 class UserProfileState extends State<UserProfile> {
+
   Future<FirebaseUser> user = FirebaseAuth.instance.currentUser();
   Future<DocumentSnapshot> userDocument;
   final TextEditingController _controllerSummary =
@@ -84,7 +77,8 @@ class UserProfileState extends State<UserProfile> {
     }
   }
 
-  Widget build(BuildContext context) {
+
+  Widget getUserProfile(BuildContext context) {
     if (userDocument != null) {
       return FutureBuilder<DocumentSnapshot>(
           future: userDocument,
@@ -104,39 +98,23 @@ class UserProfileState extends State<UserProfile> {
                   } else {
                     return SingleChildScrollView(
                         child: Column(children: [
-                      widget.editable
-                          ? Container(
-                              alignment: Alignment.topRight,
-                              child: IconButton(
-                                icon: _editMode
-                                    ? Icon(
-                                        Icons.edit,
-                                        color: Colors.red,
-                                      )
-                                    : Icon(
-                                        Icons.edit,
-                                        color: Colors.black,
-                                      ),
-                                onPressed: switchEditMode,
-                              ))
-                          : Container(),
-                      UserDetails(
-                          widget.editable,
-                          snapshot.data.data['name'] ?? "",
-                          snapshot.data.data['photo_url'] ?? "",
-                          snapshot.data.data['summary'] ?? "",
-                          _controllerSummary,
-                          _controllerLinkedn,
-                          _editMode),
-                      _editMode
-                          ? RaisedButton(
-                              onPressed: () {
-                                submitUserDetails(context);
-                              },
-                              child: Text("Save Changes"),
-                            )
-                          : Container()
-                    ]));
+                          UserDetails(
+                              widget.editable,
+                              snapshot.data.data['name'] ?? "",
+                              snapshot.data.data['photo_url'] ?? "",
+                              snapshot.data.data['summary'] ?? "",
+                              _controllerSummary,
+                              _controllerLinkedn,
+                              _editMode),
+                          _editMode
+                              ? RaisedButton(
+                            onPressed: () {
+                              submitUserDetails(context);
+                            },
+                            child: Text("Save Changes"),
+                          )
+                              : Container()
+                        ]));
                   }
                 }
                 break;
@@ -153,9 +131,38 @@ class UserProfileState extends State<UserProfile> {
       );
     }
   }
+
+  Widget build(BuildContext context) {
+    return new Scaffold(
+        appBar: AppBar(
+            title: Text("Profile"),
+          actions: <Widget>[
+            Container(
+              margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+              child: widget.editable ?
+              _editMode ? IconButton(
+                icon: Icon(Icons.edit, color: Colors.red,),
+                onPressed: switchEditMode,
+              ): IconButton(
+                icon: Icon(Icons.edit, color: Colors.white,),
+                onPressed: switchEditMode,
+              )
+              :
+              Container(width: 0, height: 0,),
+            )
+          ],),
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            FocusScope.of(context).requestFocus(new FocusNode());
+          },
+          child: getUserProfile(context),
+        )
+    );
+  }
 }
 
-class UserDetails extends StatelessWidget {
+class UserDetails extends StatefulWidget {
   final String name;
   final String photoUrl;
   final String summary;
@@ -166,61 +173,89 @@ class UserDetails extends StatelessWidget {
 
   UserDetails(this.editable, this.name, this.photoUrl, this.summary,
       this._controllerSummary, this._controllerLinkedn, this._editMode);
+  
+  UserDetailsState createState() {
+    return UserDetailsState();
+  }
+}
+
+class UserDetailsState extends State<UserDetails> {
+  
+  File _selectedImage;
+  
+  /// choose an image and display it on the screen by changing state
+  void chooseImage() async {
+    if (widget._editMode) {
+      File unCroppedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
+      File croppedImage = await ImageCropper.cropImage(sourcePath: unCroppedImage.path,
+          ratioX: 1.0,
+          ratioY: 1.0,
+          maxWidth: 512,
+          maxHeight: 512);
+      setState(() {
+        _selectedImage = croppedImage;
+      });
+    }
+  }
 
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         Container(
-          color: Color.fromRGBO(232, 233, 233, 100),
+          color: Colors.grey.shade600,
           child: Column(
             children: <Widget>[
+              _selectedImage == null ?
               Container(
                 alignment: Alignment.center,
-                child: CircleAvatar(
-                  backgroundImage: NetworkImage(photoUrl),
-                  radius: 50,
+                child: GestureDetector(
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(widget.photoUrl),
+                    radius: 80,
+                  ),
+                  onTap: chooseImage,
+                ),
+                margin: EdgeInsets.only(top: 20),
+              )
+                  :
+              Container(
+                alignment: Alignment.center,
+                child: GestureDetector(
+                  child: CircleAvatar(
+                    backgroundImage: FileImage(_selectedImage),
+                    radius: 80,
+                  ),
+                  onTap: chooseImage,
                 ),
                 margin: EdgeInsets.only(top: 20),
               ),
               Container(
                 alignment: Alignment.center,
-                child: Text(name,
+                child: Text(widget.name,
                     style: TextStyle(
                       fontSize: 20,
-                      fontFamily: 'Heebo-Black',
+                      fontFamily: 'Trajan Pro',
                     )),
                 margin: EdgeInsets.all(20),
               ),
             ],
           ),
         ),
-        editable
-            ? Container(
-                child: RaisedButton(
-                  onPressed: () {
-                    Navigator.of(context).push<void>(CupertinoPageRoute(
-                        builder: (context) => MyEvents(),
-                        fullscreenDialog: true));
-                  },
-                  child: Text("My Events"),
-                ),
-              )
-            : Container(),
         Container(
-          margin: EdgeInsets.only(top: 35, left: 20),
+          margin: EdgeInsets.only(top: 35, left: 22),
           alignment: Alignment.centerLeft,
           child: Text('ABOUT ME',
               style: TextStyle(
                   fontSize: 12.0,
-                  fontFamily: 'Heebo-Black',
-                  color: Colors.grey.shade900)),
+                  fontFamily: 'Trajan Pro',
+                  color: Colors.grey.shade200)),
         ),
         Container(
           alignment: Alignment.centerLeft,
-          child: TextField(
-            enabled: _editMode,
-            maxLines: null,
-            controller: _controllerSummary,
+          child: TextFormField(
+            enabled: widget._editMode,
+            maxLines: 10,
+            controller: widget._controllerSummary,
             decoration: InputDecoration(
               border: OutlineInputBorder(),
             ),
@@ -228,25 +263,67 @@ class UserDetails extends StatelessWidget {
           margin: EdgeInsets.all(20),
         ),
         Container(
-          margin: EdgeInsets.only(top: 20, left: 20),
+          margin: EdgeInsets.only(top: 20, left: 22),
           alignment: Alignment.centerLeft,
           child: Text('LINKEDN',
               style: TextStyle(
                   fontSize: 12.0,
                   fontFamily: 'Heebo-Black',
-                  color: Colors.grey.shade900)),
+                  color: Colors.grey.shade200)),
         ),
-        Container(
-          alignment: Alignment.centerLeft,
-          child: TextField(
-            enabled: _editMode,
-            controller: _controllerLinkedn,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-          ),
-          margin: EdgeInsets.all(20),
-        ),
+        (widget._editMode)
+            ? Container(
+                alignment: Alignment.centerLeft,
+                child: TextField(
+                  enabled: widget._editMode,
+                  controller: widget._controllerLinkedn,
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(), hintText: "Paste URL"),
+                ),
+                margin: EdgeInsets.all(20),
+              )
+            : Container(
+                width: 0,
+                height: 0,
+              ),
+        (widget._controllerLinkedn.text != "" && widget._controllerLinkedn.text != null)
+            ? !widget._editMode
+                ? Container(
+                    margin: EdgeInsets.only(top: 20, left: 22),
+                    alignment: Alignment.centerLeft,
+                    child: RaisedButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    LinkednPage(widget._controllerLinkedn.text)));
+                      },
+                      child: Text(
+                        "My Linkedn",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ))
+                : Container(
+                    height: 0,
+                    width: 0,
+                  )
+            : !widget._editMode
+                ? Container(
+                    margin: EdgeInsets.only(top: 20, left: 22),
+                    alignment: Alignment.centerLeft,
+                    child: RaisedButton(
+                      onPressed: null,
+                      color: Colors.grey,
+                      child: Text(
+                        "Linkedn N/A",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ))
+                : Container(
+                    height: 0,
+                    width: 0,
+                  ),
       ],
     );
   }

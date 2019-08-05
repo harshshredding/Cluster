@@ -31,6 +31,36 @@ class ProposalsState extends State<Proposals> {
     return result;
   }
 
+  void configureFilter(BuildContext context) async {
+    List<String> chosenFilters = await Navigator.of(context)
+        .push(MaterialPageRoute(
+        builder: (context) => TagSelector(_filters)));
+    _filters.clear();
+    _proposals.clear();
+    _subscriptions.clear();
+    for (String filter in chosenFilters) {
+      _filters.add(filter);
+      var subscription = _firestore
+          .collection("proposals")
+          .where(filter, isEqualTo: true).snapshots().listen((QuerySnapshot snapshot) {
+        List<DocumentSnapshot> newDocuments = snapshot.documents;
+        List<DocumentSnapshot> thingsToAdd = List();
+        for (DocumentSnapshot proposal in newDocuments) {
+          bool proposalDoesntExist = _proposals.every((DocumentSnapshot oldProposal) {
+            return (oldProposal.documentID != proposal.documentID);
+          });
+          if (proposalDoesntExist) {
+            thingsToAdd.add(proposal);
+          }
+        }
+        setState(() {
+          _proposals.addAll(thingsToAdd);
+        });
+      });
+      _subscriptions.add(subscription);
+    }
+  }
+
   Widget createCard(String topic, String summary, String userId) {
     return Card(
       shape: BeveledRectangleBorder(
@@ -60,27 +90,25 @@ class ProposalsState extends State<Proposals> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      textDirection: TextDirection.ltr,
-                      children: <Widget>[
-                        Container(
-                            alignment: Alignment.centerLeft,
-                            child: Text("BY :",
-                                style: TextStyle(
-                                    color: Colors.brown.shade100,
-                                    fontSize: 13)),
-                            padding: EdgeInsets.only(
-                                left: 10, right: 10, top: 10, bottom: 5)),
-                      ],
-                    ),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Harsh Verma",
-                        style: TextStyle(fontSize: 15),
+                      children: <Widget>[Container(
+                        margin: EdgeInsets.only(left: 10, top: 10),
+                        child: CircleAvatar(
+                          radius: 20,
+                          backgroundImage: NetworkImage("https://lh4.googleusercontent.com/-JEQ-bKugLRQ/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rcVET0d2uhimypWUiuWhPvhvvDMXg/s96-c/photo.jpg"),
+                          backgroundColor: Colors.transparent,
+                        ),
+
                       ),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 0, bottom: 5),
+                        Container(
+                          margin: EdgeInsets.only(top: 20),
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Harsh Verma",
+                            style: TextStyle(fontSize: 15),
+                          ),
+                          padding: EdgeInsets.only(
+                              left: 10, right: 10, top: 0, bottom: 5),
+                        )],
                     ),
                     Container(
                       alignment: Alignment.centerLeft,
@@ -149,45 +177,21 @@ class ProposalsState extends State<Proposals> {
           padding: EdgeInsets.only(left: 14),
           child: Row(
             children: <Widget>[
-              ButtonTheme(
-                minWidth: 30,
-                child: RaisedButton(
-                  elevation: 15,
-                  onPressed: () async {
-                    List<String> chosenFilters = await Navigator.of(context)
-                        .push(MaterialPageRoute(
-                            builder: (context) => TagSelector(_filters)));
-                    _filters.clear();
-                    _proposals.clear();
-                    _subscriptions.clear();
-                    for (String filter in chosenFilters) {
-                      _filters.add(filter);
-                      var subscription = _firestore
-                          .collection("proposals")
-                          .where(filter, isEqualTo: true).snapshots().listen((QuerySnapshot snapshot) {
-                            List<DocumentSnapshot> newDocuments = snapshot.documents;
-                            List<DocumentSnapshot> thingsToAdd = List();
-                            for (DocumentSnapshot proposal in newDocuments) {
-                              bool proposalDoesntExist = _proposals.every((DocumentSnapshot oldProposal) {
-                                return (oldProposal.documentID != proposal.documentID);
-                              });
-                              if (proposalDoesntExist) {
-                                thingsToAdd.add(proposal);
-                              }
-                            }
-                            setState(() {
-                              _proposals.addAll(thingsToAdd);
-                            });
-                      });
-                      _subscriptions.add(subscription);
-                    }
-                  },
-                  child: Text(
-                    "Filter",
-                    style: TextStyle(color: Colors.white),
+              Container(
+                margin: EdgeInsets.only(right: 10),
+                child: ButtonTheme(
+                  minWidth: 30,
+                  shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                  child: RaisedButton(
+                    elevation: 15,
+                    onPressed: () {configureFilter(context);},
+                    child: Text(
+                      "FILTER",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    color: brownTextColor2,
                   ),
-                  color: brownBackgroud,
-                ),
+                )
               ),
               Flexible(
                 child: ListView(

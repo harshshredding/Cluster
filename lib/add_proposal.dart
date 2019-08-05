@@ -1,15 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:google_maps_webservice/geocoding.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geoflutterfire/geoflutterfire.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'package:intl/intl.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:uuid/uuid.dart';
-import 'helper.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
@@ -117,9 +107,11 @@ class AddEventState extends State<AddEventForm> {
                   onPressed: () async {
                     List<String> result = await Navigator.of(context).push(
                         MaterialPageRoute(builder: (context) => TagSelector(categoriesSelected)));
-                    setState(() {
-                      categoriesSelected = result;
-                    });
+                      if (result != null) {
+                        setState(() {
+                          categoriesSelected = result;
+                        });
+                      }
                   },
                 ),
                 Container(
@@ -151,6 +143,8 @@ class AddEventState extends State<AddEventForm> {
                   }
                   map["title"] = _controllerTitle.text;
                   map["summary"] = _controllerSummary.text;
+                  FirebaseUser user = await FirebaseAuth.instance.currentUser();
+                  map["user_id"] = user.uid;
                   await _firestore.collection("proposals").add(map);
                   Navigator.pop(context);
                 },

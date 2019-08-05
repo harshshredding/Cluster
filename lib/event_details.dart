@@ -329,7 +329,7 @@ class DetailsInformationScreenState extends State<DetailsInformationScreen> {
                                   if (snapshot.data != null) {
                                     if (snapshot.data.data['user_id'] != null) {
                                       Navigator.of(context).push<void>(CupertinoPageRoute(
-                                          builder: (context) => UserProfileHeader(false, userDocumentId:snapshot.data.data['user_id']),
+                                          builder: (context) => UserProfile(false, userDocumentId:snapshot.data.data['user_id']),
                                           fullscreenDialog: true));
                                     }
                                   }

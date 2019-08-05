@@ -300,7 +300,7 @@ class DetailsInformationScreenState extends State<DetailsInformationScreen> {
                       // If user tapped on the creator section, we do the following.
                       onTap: () {
                             Navigator.of(context).push<void>(CupertinoPageRoute(
-                                builder: (context) => UserProfileHeader(false, userDocumentId:widget.event.creatorId),
+                                builder: (context) => UserProfile(false, userDocumentId:widget.event.creatorId),
                                 fullscreenDialog: true));
                       },)
                 ),
