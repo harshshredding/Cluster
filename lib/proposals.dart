@@ -3,6 +3,7 @@ import 'colors.dart';
 import 'tag_selector.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Proposals extends StatefulWidget {
   ProposalsState createState() {
@@ -22,10 +23,10 @@ class ProposalsState extends State<Proposals> {
       result.add(Container(
         margin: EdgeInsets.only(left: 5, right: 5),
         child: Chip(
-            label: Text(filter),
-            backgroundColor: Colors.blueGrey,
-            elevation: 4,
-          ),
+          label: Text(filter),
+          backgroundColor: Colors.blueGrey,
+          elevation: 4,
+        ),
       ));
     }
     return result;
@@ -33,8 +34,7 @@ class ProposalsState extends State<Proposals> {
 
   void configureFilter(BuildContext context) async {
     List<String> chosenFilters = await Navigator.of(context)
-        .push(MaterialPageRoute(
-        builder: (context) => TagSelector(_filters)));
+        .push(MaterialPageRoute(builder: (context) => TagSelector(_filters)));
     _filters.clear();
     _proposals.clear();
     _subscriptions.clear();
@@ -42,11 +42,14 @@ class ProposalsState extends State<Proposals> {
       _filters.add(filter);
       var subscription = _firestore
           .collection("proposals")
-          .where(filter, isEqualTo: true).snapshots().listen((QuerySnapshot snapshot) {
+          .where(filter, isEqualTo: true)
+          .snapshots()
+          .listen((QuerySnapshot snapshot) {
         List<DocumentSnapshot> newDocuments = snapshot.documents;
         List<DocumentSnapshot> thingsToAdd = List();
         for (DocumentSnapshot proposal in newDocuments) {
-          bool proposalDoesntExist = _proposals.every((DocumentSnapshot oldProposal) {
+          bool proposalDoesntExist =
+              _proposals.every((DocumentSnapshot oldProposal) {
             return (oldProposal.documentID != proposal.documentID);
           });
           if (proposalDoesntExist) {
@@ -90,15 +93,38 @@ class ProposalsState extends State<Proposals> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Row(
-                      children: <Widget>[Container(
-                        margin: EdgeInsets.only(left: 10, top: 10),
-                        child: CircleAvatar(
-                          radius: 20,
-                          backgroundImage: NetworkImage("https://lh4.googleusercontent.com/-JEQ-bKugLRQ/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rcVET0d2uhimypWUiuWhPvhvvDMXg/s96-c/photo.jpg"),
-                          backgroundColor: Colors.transparent,
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.only(left: 10, top: 10),
+                          child: (userId != null)
+                              ? FutureBuilder(
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot<DocumentSnapshot>
+                                          asyncSnapshot) {
+                                    if (asyncSnapshot.connectionState == ConnectionState.done) {
+                                      String photoUrl =
+                                      asyncSnapshot.data.data["photo_url"];
+                                      return CircleAvatar(
+                                        radius: 20,
+                                        backgroundImage: NetworkImage(photoUrl),
+                                        backgroundColor: Colors.transparent,
+                                      );
+                                    } else {
+                                      return CircularProgressIndicator();
+                                    }
+                                  },
+                                  future: Firestore.instance
+                                      .collection("users")
+                                      .document(userId)
+                                      .get(),
+                                )
+                              : CircleAvatar(
+                                  radius: 20,
+                                  backgroundImage: NetworkImage(
+                                      "https://firebasestorage.googleapis.com/v0/b/cluster-c7373.appspot.com/o/uglBgoTL4wbDe7F3vOJSYAsNAJq1d7ad0d20-b750-11e9-8d3f-77436f189394?alt=media&token=f856aba3-f8e5-4ee2-b3a6-26ed4ed823f9"),
+                                  backgroundColor: Colors.transparent,
+                                ),
                         ),
-
-                      ),
                         Container(
                           margin: EdgeInsets.only(top: 20),
                           alignment: Alignment.centerLeft,
@@ -108,7 +134,8 @@ class ProposalsState extends State<Proposals> {
                           ),
                           padding: EdgeInsets.only(
                               left: 10, right: 10, top: 0, bottom: 5),
-                        )],
+                        )
+                      ],
                     ),
                     Container(
                       alignment: Alignment.centerLeft,
@@ -178,21 +205,23 @@ class ProposalsState extends State<Proposals> {
           child: Row(
             children: <Widget>[
               Container(
-                margin: EdgeInsets.only(right: 10),
-                child: ButtonTheme(
-                  minWidth: 30,
-                  shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                  child: RaisedButton(
-                    elevation: 15,
-                    onPressed: () {configureFilter(context);},
-                    child: Text(
-                      "FILTER",
-                      style: TextStyle(color: Colors.white),
+                  margin: EdgeInsets.only(right: 10),
+                  child: ButtonTheme(
+                    minWidth: 30,
+                    shape: BeveledRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)),
+                    child: RaisedButton(
+                      elevation: 15,
+                      onPressed: () {
+                        configureFilter(context);
+                      },
+                      child: Text(
+                        "FILTER",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      color: brownTextColor2,
                     ),
-                    color: brownTextColor2,
-                  ),
-                )
-              ),
+                  )),
               Flexible(
                 child: ListView(
                   shrinkWrap: true,
@@ -210,12 +239,12 @@ class ProposalsState extends State<Proposals> {
               DocumentSnapshot currEvent = _proposals[index];
               String topic = currEvent.data["title"] ?? "";
               String summary = currEvent.data["summary"] ?? "";
-              return createCard(topic, summary, "");
+              String userId = currEvent.data["user_id"];
+              return createCard(topic, summary, userId);
             },
             itemCount: _proposals.length,
           ),
-        )
-        ,
+        ),
       ],
     );
   }
