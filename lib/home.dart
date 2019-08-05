@@ -35,7 +35,7 @@ class HomeState extends State<Home> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(top: 30),
+              margin: EdgeInsets.only(top: 40),
               child: ListTile(
                 title: Text("My Info"),
                 onTap: () {
@@ -53,12 +53,6 @@ class HomeState extends State<Home> {
                 Navigator.pushReplacementNamed(context, "/login");
               },
             ),
-            ListTile(
-              title: Text("close"),
-              onTap: () async {
-                Navigator.pop(context);
-              },
-            )
           ],
         ),
       ),

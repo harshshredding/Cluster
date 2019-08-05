@@ -86,96 +86,96 @@ class ProposalsState extends State<Proposals> {
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Expanded(
+              Flexible (
+                flex: 15,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.only(left: 10, top: 10),
-                          child: (userId != null)
-                              ? FutureBuilder(
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<DocumentSnapshot>
-                                          asyncSnapshot) {
-                                    if (asyncSnapshot.connectionState == ConnectionState.done) {
-                                      String photoUrl =
-                                      asyncSnapshot.data.data["photo_url"];
-                                      return CircleAvatar(
-                                        radius: 20,
-                                        backgroundImage: NetworkImage(photoUrl),
-                                        backgroundColor: Colors.transparent,
-                                      );
-                                    } else {
-                                      return CircularProgressIndicator();
-                                    }
-                                  },
-                                  future: Firestore.instance
-                                      .collection("users")
-                                      .document(userId)
-                                      .get(),
-                                )
-                              : CircleAvatar(
-                                  radius: 20,
-                                  backgroundImage: NetworkImage(
-                                      "https://firebasestorage.googleapis.com/v0/b/cluster-c7373.appspot.com/o/uglBgoTL4wbDe7F3vOJSYAsNAJq1d7ad0d20-b750-11e9-8d3f-77436f189394?alt=media&token=f856aba3-f8e5-4ee2-b3a6-26ed4ed823f9"),
-                                  backgroundColor: Colors.transparent,
-                                ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(top: 20),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Harsh Verma",
-                            style: TextStyle(fontSize: 15),
-                          ),
-                          padding: EdgeInsets.only(
-                              left: 10, right: 10, top: 0, bottom: 5),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.only(left: 10, top: 10),
+                        child: (userId != null)
+                            ? FutureBuilder(
+                          builder: (BuildContext context,
+                              AsyncSnapshot<DocumentSnapshot>
+                              asyncSnapshot) {
+                            if (asyncSnapshot.connectionState == ConnectionState.done) {
+                              String photoUrl =
+                              asyncSnapshot.data.data["photo_url"];
+                              return CircleAvatar(
+                                radius: 20,
+                                backgroundImage: NetworkImage(photoUrl),
+                                backgroundColor: Colors.transparent,
+                              );
+                            } else {
+                              return CircularProgressIndicator();
+                            }
+                          },
+                          future: Firestore.instance
+                              .collection("users")
+                              .document(userId)
+                              .get(),
                         )
-                      ],
-                    ),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "TOPIC :",
-                        style: TextStyle(
-                            color: Colors.brown.shade100, fontSize: 13),
+                            : CircleAvatar(
+                          radius: 20,
+                          backgroundImage: NetworkImage(
+                              "https://firebasestorage.googleapis.com/v0/b/cluster-c7373.appspot.com/o/uglBgoTL4wbDe7F3vOJSYAsNAJq1d7ad0d20-b750-11e9-8d3f-77436f189394?alt=media&token=f856aba3-f8e5-4ee2-b3a6-26ed4ed823f9"),
+                          backgroundColor: Colors.transparent,
+                        ),
                       ),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 5),
+                      Container(
+                        margin: EdgeInsets.only(top: 20),
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Harsh Verma",
+                          style: TextStyle(fontSize: 15),
+                        ),
+                        padding: EdgeInsets.only(
+                            left: 10, right: 10, top: 0, bottom: 5),
+                      )
+                    ],
+                  ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "TOPIC :",
+                      style: TextStyle(
+                          color: Colors.brown.shade100, fontSize: 13),
                     ),
-                    Container(
-                      margin: EdgeInsets.only(right: 20),
-                      alignment: Alignment.centerLeft,
-                      child: Text(topic, style: TextStyle(fontSize: 15)),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 0, bottom: 10),
+                    padding: EdgeInsets.only(
+                        left: 10, right: 10, top: 10, bottom: 5),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(right: 20),
+                    alignment: Alignment.centerLeft,
+                    child: Text(topic, style: TextStyle(fontSize: 15)),
+                    padding: EdgeInsets.only(
+                        left: 10, right: 10, top: 0, bottom: 10),
+                  ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "SUMMARY :",
+                      style: TextStyle(
+                          color: Colors.brown.shade100, fontSize: 13),
                     ),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "SUMMARY :",
-                        style: TextStyle(
-                            color: Colors.brown.shade100, fontSize: 13),
-                      ),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 5),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(right: 20),
-                      alignment: Alignment.centerLeft,
-                      child: Text(summary, style: TextStyle(fontSize: 15)),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 0, bottom: 10),
-                    )
-                  ],
-                ),
-              ),
-              Container(
-                alignment: Alignment.centerRight,
+                    padding: EdgeInsets.only(
+                        left: 10, right: 10, top: 10, bottom: 5),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(right: 20),
+                    alignment: Alignment.centerLeft,
+                    child: Text(summary, style: TextStyle(fontSize: 15)),
+                    padding: EdgeInsets.only(
+                        left: 10, right: 10, top: 0, bottom: 10),
+                  )
+                ],
+              ),),
+              Flexible(
+                flex: 2,
                 child: Container(
                   alignment: Alignment.topRight,
                   child: Icon(
@@ -183,14 +183,14 @@ class ProposalsState extends State<Proposals> {
                     size: 25,
                   ),
                   margin:
-                      EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+                  EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
                 ),
-              )
+              ),
             ],
           )
         ],
       ),
-      margin: EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
+      margin: EdgeInsets.only(left: 8, right: 8, top: 10, bottom: 10),
     );
   }
 
