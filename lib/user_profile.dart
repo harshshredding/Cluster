@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'my_events.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'webview_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:uuid/uuid.dart';
 
 
 class UserProfile extends StatefulWidget {
@@ -27,6 +27,7 @@ class UserProfileState extends State<UserProfile> {
       TextEditingController(text: "");
   bool _editMode = false;
   bool _hasEdited = false;
+  File _selectedImage;
 
   @override
   void initState() {
@@ -65,16 +66,206 @@ class UserProfileState extends State<UserProfile> {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     DocumentSnapshot document =
         await Firestore.instance.collection("users").document(user.uid).get();
-    if (document.exists) {
+    if (document.exists && (_selectedImage != null)) {
+      final String uuid = Uuid().v1();
+      StorageReference storageRef =
+      FirebaseStorage.instance.ref().child(user.uid + uuid);
+      StorageUploadTask uploadTask = storageRef.putFile(_selectedImage);
+
+      // Show a snackbar
+      var snackbar = new SnackBar(
+        duration: new Duration(seconds: 60),
+        content: new Row(
+          children: <Widget>[
+            new CircularProgressIndicator(),
+            new Text("Uploading Image")
+          ],
+        ),
+      );
+      Scaffold.of(context).showSnackBar(snackbar);
+
+      StorageTaskSnapshot storageSnapshot =
+      await uploadTask.onComplete;
+      String downloadUrl = await storageSnapshot.ref.getDownloadURL();
+
+      Scaffold.of(context).hideCurrentSnackBar();
+      snackbar = new SnackBar(
+        duration: new Duration(seconds: 60),
+        content: new Row(
+          children: <Widget>[
+            new CircularProgressIndicator(),
+            new Text("Publishing event")
+          ],
+        ),
+      );
+      Scaffold.of(context).showSnackBar(snackbar);
+      document.data["summary"] = _controllerSummary.text;
+      document.data["linkedn"] = _controllerLinkedn.text;
+      document.data["photo_url"] = downloadUrl;
+      await Firestore.instance
+          .collection("users")
+          .document(user.uid)
+          .setData(document.data);
+      Scaffold.of(context).hideCurrentSnackBar();
+      print("yoasdasda");
+    } else if (document.exists && (_selectedImage == null)) {
       document.data["summary"] = _controllerSummary.text;
       document.data["linkedn"] = _controllerLinkedn.text;
       await Firestore.instance
           .collection("users")
           .document(user.uid)
           .setData(document.data);
-      final snackBar = SnackBar(content: Text('Profile Updated'));
-      Scaffold.of(context).showSnackBar(snackBar);
     }
+    var snackbar = new SnackBar(
+      duration: new Duration(seconds: 2),
+      content: Text("Profile Updated"),
+    );
+    Scaffold.of(context).showSnackBar(snackbar);
+  }
+
+  /// choose an image and display it on the screen by changing state
+  void chooseImage() async {
+    if (_editMode) {
+      File unCroppedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
+      File croppedImage = await ImageCropper.cropImage(sourcePath: unCroppedImage.path,
+          ratioX: 1.0,
+          ratioY: 1.0,
+          maxWidth: 512,
+          maxHeight: 512);
+      setState(() {
+        _selectedImage = croppedImage;
+      });
+    }
+  }
+
+  Widget buildUserForm(String name, String photoUrl, String summary) {
+    return Column(
+      children: <Widget>[
+        Container(
+          color: Colors.grey.shade600,
+          child: Column(
+            children: <Widget>[
+              _selectedImage == null ?
+              Container(
+                alignment: Alignment.center,
+                child: GestureDetector(
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(photoUrl),
+                    radius: 80,
+                  ),
+                  onTap: chooseImage,
+                ),
+                margin: EdgeInsets.only(top: 20),
+              )
+                  :
+              Container(
+                alignment: Alignment.center,
+                child: GestureDetector(
+                  child: CircleAvatar(
+                    backgroundImage: FileImage(_selectedImage),
+                    radius: 80,
+                  ),
+                  onTap: chooseImage,
+                ),
+                margin: EdgeInsets.only(top: 20),
+              ),
+              Container(
+                alignment: Alignment.center,
+                child: Text(name,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'Trajan Pro',
+                    )),
+                margin: EdgeInsets.all(20),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          margin: EdgeInsets.only(top: 35, left: 22),
+          alignment: Alignment.centerLeft,
+          child: Text('ABOUT ME',
+              style: TextStyle(
+                  fontSize: 12.0,
+                  fontFamily: 'Trajan Pro',
+                  color: Colors.grey.shade200)),
+        ),
+        Container(
+          alignment: Alignment.centerLeft,
+          child: TextFormField(
+            enabled: _editMode,
+            maxLines: 10,
+            controller: _controllerSummary,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+            ),
+          ),
+          margin: EdgeInsets.all(20),
+        ),
+        Container(
+          margin: EdgeInsets.only(top: 20, left: 22),
+          alignment: Alignment.centerLeft,
+          child: Text('LINKEDN',
+              style: TextStyle(
+                  fontSize: 12.0,
+                  fontFamily: 'Heebo-Black',
+                  color: Colors.grey.shade200)),
+        ),
+        (_editMode)
+            ? Container(
+          alignment: Alignment.centerLeft,
+          child: TextField(
+            enabled: _editMode,
+            controller: _controllerLinkedn,
+            decoration: InputDecoration(
+                border: OutlineInputBorder(), hintText: "Paste URL"),
+          ),
+          margin: EdgeInsets.all(20),
+        )
+            : Container(
+          width: 0,
+          height: 0,
+        ),
+        (_controllerLinkedn.text != "" && _controllerLinkedn.text != null)
+            ? !_editMode
+            ? Container(
+            margin: EdgeInsets.only(top: 20, left: 22),
+            alignment: Alignment.centerLeft,
+            child: RaisedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            LinkednPage(_controllerLinkedn.text)));
+              },
+              child: Text(
+                "My Linkedn",
+                style: TextStyle(color: Colors.white),
+              ),
+            ))
+            : Container(
+          height: 0,
+          width: 0,
+        )
+            : !_editMode
+            ? Container(
+            margin: EdgeInsets.only(top: 20, left: 22),
+            alignment: Alignment.centerLeft,
+            child: RaisedButton(
+              onPressed: null,
+              color: Colors.grey,
+              child: Text(
+                "Linkedn N/A",
+                style: TextStyle(color: Colors.white),
+              ),
+            ))
+            : Container(
+          height: 0,
+          width: 0,
+        ),
+      ],
+    );
   }
 
 
@@ -98,14 +289,11 @@ class UserProfileState extends State<UserProfile> {
                   } else {
                     return SingleChildScrollView(
                         child: Column(children: [
-                          UserDetails(
-                              widget.editable,
+                          buildUserForm(
                               snapshot.data.data['name'] ?? "",
                               snapshot.data.data['photo_url'] ?? "",
                               snapshot.data.data['summary'] ?? "",
-                              _controllerSummary,
-                              _controllerLinkedn,
-                              _editMode),
+                              ),
                           _editMode
                               ? RaisedButton(
                             onPressed: () {
@@ -158,173 +346,6 @@ class UserProfileState extends State<UserProfile> {
           },
           child: getUserProfile(context),
         )
-    );
-  }
-}
-
-class UserDetails extends StatefulWidget {
-  final String name;
-  final String photoUrl;
-  final String summary;
-  final TextEditingController _controllerSummary;
-  final TextEditingController _controllerLinkedn;
-  final bool _editMode;
-  final bool editable;
-
-  UserDetails(this.editable, this.name, this.photoUrl, this.summary,
-      this._controllerSummary, this._controllerLinkedn, this._editMode);
-  
-  UserDetailsState createState() {
-    return UserDetailsState();
-  }
-}
-
-class UserDetailsState extends State<UserDetails> {
-  
-  File _selectedImage;
-  
-  /// choose an image and display it on the screen by changing state
-  void chooseImage() async {
-    if (widget._editMode) {
-      File unCroppedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
-      File croppedImage = await ImageCropper.cropImage(sourcePath: unCroppedImage.path,
-          ratioX: 1.0,
-          ratioY: 1.0,
-          maxWidth: 512,
-          maxHeight: 512);
-      setState(() {
-        _selectedImage = croppedImage;
-      });
-    }
-  }
-
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Container(
-          color: Colors.grey.shade600,
-          child: Column(
-            children: <Widget>[
-              _selectedImage == null ?
-              Container(
-                alignment: Alignment.center,
-                child: GestureDetector(
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(widget.photoUrl),
-                    radius: 80,
-                  ),
-                  onTap: chooseImage,
-                ),
-                margin: EdgeInsets.only(top: 20),
-              )
-                  :
-              Container(
-                alignment: Alignment.center,
-                child: GestureDetector(
-                  child: CircleAvatar(
-                    backgroundImage: FileImage(_selectedImage),
-                    radius: 80,
-                  ),
-                  onTap: chooseImage,
-                ),
-                margin: EdgeInsets.only(top: 20),
-              ),
-              Container(
-                alignment: Alignment.center,
-                child: Text(widget.name,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontFamily: 'Trajan Pro',
-                    )),
-                margin: EdgeInsets.all(20),
-              ),
-            ],
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 35, left: 22),
-          alignment: Alignment.centerLeft,
-          child: Text('ABOUT ME',
-              style: TextStyle(
-                  fontSize: 12.0,
-                  fontFamily: 'Trajan Pro',
-                  color: Colors.grey.shade200)),
-        ),
-        Container(
-          alignment: Alignment.centerLeft,
-          child: TextFormField(
-            enabled: widget._editMode,
-            maxLines: 10,
-            controller: widget._controllerSummary,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-            ),
-          ),
-          margin: EdgeInsets.all(20),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 20, left: 22),
-          alignment: Alignment.centerLeft,
-          child: Text('LINKEDN',
-              style: TextStyle(
-                  fontSize: 12.0,
-                  fontFamily: 'Heebo-Black',
-                  color: Colors.grey.shade200)),
-        ),
-        (widget._editMode)
-            ? Container(
-                alignment: Alignment.centerLeft,
-                child: TextField(
-                  enabled: widget._editMode,
-                  controller: widget._controllerLinkedn,
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(), hintText: "Paste URL"),
-                ),
-                margin: EdgeInsets.all(20),
-              )
-            : Container(
-                width: 0,
-                height: 0,
-              ),
-        (widget._controllerLinkedn.text != "" && widget._controllerLinkedn.text != null)
-            ? !widget._editMode
-                ? Container(
-                    margin: EdgeInsets.only(top: 20, left: 22),
-                    alignment: Alignment.centerLeft,
-                    child: RaisedButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    LinkednPage(widget._controllerLinkedn.text)));
-                      },
-                      child: Text(
-                        "My Linkedn",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ))
-                : Container(
-                    height: 0,
-                    width: 0,
-                  )
-            : !widget._editMode
-                ? Container(
-                    margin: EdgeInsets.only(top: 20, left: 22),
-                    alignment: Alignment.centerLeft,
-                    child: RaisedButton(
-                      onPressed: null,
-                      color: Colors.grey,
-                      child: Text(
-                        "Linkedn N/A",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ))
-                : Container(
-                    height: 0,
-                    width: 0,
-                  ),
-      ],
     );
   }
 }
