@@ -4,6 +4,7 @@ import 'tag_selector.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'user_profile.dart';
 
 class Proposals extends StatefulWidget {
   ProposalsState createState() {
@@ -105,10 +106,24 @@ class ProposalsState extends State<Proposals> {
                             if (asyncSnapshot.connectionState == ConnectionState.done) {
                               String photoUrl =
                               asyncSnapshot.data.data["photo_url"];
-                              return CircleAvatar(
-                                radius: 20,
-                                backgroundImage: NetworkImage(photoUrl),
-                                backgroundColor: Colors.transparent,
+                              return GestureDetector(
+                                child: CircleAvatar(
+                                  radius: 20,
+                                  backgroundImage: NetworkImage(photoUrl),
+                                  backgroundColor: Colors.transparent,
+                                ),
+                                onTap: () {
+                                  if (asyncSnapshot.data.data != null) {
+                                    if (asyncSnapshot.data.documentID != null) {
+                                      Navigator.of(context).push<void>(
+                                          MaterialPageRoute(
+                                            builder: (context) => UserProfile(false, userDocumentId:asyncSnapshot.data.documentID),
+                                            fullscreenDialog: true
+                                          )
+                                      );
+                                    }
+                                  }
+                                },
                               );
                             } else {
                               return CircularProgressIndicator();
@@ -151,7 +166,7 @@ class ProposalsState extends State<Proposals> {
                   Container(
                     margin: EdgeInsets.only(right: 20),
                     alignment: Alignment.centerLeft,
-                    child: Text(topic, style: TextStyle(fontSize: 15)),
+                    child: Text(topic, style: TextStyle(fontSize: 15, fontFamily: "Trajan Pro")),
                     padding: EdgeInsets.only(
                         left: 10, right: 10, top: 0, bottom: 10),
                   ),
@@ -168,7 +183,7 @@ class ProposalsState extends State<Proposals> {
                   Container(
                     margin: EdgeInsets.only(right: 20),
                     alignment: Alignment.centerLeft,
-                    child: Text(summary, style: TextStyle(fontSize: 15)),
+                    child: Text(summary, style: TextStyle(fontSize: 15, fontFamily: "Trajan Pro")),
                     padding: EdgeInsets.only(
                         left: 10, right: 10, top: 0, bottom: 10),
                   )
@@ -178,19 +193,19 @@ class ProposalsState extends State<Proposals> {
                 flex: 2,
                 child: Container(
                   alignment: Alignment.topRight,
-                  child: Icon(
-                    Icons.star,
-                    size: 25,
+                  child: IconButton(
+                    icon: Icon(Icons.chat, size: 20),
+                    onPressed: null,
                   ),
                   margin:
-                  EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+                  EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
                 ),
               ),
             ],
           )
         ],
       ),
-      margin: EdgeInsets.only(left: 8, right: 8, top: 10, bottom: 10),
+      margin: EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
     );
   }
 
