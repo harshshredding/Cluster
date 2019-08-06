@@ -5,11 +5,11 @@ import 'platform_adaptive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String eventId;
-  ChatScreen(this.eventId);
+  final String roomId;
+  ChatScreen(this.roomId);
 
   @override
-  State createState() => ChatScreenState(eventId);
+  State createState() => ChatScreenState(roomId);
 }
 
 class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
@@ -19,11 +19,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   GoogleSignIn _googleSignIn = GoogleSignIn();
   var fireBaseSubscription;
   Firestore firestore = Firestore.instance;
-  String eventId;
+  String roomId;
   CollectionReference collectionReference;
   ScrollController _scrollController;
   Function _currentScrollListener;
-  ChatScreenState(this.eventId);
+  ChatScreenState(this.roomId);
 
   @override
   void initState() {
@@ -31,12 +31,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _scrollController = ScrollController();
     _googleSignIn.signInSilently();
     firestore = Firestore.instance;
-    collectionReference = firestore
-        .collection('events')
-        .document(eventId)
-        .collection('chat_room');
-    fireBaseSubscription =
-        collectionReference.limit(15).orderBy("timestamp", descending: true).snapshots().listen((QuerySnapshot snapshot) {
+    collectionReference =
+        firestore.collection('chats').document(roomId).collection('chat_room');
+    fireBaseSubscription = collectionReference
+        .limit(15)
+        .orderBy("timestamp", descending: true)
+        .snapshots()
+        .listen((QuerySnapshot snapshot) {
       for (DocumentSnapshot snapshot in snapshot.documents.reversed) {
         Timestamp newMessageTimestamp = snapshot.data['timestamp'];
         if (_messages.isNotEmpty) {
@@ -66,10 +67,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     });
   }
 
-
   Function getScrollListener(context) {
     return () {
-      if ((_scrollController.offset >= _scrollController.position.maxScrollExtent )&&
+      if ((_scrollController.offset >=
+              _scrollController.position.maxScrollExtent) &&
           (!_scrollController.position.outOfRange)) {
         setState(() {
           _getOldMessages();
@@ -143,16 +144,20 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       _isComposing = false;
     });
   }
-  
+
   void _getOldMessages() async {
     final snackBar = SnackBar(
-        content: Text('Loading old messages'),
-        duration: Duration(milliseconds: 800),);
+      content: Text('Loading old messages'),
+      duration: Duration(milliseconds: 800),
+    );
 
     // Find the Scaffold in the widget tree and use it to show a SnackBar.
     Scaffold.of(context).showSnackBar(snackBar);
     Timestamp minTimestamp = _messages.reversed.first.timestamp;
-    QuerySnapshot querySnapshot = await collectionReference.limit(5).orderBy("timestamp", descending: true).startAfter([minTimestamp]).getDocuments();
+    QuerySnapshot querySnapshot = await collectionReference
+        .limit(5)
+        .orderBy("timestamp", descending: true)
+        .startAfter([minTimestamp]).getDocuments();
     for (DocumentSnapshot docSnapshot in querySnapshot.documents) {
       _addMessageAtEnd(
           name: docSnapshot.data['sender']['name'],
@@ -193,7 +198,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         : null,
                     child: Text('Send'),
                   )),
-              ])));
+            ])));
   }
 
   Widget build(BuildContext context) {
@@ -202,20 +207,28 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     }
     _currentScrollListener = getScrollListener(context);
     _scrollController.addListener(_currentScrollListener);
-    return Column(children: [
-      Flexible(
-          child: ListView.builder(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Chat"),
+      ),
+      body: Center(
+        child: Column(children: [
+          Flexible(
+              child: ListView.builder(
             controller: _scrollController,
             padding: EdgeInsets.all(8.0),
             reverse: true,
-            itemBuilder: (_, int index) => ChatMessageListItem(_messages[index]),
+            itemBuilder: (_, int index) =>
+                ChatMessageListItem(_messages[index]),
             itemCount: _messages.length,
           )),
-      Divider(height: 1.0),
-      Container(
-          decoration: BoxDecoration(color: Theme.of(context).cardColor),
-          child: _buildTextComposer()),
-    ]);
+          Divider(height: 1.0),
+          Container(
+              decoration: BoxDecoration(color: Theme.of(context).cardColor),
+              child: _buildTextComposer()),
+        ]),
+      ),
+    );
   }
 }
 
@@ -276,14 +289,14 @@ class ChatMessageContent extends StatelessWidget {
   final ChatMessage message;
 
   Widget build(BuildContext context) {
-    double c_width = MediaQuery.of(context).size.width*0.8;
+    double c_width = MediaQuery.of(context).size.width * 0.8;
     //80% of screen width
-    return new Container (
+    return new Container(
       width: c_width,
-      child: new Column (
+      child: new Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          new Text (message.text),
+          new Text(message.text),
         ],
       ),
     );

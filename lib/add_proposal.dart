@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
 import 'tag_selector.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:uuid/uuid.dart';
 
 /// scaffolding of the add event screen
 class AddEventScreen extends StatelessWidget {
@@ -145,7 +146,21 @@ class AddEventState extends State<AddEventForm> {
                   map["summary"] = _controllerSummary.text;
                   FirebaseUser user = await FirebaseAuth.instance.currentUser();
                   map["user_id"] = user.uid;
-                  await _firestore.collection("proposals").add(map);
+                  String proposalId = Uuid().v1() + user.uid;
+
+
+                  DocumentReference userProposal = _firestore.collection("users")
+                      .document(user.uid)
+                      .collection("proposals").document(proposalId);
+                  DocumentReference proposalEntry = _firestore.collection("proposals")
+                  .document(proposalId);
+                  await _firestore.runTransaction((Transaction t) async {
+                    await t.set(proposalEntry, map);
+                    await t.set(userProposal, {"id": proposalId});
+                    return null;
+                  });
+
+                  //await _firestore.collection("proposals").add(map);
                   Navigator.pop(context);
                 },
                 child: Text("CREATE"),

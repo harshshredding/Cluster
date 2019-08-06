@@ -5,6 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_profile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uuid/uuid.dart';
+import 'chat.dart';
 
 class Proposals extends StatefulWidget {
   ProposalsState createState() {
@@ -65,7 +68,30 @@ class ProposalsState extends State<Proposals> {
     }
   }
 
-  Widget createCard(String topic, String summary, String userId) {
+  Future<void> createChatIfDoesntExist(String creatorUserId, String proposalId, BuildContext context) async {
+    print(creatorUserId);
+    print(proposalId);
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    print(currentUser.uid);
+    String chatId = proposalId + creatorUserId + creatorUserId;
+    DocumentReference currentUserReference = Firestore.instance
+        .collection("users").document(currentUser.uid).collection("chats").document(chatId);
+    DocumentReference creatorUserReference = Firestore
+        .instance.collection("users").document(creatorUserId).collection("chats").document(chatId);
+    DocumentReference chatReference = Firestore.instance.collection("chats").document(chatId);
+    DocumentSnapshot chat = await chatReference.get();
+    if (!chat.exists) {
+      await Firestore.instance.runTransaction((Transaction t) async {
+        t.set(currentUserReference, {"id" : chatId});
+        t.set(creatorUserReference, {"id": chatId});
+        t.set(chatReference, {"id": chatId});
+        return null;
+      });
+    }
+    Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId)));
+  }
+
+  Widget createCard(String topic, String summary, String userId, String proposalId) {
     return Card(
       shape: BeveledRectangleBorder(
           borderRadius: BorderRadius.only(bottomRight: Radius.circular(20))),
@@ -90,7 +116,7 @@ class ProposalsState extends State<Proposals> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Flexible (
-                flex: 15,
+                flex: 17,
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -190,15 +216,18 @@ class ProposalsState extends State<Proposals> {
                 ],
               ),),
               Flexible(
-                flex: 2,
+                flex: 4,
                 child: Container(
                   alignment: Alignment.topRight,
                   child: IconButton(
-                    icon: Icon(Icons.chat, size: 20),
-                    onPressed: null,
+                    icon: Icon(Icons.chat, size: 25),
+                    onPressed: () async {
+                        print("hello");
+                        createChatIfDoesntExist(userId, proposalId, context);
+                      },
                   ),
                   margin:
-                  EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                  EdgeInsets.only(left: 10, right: 5, top: 5, bottom: 5),
                 ),
               ),
             ],
@@ -255,7 +284,7 @@ class ProposalsState extends State<Proposals> {
               String topic = currEvent.data["title"] ?? "";
               String summary = currEvent.data["summary"] ?? "";
               String userId = currEvent.data["user_id"];
-              return createCard(topic, summary, userId);
+              return createCard(topic, summary, userId, currEvent.documentID);
             },
             itemCount: _proposals.length,
           ),
