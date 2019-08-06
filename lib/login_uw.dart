@@ -66,33 +66,49 @@ class LoginState extends State<Login> {
 
     final FirebaseUser user = await _auth.signInWithCredential(credential);
 
-    if (user.email.length > 7) {
-      if (user.email.substring(user.email.length - 7) == "@uw.edu") {
-        DocumentReference document =
-            firestore.collection("users").document(user.uid);
-        DocumentSnapshot documentSnap = await document.get();
-        if (!documentSnap.exists) {
-          await document.setData({
-            "id": user.uid,
-            "name": user.displayName,
-            "photo_url": user.photoUrl,
-            "summary": ""
-          });
-        }
-        Navigator.pushReplacementNamed(context, '/home',
-            arguments: UserId(user.uid));
-      }
-    } else {
-      var snackbar = new SnackBar(
-        duration: new Duration(seconds: 60),
-        content: new Row(
-          children: <Widget>[new Text("Login Unsuccessful")],
-        ),
-      );
-      Scaffold.of(context).showSnackBar(snackbar);
-      await googleSignIn.signOut();
-      await FirebaseAuth.instance.signOut();
+
+    DocumentReference document =
+    firestore.collection("users").document(user.uid);
+    DocumentSnapshot documentSnap = await document.get();
+    if (!documentSnap.exists) {
+      await document.setData({
+        "id": user.uid,
+        "name": user.displayName,
+        "photo_url": user.photoUrl,
+        "summary": ""
+      });
     }
+    Navigator.pushReplacementNamed(context, '/home',
+        arguments: UserId(user.uid));
+
+
+//    if (user.email.length > 7) {
+//      if (user.email.substring(user.email.length - 7) == "@uw.edu") {
+//        DocumentReference document =
+//            firestore.collection("users").document(user.uid);
+//        DocumentSnapshot documentSnap = await document.get();
+//        if (!documentSnap.exists) {
+//          await document.setData({
+//            "id": user.uid,
+//            "name": user.displayName,
+//            "photo_url": user.photoUrl,
+//            "summary": ""
+//          });
+//        }
+//        Navigator.pushReplacementNamed(context, '/home',
+//            arguments: UserId(user.uid));
+//      }
+//    } else {
+//      var snackbar = new SnackBar(
+//        duration: new Duration(seconds: 60),
+//        content: new Row(
+//          children: <Widget>[new Text("Login Unsuccessful")],
+//        ),
+//      );
+//      Scaffold.of(context).showSnackBar(snackbar);
+//      await googleSignIn.signOut();
+//      await FirebaseAuth.instance.signOut();
+//    }
     setState(() {
       _isLoggingIn = false;
     });

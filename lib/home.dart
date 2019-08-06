@@ -3,6 +3,7 @@ import 'proposals.dart';
 import 'user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'my_chats.dart';
 
 
 class Home extends StatefulWidget {
@@ -18,7 +19,7 @@ class HomeState extends State<Home> {
 
   final List<Widget> _children = [
     Proposals(),
-    Center(child: Text("lo", style: TextStyle(color: Colors.white)))
+    MyChats()
   ];
 
   void _onTabTapped(int index) {

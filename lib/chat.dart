@@ -183,7 +183,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               Flexible(
                 child: TextField(
                   controller: _textController,
-                  onSubmitted: _handleSubmitted,
                   onChanged: _handleMessageChanged,
                   decoration:
                       InputDecoration.collapsed(hintText: 'Send a message'),
@@ -194,7 +193,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   child: PlatformAdaptiveButton(
                     icon: Icon(Icons.send),
                     onPressed: _isComposing
-                        ? () => _handleSubmitted(_textController.text)
+                        ? () {_handleSubmitted(_textController.text);}
                         : null,
                     child: Text('Send'),
                   )),

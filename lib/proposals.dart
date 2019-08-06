@@ -73,7 +73,7 @@ class ProposalsState extends State<Proposals> {
     print(proposalId);
     FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     print(currentUser.uid);
-    String chatId = proposalId + creatorUserId + creatorUserId;
+    String chatId = proposalId + creatorUserId + currentUser.uid;
     DocumentReference currentUserReference = Firestore.instance
         .collection("users").document(currentUser.uid).collection("chats").document(chatId);
     DocumentReference creatorUserReference = Firestore
@@ -81,10 +81,16 @@ class ProposalsState extends State<Proposals> {
     DocumentReference chatReference = Firestore.instance.collection("chats").document(chatId);
     DocumentSnapshot chat = await chatReference.get();
     if (!chat.exists) {
+      Map<String, dynamic> dataToWrite = {
+        "id" : chatId,
+        "proposal_id": proposalId,
+        "creator_id": creatorUserId,
+        "interested_id": currentUser.uid
+      };
       await Firestore.instance.runTransaction((Transaction t) async {
-        t.set(currentUserReference, {"id" : chatId});
-        t.set(creatorUserReference, {"id": chatId});
-        t.set(chatReference, {"id": chatId});
+        t.set(currentUserReference, dataToWrite);
+        t.set(creatorUserReference, dataToWrite);
+        t.set(chatReference, dataToWrite);
         return null;
       });
     }
