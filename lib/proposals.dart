@@ -3,23 +3,32 @@ import 'colors.dart';
 import 'tag_selector.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:uuid/uuid.dart';
 import 'chat.dart';
 
 class Proposals extends StatefulWidget {
+  final List<String> _filters;
+  final Function updateFilters;
+  
+  Proposals(this._filters, this.updateFilters);
+  
   ProposalsState createState() {
     return ProposalsState();
   }
 }
 
 class ProposalsState extends State<Proposals> {
-  List<String> _filters = [];
   final Firestore _firestore = Firestore.instance;
   List<DocumentSnapshot> _proposals = new List();
   List<StreamSubscription<QuerySnapshot>> _subscriptions = new List();
+  List<String> _filters = List<String>();
+
+  void initState() {
+    super.initState();
+    _filters = widget._filters;
+    getProposals();
+  }
 
   List<Widget> createChips() {
     List<Widget> result = List();
@@ -35,15 +44,11 @@ class ProposalsState extends State<Proposals> {
     }
     return result;
   }
-
-  void configureFilter(BuildContext context) async {
-    List<String> chosenFilters = await Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => TagSelector(_filters)));
-    _filters.clear();
+  
+  void getProposals() {
     _proposals.clear();
     _subscriptions.clear();
-    for (String filter in chosenFilters) {
-      _filters.add(filter);
+    for (String filter in _filters) {
       var subscription = _firestore
           .collection("proposals")
           .where(filter, isEqualTo: true)
@@ -53,7 +58,7 @@ class ProposalsState extends State<Proposals> {
         List<DocumentSnapshot> thingsToAdd = List();
         for (DocumentSnapshot proposal in newDocuments) {
           bool proposalDoesntExist =
-              _proposals.every((DocumentSnapshot oldProposal) {
+          _proposals.every((DocumentSnapshot oldProposal) {
             return (oldProposal.documentID != proposal.documentID);
           });
           if (proposalDoesntExist) {
@@ -66,6 +71,15 @@ class ProposalsState extends State<Proposals> {
       });
       _subscriptions.add(subscription);
     }
+  }
+  
+
+  void configureFilter(BuildContext context) async {
+    List<String> chosenFilters = await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => TagSelector(_filters)));
+    widget.updateFilters(chosenFilters);
+    _filters = chosenFilters;
+    getProposals();
   }
 
   Future<void> createChatIfDoesntExist(String creatorUserId, String proposalId, BuildContext context) async {

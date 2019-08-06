@@ -173,13 +173,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         child: PlatformAdaptiveContainer(
             margin: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(children: [
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 4.0),
-                child: IconButton(
-                  icon: Icon(Icons.photo),
-                  onPressed: null,
-                ),
-              ),
               Flexible(
                 child: TextField(
                   controller: _textController,

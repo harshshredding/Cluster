@@ -17,10 +17,22 @@ class HomeState extends State<Home> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final List<Widget> _children = [
-    Proposals(),
-    MyChats()
-  ];
+  List<Widget> _children;
+
+  HomeState() {
+    _children = [
+      Proposals(List<String>(), updateProposalsCallback),
+      MyChats()
+    ];
+  }
+
+  void updateProposalsCallback(List<String> filters) {
+    print("lala");
+    print(filters);
+    setState(() {
+      _children[0] = Proposals(filters, updateProposalsCallback);
+    });
+  }
 
   void _onTabTapped(int index) {
     setState(() {
