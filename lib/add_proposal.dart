@@ -8,25 +8,25 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:uuid/uuid.dart';
 
 /// scaffolding of the add event screen
-class AddEventScreen extends StatelessWidget {
+class AddProposalScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Make Proposal'),
       ),
-      body: Center(child: AddEventForm()),
+      body: Center(child: AddProposalForm()),
     );
   }
 }
 
 /// The forms user fills out to create an event.
-class AddEventForm extends StatefulWidget {
-  AddEventState createState() {
-    return AddEventState();
+class AddProposalForm extends StatefulWidget {
+  AddProposalFormState createState() {
+    return AddProposalFormState();
   }
 }
 
-class AddEventState extends State<AddEventForm> {
+class AddProposalFormState extends State<AddProposalForm> {
   final TextEditingController _controllerTitle = TextEditingController();
   // IMPORTANT !!!!!!!
   // Had to initialize the below controller with empty string for the entire

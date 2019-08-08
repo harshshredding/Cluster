@@ -87,7 +87,7 @@ class HomeState extends State<Home> {
             child: IconButton(
               icon: Icon(Icons.add_box, color: Colors.white,),
               onPressed: () {
-                Navigator.pushNamed(context, '/addEvent',
+                Navigator.pushNamed(context, '/addProposal',
                     arguments: ModalRoute.of(context).settings.arguments);
               },
             ),

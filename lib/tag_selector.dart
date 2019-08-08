@@ -4,16 +4,7 @@ import 'colors.dart';
 class TagSelector extends StatefulWidget {
   final List<String> alreadySelectedCategories;
 
-  TagSelector(this.alreadySelectedCategories);
-
-  TagSelectorState createState() {
-    return TagSelectorState();
-  }
-}
-
-class TagSelectorState extends State<TagSelector> {
-  final Set<String> categoriesSelected = Set();
-  final List<String> categories = [
+  static final List<String> categories = [
     "Agriculture",
     "Architecture",
     "Biological and Biomedical Sciences",
@@ -40,6 +31,17 @@ class TagSelectorState extends State<TagSelector> {
     "Philosophy",
     "Startups"
   ];
+
+  TagSelector(this.alreadySelectedCategories);
+
+  TagSelectorState createState() {
+    return TagSelectorState();
+  }
+}
+
+class TagSelectorState extends State<TagSelector> {
+  final Set<String> categoriesSelected = Set();
+
 
   initState() {
     super.initState();
@@ -76,7 +78,7 @@ class TagSelectorState extends State<TagSelector> {
 
   Widget build(BuildContext context) {
     List<Widget> chips = new List<Widget>();
-    for (String category in categories) {
+    for (String category in TagSelector.categories) {
       chips.add(createChip(category));
     }
     return Scaffold(

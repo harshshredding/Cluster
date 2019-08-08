@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'user_profile.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'proposal_details.dart';
 
 class MyProposals extends StatefulWidget {
   MyProposalsState createState() {
@@ -121,7 +122,10 @@ class MyProposalsState extends State<MyProposals> {
                         Expanded(
                           child: Container(
                             alignment: Alignment.centerRight,
-                            child: IconButton(icon: Icon(Icons.edit), onPressed: null),
+                            child: IconButton(icon: Icon(Icons.edit, color: Colors.white,), onPressed: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) => EditProposalScreen(proposalId)));
+                            }),
                           ),
                         )
                       ],

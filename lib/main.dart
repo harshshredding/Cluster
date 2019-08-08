@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => Login(true),
         '/map': (context) => MapScreen(),
-        '/addEvent': (context) => AddEventScreen(),
+        '/addProposal': (context) => AddProposalScreen(),
         '/userProfile': (context) => UserProfile(true),
         '/home': (context) => Home(),
         '/my_proposals': (context) => MyProposals(),
