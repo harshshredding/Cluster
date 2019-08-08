@@ -48,10 +48,9 @@ class ProposalsState extends State<Proposals> {
   void getProposals() {
     _proposals.clear();
     _subscriptions.clear();
-    for (String filter in _filters) {
+    if (_filters.isEmpty) {
       var subscription = _firestore
           .collection("proposals")
-          .where(filter, isEqualTo: true)
           .snapshots()
           .listen((QuerySnapshot snapshot) {
         List<DocumentSnapshot> newDocuments = snapshot.documents;
@@ -70,6 +69,30 @@ class ProposalsState extends State<Proposals> {
         });
       });
       _subscriptions.add(subscription);
+    } else {
+      for (String filter in _filters) {
+        var subscription = _firestore
+            .collection("proposals")
+            .where(filter, isEqualTo: true)
+            .snapshots()
+            .listen((QuerySnapshot snapshot) {
+          List<DocumentSnapshot> newDocuments = snapshot.documents;
+          List<DocumentSnapshot> thingsToAdd = List();
+          for (DocumentSnapshot proposal in newDocuments) {
+            bool proposalDoesntExist =
+            _proposals.every((DocumentSnapshot oldProposal) {
+              return (oldProposal.documentID != proposal.documentID);
+            });
+            if (proposalDoesntExist) {
+              thingsToAdd.add(proposal);
+            }
+          }
+          setState(() {
+            _proposals.addAll(thingsToAdd);
+          });
+        });
+        _subscriptions.add(subscription);
+      }
     }
   }
   
@@ -83,35 +106,41 @@ class ProposalsState extends State<Proposals> {
   }
 
   Future<void> createChatIfDoesntExist(String creatorUserId, String proposalId, BuildContext context) async {
-    print(creatorUserId);
-    print(proposalId);
-    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
-    print(currentUser.uid);
-    String chatId = proposalId + creatorUserId + currentUser.uid;
-    DocumentReference currentUserReference = Firestore.instance
-        .collection("users").document(currentUser.uid).collection("chats").document(chatId);
-    DocumentReference creatorUserReference = Firestore
-        .instance.collection("users").document(creatorUserId).collection("chats").document(chatId);
-    DocumentReference chatReference = Firestore.instance.collection("chats").document(chatId);
-    DocumentSnapshot chat = await chatReference.get();
-    if (!chat.exists) {
-      Map<String, dynamic> dataToWrite = {
-        "id" : chatId,
-        "proposal_id": proposalId,
-        "creator_id": creatorUserId,
-        "interested_id": currentUser.uid
-      };
-      await Firestore.instance.runTransaction((Transaction t) async {
-        t.set(currentUserReference, dataToWrite);
-        t.set(creatorUserReference, dataToWrite);
-        t.set(chatReference, dataToWrite);
-        return null;
-      });
+    if (creatorUserId == null || proposalId == null) {
+      var snackbar = new SnackBar(
+        duration: new Duration(seconds: 2),
+        content: Text("Some error occured.")
+      );
+      Scaffold.of(context).showSnackBar(snackbar);
+    } else {
+      FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+      print(currentUser.uid);
+      String chatId = proposalId + creatorUserId + currentUser.uid;
+      DocumentReference currentUserReference = Firestore.instance
+          .collection("users").document(currentUser.uid).collection("chats").document(chatId);
+      DocumentReference creatorUserReference = Firestore
+          .instance.collection("users").document(creatorUserId).collection("chats").document(chatId);
+      DocumentReference chatReference = Firestore.instance.collection("chats").document(chatId);
+      DocumentSnapshot chat = await chatReference.get();
+      if (!chat.exists) {
+        Map<String, dynamic> dataToWrite = {
+          "id" : chatId,
+          "proposal_id": proposalId,
+          "creator_id": creatorUserId,
+          "interested_id": currentUser.uid
+        };
+        await Firestore.instance.runTransaction((Transaction t) async {
+          t.set(currentUserReference, dataToWrite);
+          t.set(creatorUserReference, dataToWrite);
+          t.set(chatReference, dataToWrite);
+          return null;
+        });
+      }
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId)));
     }
-    Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId)));
   }
 
-  Widget createCard(String topic, String summary, String userId, String proposalId) {
+  Widget createCard(String topic, String summary, String userId, String proposalId, BuildContext context) {
     return Card(
       shape: BeveledRectangleBorder(
           borderRadius: BorderRadius.only(bottomRight: Radius.circular(20))),
@@ -242,7 +271,6 @@ class ProposalsState extends State<Proposals> {
                   child: IconButton(
                     icon: Icon(Icons.chat, size: 25),
                     onPressed: () async {
-                        print("hello");
                         createChatIfDoesntExist(userId, proposalId, context);
                       },
                   ),
@@ -304,7 +332,7 @@ class ProposalsState extends State<Proposals> {
               String topic = currEvent.data["title"] ?? "";
               String summary = currEvent.data["summary"] ?? "";
               String userId = currEvent.data["user_id"];
-              return createCard(topic, summary, userId, currEvent.documentID);
+              return createCard(topic, summary, userId, currEvent.documentID, context);
             },
             itemCount: _proposals.length,
           ),
