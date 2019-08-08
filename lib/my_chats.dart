@@ -28,7 +28,7 @@ class MyChatsState extends State<MyChats> {
   Widget buildCard(String proposalId, String photoUserId, String chatId) {
     print(proposalId);
     return Container(
-      margin: EdgeInsets.only(top: 10, bottom: 10),
+      margin: EdgeInsets.only(top: 3, bottom: 3),
       child: GestureDetector(
         child: Card(
           child: Container(
@@ -39,7 +39,7 @@ class MyChatsState extends State<MyChats> {
                 if (asyncSnapshot.connectionState == ConnectionState.done) {
                     return ListTile(
                       leading: CircularPhoto(photoUserId),
-                      title: Text(asyncSnapshot.data.data['title']),
+                      title: Text(asyncSnapshot.data.data['title'], style: TextStyle(fontFamily: "Trajan Pro"),),
                     );
                 } else {
                   return CircularProgressIndicator();

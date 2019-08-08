@@ -60,6 +60,13 @@ class HomeState extends State<Home> {
             )
             ,
             ListTile(
+              title: Text("My Proposals"),
+              onTap: () async {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, "/my_proposals");
+              },
+            ),
+            ListTile(
               title: Text("Log Out"),
               onTap: () async {
                 await FirebaseAuth.instance.signOut();
@@ -73,7 +80,7 @@ class HomeState extends State<Home> {
         leading: IconButton(icon: Icon(Icons.person, color: Colors.white,), onPressed: () {
           _scaffoldKey.currentState.openDrawer();
         }),
-        title: Text("Kluzter"),
+        title: Text("CoffeeShop"),
         actions: <Widget>[
           Container(
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),

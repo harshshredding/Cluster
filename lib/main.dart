@@ -5,6 +5,7 @@ import 'login_uw.dart';
 import 'home.dart';
 import 'user_profile.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'my_proposals.dart';
 
 void main() => runApp(new MyApp());
 
@@ -24,7 +25,8 @@ class MyApp extends StatelessWidget {
         '/map': (context) => MapScreen(),
         '/addEvent': (context) => AddEventScreen(),
         '/userProfile': (context) => UserProfile(true),
-        '/home': (context) => Home()
+        '/home': (context) => Home(),
+        '/my_proposals': (context) => MyProposals(),
       },
     );
   }

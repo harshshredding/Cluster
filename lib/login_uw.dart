@@ -77,6 +77,7 @@ class LoginState extends State<Login> {
         "summary": ""
       });
     }
+    print("reliable " + user.displayName);
     Navigator.pushReplacementNamed(context, '/home',
         arguments: UserId(user.uid));
 
@@ -119,6 +120,7 @@ class LoginState extends State<Login> {
     });
     FirebaseUser user = await _auth.currentUser();
     if (user != null) {
+      print("automatic");
       Navigator.pushReplacementNamed(context, '/home',
           arguments: UserId(user.uid));
     }

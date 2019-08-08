@@ -165,7 +165,7 @@ class ProposalsState extends State<Proposals> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Flexible (
-                flex: 17,
+                flex: 1,
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -225,6 +225,19 @@ class ProposalsState extends State<Proposals> {
                         ),
                         padding: EdgeInsets.only(
                             left: 10, right: 10, top: 0, bottom: 5),
+                      ),
+                      Expanded(
+                        child: Container(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            icon: Icon(Icons.chat, size: 20),
+                            onPressed: () async {
+                              createChatIfDoesntExist(userId, proposalId, context);
+                            },
+                          ),
+                          margin:
+                          EdgeInsets.only(left: 10, right: 5, top: 5, bottom: 5),
+                        ),
                       )
                     ],
                   ),
@@ -264,20 +277,6 @@ class ProposalsState extends State<Proposals> {
                   )
                 ],
               ),),
-              Flexible(
-                flex: 4,
-                child: Container(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    icon: Icon(Icons.chat, size: 25),
-                    onPressed: () async {
-                        createChatIfDoesntExist(userId, proposalId, context);
-                      },
-                  ),
-                  margin:
-                  EdgeInsets.only(left: 10, right: 5, top: 5, bottom: 5),
-                ),
-              ),
             ],
           )
         ],

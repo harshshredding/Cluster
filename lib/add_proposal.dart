@@ -147,8 +147,6 @@ class AddEventState extends State<AddEventForm> {
                   FirebaseUser user = await FirebaseAuth.instance.currentUser();
                   map["user_id"] = user.uid;
                   String proposalId = Uuid().v1() + user.uid;
-
-
                   DocumentReference userProposal = _firestore.collection("users")
                       .document(user.uid)
                       .collection("proposals").document(proposalId);
@@ -159,7 +157,6 @@ class AddEventState extends State<AddEventForm> {
                     await t.set(userProposal, {"id": proposalId});
                     return null;
                   });
-
                   //await _firestore.collection("proposals").add(map);
                   Navigator.pop(context);
                 },
