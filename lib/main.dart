@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
       title: 'Cluster',
       theme: ThemeData.dark(),
       home:  Login(false),
+      //home: Center(child: Text("Text")),
       initialRoute: '/',
       routes: {
         '/login': (context) => Login(true),

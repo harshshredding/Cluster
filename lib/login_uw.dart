@@ -56,6 +56,7 @@ class LoginState extends State<Login> {
     setState(() {
       _isLoggingIn = true;
     });
+
     GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
     GoogleSignInAuthentication gSA = await googleSignInAccount.authentication;
 
@@ -63,9 +64,7 @@ class LoginState extends State<Login> {
       accessToken: gSA.accessToken,
       idToken: gSA.idToken,
     );
-
     final FirebaseUser user = await _auth.signInWithCredential(credential);
-
 
     DocumentReference document =
     firestore.collection("users").document(user.uid);
@@ -80,7 +79,6 @@ class LoginState extends State<Login> {
     }
     Navigator.pushReplacementNamed(context, '/home',
         arguments: UserId(user.uid));
-
 
 //    if (user.email.length > 7) {
 //      if (user.email.substring(user.email.length - 7) == "@uw.edu") {
@@ -114,6 +112,21 @@ class LoginState extends State<Login> {
     });
   }
 
+
+  Future<FirebaseUser> _signInAutomatically(BuildContext context) async {
+    setState(() {
+      _isLoggingIn = true;
+    });
+    FirebaseUser user = await _auth.currentUser();
+    if (user != null) {
+      Navigator.pushReplacementNamed(context, '/home',
+          arguments: UserId(user.uid));
+    }
+    setState(() {
+      _isLoggingIn = false;
+    });
+  }
+
   void _signOut(context) async {
     await googleSignIn.signOut();
     await FirebaseAuth.instance.signOut();
@@ -125,7 +138,7 @@ class LoginState extends State<Login> {
 
   Widget build(BuildContext context) {
     if (!widget.shouldLogout) {
-      _signIn(context);
+      _signInAutomatically(context);
     }
     return Scaffold(
         appBar: new AppBar(
@@ -138,18 +151,21 @@ class LoginState extends State<Login> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 _isLoggingIn
-                    ? Center(
+                    ? Container(
+                    margin: EdgeInsets.only(bottom: 25),
+                    child : Center(
                         child: SpinKitFadingCircle(
                           itemBuilder: (_, int index) {
                             return DecoratedBox(
                               decoration: BoxDecoration(
                                 color:
-                                    index.isEven ? Colors.brown : Colors.grey,
+                                index.isEven ? Colors.brown : Colors.grey,
                               ),
                             );
                           },
                         ),
                       )
+                    )
                     : Container(
                         height: 0,
                         width: 0,
