@@ -85,9 +85,18 @@ class HomeState extends State<Home> {
         title: Text("CoffeeShop"),
         actions: <Widget>[
           Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-            child: IconButton(
-              icon: Icon(Icons.add_box, color: Colors.white,),
+            margin: EdgeInsets.all(5),
+            padding: EdgeInsets.all(5),
+            child: RaisedButton(
+              shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              padding: EdgeInsets.all(0),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              elevation: 12,
+              color: Colors.grey.shade800,
+              child: Row( children: <Widget>[
+                Icon(Icons.add, size: 20,),
+                Text("proposal", style: TextStyle(fontSize: 10)),
+              ],),
               onPressed: () {
                 Navigator.pushNamed(context, '/addProposal',
                     arguments: ModalRoute.of(context).settings.arguments);

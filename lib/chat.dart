@@ -26,6 +26,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   ScrollController _scrollController;
   Function _currentScrollListener;
   ChatScreenState(this.roomId);
+  FirebaseUser currentUser;
 
   @override
   void initState() {
@@ -67,6 +68,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         }
       }
     });
+    getUserDetails();
+  }
+
+
+  void getUserDetails() async {
+    this.currentUser = await FirebaseAuth.instance.currentUser();
   }
 
   Function getScrollListener(context) {
@@ -132,29 +139,28 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     animationController?.forward();
   }
 
-  void _handleSubmitted(String text) {
+  void _handleSubmitted(String text) async {
     _textController.clear();
-    _googleSignIn.signIn().then((user) async {
-      Timestamp currentTime = Timestamp.now();
-      var message = {
-        'sender': {'name': user.displayName, 'imageUrl': user.photoUrl},
-        'text': text,
-        'timestamp': currentTime
-      };
-      print(collectionReference.path);
-      collectionReference.add(message);
-      DocumentReference chatReference = firestore.collection('chats').document(roomId);
-      DocumentSnapshot chat = await chatReference.get();
-      String creatorId = chat.data['creator_id'];
-      String interestedId = chat.data['interested_id'];
-      DocumentReference creatorReference = firestore.collection("users").document(creatorId).collection("chats").document(roomId);
-      DocumentReference interestedReference = firestore.collection("users").document(interestedId).collection("chats").document(roomId);
-      firestore.runTransaction((Transaction t) async {
-        await t.update(chatReference, {"last_updated": currentTime});
-        await t.update(creatorReference, {"last_updated": currentTime});
-        await t.update(interestedReference, {"last_updated": currentTime});
-      }).catchError((error) {print("yo");});
-    });
+    DocumentSnapshot userDetails = await firestore.collection("users").document(this.currentUser.uid).get();
+    Timestamp currentTime = Timestamp.now();
+    var message = {
+      'sender': {'name': userDetails.data['id'], 'imageUrl': userDetails.data['photo_url']},
+      'text': text,
+      'timestamp': currentTime
+    };
+    print(collectionReference.path);
+    collectionReference.add(message);
+    DocumentReference chatReference = firestore.collection('chats').document(roomId);
+    DocumentSnapshot chat = await chatReference.get();
+    String creatorId = chat.data['creator_id'];
+    String interestedId = chat.data['interested_id'];
+    DocumentReference creatorReference = firestore.collection("users").document(creatorId).collection("chats").document(roomId);
+    DocumentReference interestedReference = firestore.collection("users").document(interestedId).collection("chats").document(roomId);
+    firestore.runTransaction((Transaction t) async {
+      await t.update(chatReference, {"last_updated": currentTime});
+      await t.update(creatorReference, {"last_updated": currentTime});
+      await t.update(interestedReference, {"last_updated": currentTime});
+    }).catchError((error) {print("yo");});
     setState(() {
       _isComposing = false;
     });
