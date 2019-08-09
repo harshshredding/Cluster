@@ -4,6 +4,7 @@ import 'user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'my_chats.dart';
+import 'groups.dart';
 
 
 class Home extends StatefulWidget {
@@ -19,15 +20,16 @@ class HomeState extends State<Home> {
 
   List<Widget> _children;
 
+
   HomeState() {
     _children = [
+      Groups(),
       Proposals(List<String>(), updateProposalsCallback),
       MyChats()
     ];
   }
 
   void updateProposalsCallback(List<String> filters) {
-    print("lala");
     print(filters);
     setState(() {
       _children[0] = Proposals(filters, updateProposalsCallback);
@@ -101,13 +103,17 @@ class HomeState extends State<Home> {
           currentIndex: _currentIndex,
           items: [
             BottomNavigationBarItem(
+              icon: Icon(Icons.group),
+              title: Text('groups'),
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.list),
-              title: Text('proposals'),
+              title: Text('feed'),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.chat_bubble_outline),
               title: Text('chat'),
-            )
+            ),
           ]
       )
     );

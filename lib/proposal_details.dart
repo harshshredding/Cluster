@@ -57,9 +57,12 @@ class EditProposalFormState extends State<EditProposalForm> {
     DocumentSnapshot proposal = await Firestore.instance.collection("proposals").document(widget.proposalId).get();
     _controllerTitle.text = proposal.data['title'] ?? "";
     _controllerSummary.text = proposal.data['summary'] ?? "";
-    for (String category in TagSelector.categories) {
-      if (proposal.data[category] != null) {
-        _categoriesSelected.add(category);
+    QuerySnapshot groupsQuery = await Firestore
+        .instance.collection("groups").getDocuments();
+    for (DocumentSnapshot groupSnap in groupsQuery.documents) {
+      String groupTitle = groupSnap.data['title'];
+      if (proposal.data[groupTitle] != null) {
+        _categoriesSelected.add(groupTitle);
       }
     }
     setState(() {
@@ -147,7 +150,7 @@ class EditProposalFormState extends State<EditProposalForm> {
                     );
                   },
                 ): RaisedButton(
-                  color: brownBackgroud,
+                  color: brownBackground,
                   onPressed: () async {
                     setState(() {
                       submitting = true;

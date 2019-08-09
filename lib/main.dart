@@ -6,6 +6,7 @@ import 'home.dart';
 import 'user_profile.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'my_proposals.dart';
+import 'create_group.dart';
 
 void main() => runApp(new MyApp());
 
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         '/userProfile': (context) => UserProfile(true),
         '/home': (context) => Home(),
         '/my_proposals': (context) => MyProposals(),
+        '/add_group': (context) => AddGroupScreen(),
       },
     );
   }

@@ -1,38 +1,12 @@
 import 'package:flutter/material.dart';
 import 'colors.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class TagSelector extends StatefulWidget {
-  final List<String> alreadySelectedCategories;
+  final List<String> alreadySelectedGroups;
 
-  static final List<String> categories = [
-    "Agriculture",
-    "Architecture",
-    "Biological and Biomedical Sciences",
-    "Business",
-    "Communications and Journalism",
-    "Computer Science",
-    "Geography",
-    "Culinary Arts and Personal Services",
-    "Education",
-    "Engineering",
-    "Politics",
-    "Liberal Arts And Humanities",
-    "Drama",
-    "Music",
-    "Art",
-    "Dance",
-    "Law",
-    "Medical and Health Professions",
-    "Chemistry",
-    "Psychology",
-    "Physics",
-    "Mathematics",
-    "Applied Mathematics",
-    "Philosophy",
-    "Startups"
-  ];
-
-  TagSelector(this.alreadySelectedCategories);
+  TagSelector(this.alreadySelectedGroups);
 
   TagSelectorState createState() {
     return TagSelectorState();
@@ -40,36 +14,37 @@ class TagSelector extends StatefulWidget {
 }
 
 class TagSelectorState extends State<TagSelector> {
-  final Set<String> categoriesSelected = Set();
-
-
+  final Set<String> groupsSelected = Set();
+  Future<QuerySnapshot> getGroupsFuture;
+  
   initState() {
     super.initState();
-    for (String category in widget.alreadySelectedCategories) {
-      categoriesSelected.add(category);
+    for (String group in widget.alreadySelectedGroups) {
+      groupsSelected.add(group);
     }
+    getGroupsFuture =  Firestore.instance.collection("groups").getDocuments();
   }
 
-  Widget createChip(String category) {
+  Widget createChip(String group) {
     return InkWell(
       child: Container(
         margin: EdgeInsets.all(5),
-        child: categoriesSelected.contains(category)
+        child: groupsSelected.contains(group)
             ? Chip(
-                label: Text(category),
+                label: Text(group),
                 backgroundColor: Colors.blueAccent,
               )
             : Chip(
-                label: Text(category),
+                label: Text(group),
                 backgroundColor: Colors.blueGrey,
               ),
       ),
       onTap: () {
         setState(() {
-          if (categoriesSelected.contains(category)) {
-            categoriesSelected.remove(category);
+          if (groupsSelected.contains(group)) {
+            groupsSelected.remove(group);
           } else {
-            categoriesSelected.add(category);
+            groupsSelected.add(group);
           }
         });
       },
@@ -77,39 +52,67 @@ class TagSelectorState extends State<TagSelector> {
   }
 
   Widget build(BuildContext context) {
-    List<Widget> chips = new List<Widget>();
-    for (String category in TagSelector.categories) {
-      chips.add(createChip(category));
-    }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Choose Relevant Tags"),
-      ),
-      body: Container(
-        child: SingleChildScrollView(
-            child: Column(
-          children: <Widget>[
-            Wrap(
-              children: chips,
-            ),
-            Container(
-                margin: EdgeInsets.only(top: 30),
-                alignment: Alignment.center,
-                child: ButtonTheme(
-                  minWidth: 80.0,
-                  height: 40.0,
-                  child: RaisedButton(
-                    color: brownBackgroud,
-                    onPressed: () async {Navigator.pop(context, categoriesSelected.toList());},
-                    child: Text("Done"),
-                    elevation: 6,
-                    shape: BeveledRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                )),
-          ],
-        )),
-      ),
-    );
+    return FutureBuilder(
+        builder: (BuildContext context,
+            AsyncSnapshot<QuerySnapshot> asyncSnapshot) {
+          switch (asyncSnapshot.connectionState) {
+            case ConnectionState.done:
+              List<Widget> chips = new List<Widget>();
+              for (DocumentSnapshot groupSnap in asyncSnapshot.data.documents) {
+                chips.add(createChip(groupSnap.data["title"]));
+              }
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text("Choose Relevant Tags"),
+                ),
+                body: Container(
+                  child: SingleChildScrollView(
+                      child: Column(
+                        children: <Widget>[
+                          Wrap(
+                            children: chips,
+                          ),
+                          Container(
+                              margin: EdgeInsets.only(top: 30),
+                              alignment: Alignment.center,
+                              child: ButtonTheme(
+                                minWidth: 80.0,
+                                height: 40.0,
+                                child: RaisedButton(
+                                  color: brownBackground,
+                                  onPressed: () async {Navigator.pop(context, groupsSelected.toList());},
+                                  child: Text("Done"),
+                                  elevation: 6,
+                                  shape: BeveledRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                              )),
+                        ],
+                      )),
+                ),
+              );
+              break;
+            case ConnectionState.active:
+            case ConnectionState.waiting:
+            case ConnectionState.none:
+            default:
+              return Container(
+                  margin: EdgeInsets.only(top: 25),
+                  child: Center(
+                    child: SpinKitFadingCircle(
+                      itemBuilder: (_, int index) {
+                        return DecoratedBox(
+                          decoration: BoxDecoration(
+                            color:
+                            index.isEven ? Colors.brown : Colors.grey,
+                          ),
+                        );
+                      },
+                    ),
+                  ));
+              break;
+          }
+        },
+        future: getGroupsFuture);
   }
 }

@@ -8,31 +8,37 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:uuid/uuid.dart';
 
 /// scaffolding of the add event screen
-class AddProposalScreen extends StatelessWidget {
+class AddGroupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Make Proposal'),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        FocusScope.of(context).requestFocus(new FocusNode());
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Create Group'),
+        ),
+        body: Center(child: AddGroupForm()),
       ),
-      body: Center(child: AddProposalForm()),
     );
   }
 }
 
 /// The forms user fills out to create an event.
-class AddProposalForm extends StatefulWidget {
-  AddProposalFormState createState() {
-    return AddProposalFormState();
+class AddGroupForm extends StatefulWidget {
+  AddGroupFormState createState() {
+    return AddGroupFormState();
   }
 }
 
-class AddProposalFormState extends State<AddProposalForm> {
+class AddGroupFormState extends State<AddGroupForm> {
   final TextEditingController _controllerTitle = TextEditingController();
   // IMPORTANT !!!!!!!
   // Had to initialize the below controller with empty string for the entire
   // form to work. This is really weird but it seems to be working.
-  final TextEditingController _controllerSummary =
-      TextEditingController(text: "");
+  final TextEditingController _controllerPurpose =
+  TextEditingController(text: "");
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   Firestore _firestore = Firestore.instance;
   List<String> categoriesSelected = new List();
@@ -41,7 +47,6 @@ class AddProposalFormState extends State<AddProposalForm> {
   @override
   void initState() {
     super.initState();
-    _googleSignIn.signInSilently();
   }
 
   Widget makeChips() {
@@ -57,12 +62,12 @@ class AddProposalFormState extends State<AddProposalForm> {
   Widget createChip(String category) {
     return InkWell(
       child: Container(
-        margin: EdgeInsets.all(5),
-        child:  Chip(
-          label: Text(category),
-          backgroundColor: Colors.blueGrey,
-          elevation: 4,
-        )
+          margin: EdgeInsets.all(5),
+          child:  Chip(
+            label: Text(category),
+            backgroundColor: Colors.blueGrey,
+            elevation: 4,
+          )
       ),
       onTap: () {
         setState(() {
@@ -89,39 +94,21 @@ class AddProposalFormState extends State<AddProposalForm> {
               title: new TextFormField(
                 decoration: new InputDecoration(
                   labelText: "Title",
+                  hintText: "Group Title"
                 ),
                 controller: _controllerTitle,
               ),
             ),
             new ListTile(
               title: new TextFormField(
-                decoration: new InputDecoration(labelText: "Summary"),
+                decoration: new InputDecoration(
+                  labelText: "Purpose",
+                  hintText: "Tell us why this group is important."
+                ),
                 maxLines: null,
-                controller: _controllerSummary,
+                controller: _controllerPurpose,
               ),
             ),
-            Container(
-              margin: EdgeInsets.only(top: 20, bottom: 15, left: 12),
-              child: Row(children: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: () async {
-                    List<String> result = await Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => TagSelector(categoriesSelected)));
-                      if (result != null) {
-                        setState(() {
-                          categoriesSelected = result;
-                        });
-                      }
-                  },
-                ),
-                Container(
-                    margin: EdgeInsets.only(left: 10),
-                    child: Text("choose groups to publish to",
-                        style: TextStyle(color: Colors.grey))),
-              ]),
-            ),
-            makeChips(),
             Container(
               padding: const EdgeInsets.all(20),
               child: submitting ? SpinKitFadingCircle(
@@ -139,26 +126,22 @@ class AddProposalFormState extends State<AddProposalForm> {
                     submitting = true;
                   });
                   Map<String, dynamic> map = Map();
-                  for (String category in categoriesSelected) {
-                    map[category] = true;
-                  }
                   map["title"] = _controllerTitle.text;
-                  map["summary"] = _controllerSummary.text;
+                  map["purpose"] = _controllerPurpose.text;
                   FirebaseUser user = await FirebaseAuth.instance.currentUser();
                   map["user_id"] = user.uid;
-                  String proposalId = Uuid().v1() + user.uid;
-                  DocumentReference userProposal = _firestore.collection("users")
-                      .document(user.uid)
-                      .collection("proposals").document(proposalId);
-                  DocumentReference proposalEntry = _firestore.collection("proposals")
-                  .document(proposalId);
-                  await _firestore.runTransaction((Transaction t) async {
-                    await t.set(proposalEntry, map);
-                    await t.set(userProposal, {"id": proposalId});
-                    return null;
+                  await _firestore.collection("groups").add(map);
+                  setState(() {
+                    submitting = true;
                   });
-                  //await _firestore.collection("proposals").add(map);
-                  Navigator.pop(context);
+                  var snackbar = new SnackBar(
+                    duration: new Duration(seconds: 3),
+                    content: Text("Group Added To Universe")
+                  );
+                  Scaffold.of(context).showSnackBar(snackbar);
+                  setState(() {
+                    submitting = false;
+                  });
                 },
                 child: Text("CREATE"),
                 elevation: 6,
