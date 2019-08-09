@@ -44,7 +44,7 @@ class GroupsState extends State<Groups> {
     return Column(children: <Widget>[
       Container(
         margin: EdgeInsets.only(top: 10, right: 5),
-        alignment: Alignment.centerRight,
+        alignment: Alignment.center,
         child: RaisedButton(
           elevation: 10,
           color: brownBackground,

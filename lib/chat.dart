@@ -144,7 +144,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     DocumentSnapshot userDetails = await firestore.collection("users").document(this.currentUser.uid).get();
     Timestamp currentTime = Timestamp.now();
     var message = {
-      'sender': {'name': userDetails.data['id'], 'imageUrl': userDetails.data['photo_url']},
+      'sender': {'name': userDetails.data['name'], 'imageUrl': userDetails.data['photo_url']},
       'text': text,
       'timestamp': currentTime
     };

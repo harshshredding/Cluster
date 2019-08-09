@@ -30,8 +30,7 @@ class GroupDetailsState extends State<GroupDetails> {
             AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
           switch (asyncSnapshot.connectionState) {
             case ConnectionState.done:
-              this.groupDescriptionText =
-                  "aslkfjalskdjf jalksjdf akjsd fkajsd fkajs dfkja sdkfj aksdjf akjsd fkjasd kfj aksdjf kasjdf kajsd fkaj skdfj aksjd fkajs dkfj aksdjf kajs dfkja skdjf akjsd fkja sdkjf kajsdfkja skdjf aksdjf kajsd fkj asdkjf aksjd fkjs dkfja ksdj fkajsd fkja sdkfj aksdjf kajs dkfaj skdjf kasdjfkjasdkfjaks dfj aksjdf kasjd fkjas dkfj ";
+              this.groupDescriptionText = asyncSnapshot.data.data['purpose'];
               int trimEnd = (this.groupDescriptionText.length < 100)
                   ? this.groupDescriptionText.length
                   : 100;
