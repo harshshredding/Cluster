@@ -3,10 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'platform_adaptive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'circular_photo.dart';
 
 class ChatScreen extends StatefulWidget {
   final String roomId;
-  ChatScreen(this.roomId);
+  final String photoUserId;
+  ChatScreen(this.roomId, this.photoUserId);
 
   @override
   State createState() => ChatScreenState(roomId);
@@ -132,13 +134,26 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   void _handleSubmitted(String text) {
     _textController.clear();
-    _googleSignIn.signIn().then((user) {
+    _googleSignIn.signIn().then((user) async {
+      Timestamp currentTime = Timestamp.now();
       var message = {
         'sender': {'name': user.displayName, 'imageUrl': user.photoUrl},
         'text': text,
-        'timestamp': Timestamp.now()
+        'timestamp': currentTime
       };
+      print(collectionReference.path);
       collectionReference.add(message);
+      DocumentReference chatReference = firestore.collection('chats').document(roomId);
+      DocumentSnapshot chat = await chatReference.get();
+      String creatorId = chat.data['creator_id'];
+      String interestedId = chat.data['interested_id'];
+      DocumentReference creatorReference = firestore.collection("users").document(creatorId).collection("chats").document(roomId);
+      DocumentReference interestedReference = firestore.collection("users").document(interestedId).collection("chats").document(roomId);
+      firestore.runTransaction((Transaction t) async {
+        await t.update(chatReference, {"last_updated": currentTime});
+        await t.update(creatorReference, {"last_updated": currentTime});
+        await t.update(interestedReference, {"last_updated": currentTime});
+      }).catchError((error) {print("yo");});
     });
     setState(() {
       _isComposing = false;
@@ -202,6 +217,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         title: Text("Chat"),
+        actions: <Widget>[
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 5, 10, 5),
+            child: CircularPhoto(widget.photoUserId, 20),
+          )
+        ]
       ),
       body: Center(
         child: Column(children: [

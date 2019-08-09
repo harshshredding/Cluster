@@ -32,7 +32,7 @@ class HomeState extends State<Home> {
   void updateProposalsCallback(List<String> filters) {
     print(filters);
     setState(() {
-      _children[0] = Proposals(filters, updateProposalsCallback);
+      _children[1] = Proposals(filters, updateProposalsCallback);
     });
   }
 

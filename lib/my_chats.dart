@@ -28,17 +28,17 @@ class MyChatsState extends State<MyChats> {
   Widget buildCard(String proposalId, String photoUserId, String chatId) {
     print(proposalId);
     return Container(
-      margin: EdgeInsets.only(top: 3, bottom: 3),
+      margin: EdgeInsets.only(top: 1, bottom: 1),
       child: GestureDetector(
         child: Card(
           child: Container(
-            margin: EdgeInsets.only(top: 20, bottom: 20),
+            margin: EdgeInsets.only(top: 10, bottom: 10),
             child: FutureBuilder(
               builder: (BuildContext context,
                   AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
                 if (asyncSnapshot.connectionState == ConnectionState.done) {
                     return ListTile(
-                      leading: CircularPhoto(photoUserId),
+                      leading: CircularPhoto(photoUserId, 30),
                       title: Text(asyncSnapshot.data.data['title'], style: TextStyle(fontFamily: "Trajan Pro"),),
                     );
                 } else {
@@ -53,16 +53,35 @@ class MyChatsState extends State<MyChats> {
           ),
         ),
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId)));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, photoUserId)));
         }
-
         ,
       ),
     );
   }
 
+  int compareChats(DocumentSnapshot snap1, DocumentSnapshot snap2) {
+    if ((snap1.data['last_updated'] != null)
+        && (snap2.data['last_updated'] != null)) {
+      Timestamp t1 = snap1.data['last_updated'];
+      Timestamp t2 = snap2.data['last_updated'];
+      return -1*t1.compareTo(t2);
+    } else if ((snap1.data['last_updated'] != null)) {
+      return 1*(-1);
+    } else if ((snap2.data['last_updated'] != null)) {
+      return -1*(-1);
+    } else {
+      return snap1.documentID.compareTo(snap2.documentID)*(-1);
+    }
+  }
+
   Widget buildCardsList(QuerySnapshot querySnapshot, context) {
     List<DocumentSnapshot> chats = querySnapshot.documents;
+    for (DocumentSnapshot chat in chats) {
+      print(chat.data['last_updated']);
+    }
+    chats.sort(compareChats);
+    print(chats.length);
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
         DocumentSnapshot currChat = chats[index];

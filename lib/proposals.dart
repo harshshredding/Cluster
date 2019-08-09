@@ -26,7 +26,7 @@ class ProposalsState extends State<Proposals> {
 
   void initState() {
     super.initState();
-    _filters = widget._filters;
+    _filters = widget._filters ?? List<String>();
     getProposals();
   }
 
@@ -101,7 +101,7 @@ class ProposalsState extends State<Proposals> {
     List<String> chosenFilters = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => TagSelector(_filters)));
     widget.updateFilters(chosenFilters);
-    _filters = chosenFilters;
+    _filters = chosenFilters ?? List<String>();
     getProposals();
   }
 
@@ -122,12 +122,14 @@ class ProposalsState extends State<Proposals> {
           .instance.collection("users").document(creatorUserId).collection("chats").document(chatId);
       DocumentReference chatReference = Firestore.instance.collection("chats").document(chatId);
       DocumentSnapshot chat = await chatReference.get();
+      Timestamp currentTime = Timestamp.now();
       if (!chat.exists) {
         Map<String, dynamic> dataToWrite = {
           "id" : chatId,
           "proposal_id": proposalId,
           "creator_id": creatorUserId,
-          "interested_id": currentUser.uid
+          "interested_id": currentUser.uid,
+          "last_updated": currentTime
         };
         await Firestore.instance.runTransaction((Transaction t) async {
           t.set(currentUserReference, dataToWrite);
@@ -136,7 +138,7 @@ class ProposalsState extends State<Proposals> {
           return null;
         });
       }
-      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, creatorUserId)));
     }
   }
 

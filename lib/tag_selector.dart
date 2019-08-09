@@ -72,25 +72,21 @@ class TagSelectorState extends State<TagSelector> {
                           Wrap(
                             children: chips,
                           ),
-                          Container(
-                              margin: EdgeInsets.only(top: 30),
-                              alignment: Alignment.center,
-                              child: ButtonTheme(
-                                minWidth: 80.0,
-                                height: 40.0,
-                                child: RaisedButton(
-                                  color: brownBackground,
-                                  onPressed: () async {Navigator.pop(context, groupsSelected.toList());},
-                                  child: Text("Done"),
-                                  elevation: 6,
-                                  shape: BeveledRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10)),
-                                ),
-                              )),
                         ],
                       )),
                 ),
-              );
+                floatingActionButton: ButtonTheme(
+                  minWidth: 80.0,
+                  height: 40.0,
+                  child: RaisedButton(
+                    color: brownBackground,
+                    onPressed: () async {Navigator.pop(context, groupsSelected.toList());},
+                    child: Text("Done"),
+                    elevation: 6,
+                    shape: BeveledRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ));
               break;
             case ConnectionState.active:
             case ConnectionState.waiting:
