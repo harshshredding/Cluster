@@ -109,7 +109,7 @@ class ProposalsForOneGroupState extends State<ProposalsForOneGroup> {
           return null;
         });
       }
-      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, creatorUserId)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, creatorUserId, proposalId)));
     }
   }
 

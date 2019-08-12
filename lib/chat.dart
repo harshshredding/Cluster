@@ -4,11 +4,13 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'platform_adaptive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'circular_photo.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class ChatScreen extends StatefulWidget {
   final String roomId;
   final String photoUserId;
-  ChatScreen(this.roomId, this.photoUserId);
+  final String proposalId;
+  ChatScreen(this.roomId, this.photoUserId, this.proposalId);
 
   @override
   State createState() => ChatScreenState(roomId);
@@ -27,6 +29,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Function _currentScrollListener;
   ChatScreenState(this.roomId);
   FirebaseUser currentUser;
+  final FirebaseMessaging _fcm = FirebaseMessaging();
+  bool _receivedMessage = false;
 
   @override
   void initState() {
@@ -67,10 +71,81 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               timestamp: newMessageTimestamp);
         }
       }
+      // Update the 'time_seen' state
+      if (_messages.isNotEmpty) {
+        _updateTimeSeenState(_messages[0].timestamp);
+      }
     });
     getUserDetails();
+     //Old
+    _fcm.configure(
+        onMessage: (message) async {
+          printSomething();
+        },
+        onResume: (message) async {
+          printSomething();
+        },
+        onLaunch: (message) async {
+          printSomething();
+        }
+    );
+    _fcm.requestNotificationPermissions(const IosNotificationSettings(sound: true, badge: true, alert: true));
+    _fcm.onIosSettingsRegistered.listen((IosNotificationSettings settings) {
+      print("Settings registered: $settings");
+    });
+    printToken();
   }
 
+  // We keep track of when the maximum timestamp message that the user has seen.
+  _updateTimeSeenState(Timestamp maxTimestamp) async {
+    DocumentReference chatReference = firestore.collection("chats").document(roomId);
+    DocumentSnapshot chat = await chatReference.get();
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    DocumentReference creatorReference = firestore.collection("users").document(chat.data['creator_id']).collection("chats").document(roomId);
+    DocumentReference interestedReference = firestore.collection("users").document(chat.data['interested_id']).collection("chats").document(roomId);
+    if (chat.data['creator_id'] == currentUser.uid) {
+      print("running transaction");
+      firestore.runTransaction((Transaction t) async {
+        await t.update(chatReference, {
+          "creator_seen" : maxTimestamp
+        });
+        await t.update(creatorReference, {
+          "creator_seen" : maxTimestamp
+        });
+        await t.update(interestedReference, {
+          "creator_seen" : maxTimestamp
+        });
+      });
+    } else  {
+      print("running_transaction");
+      firestore.runTransaction((Transaction t) async {
+        await t.update(chatReference, {
+          "interested_seen" : maxTimestamp
+        });
+        await t.update(creatorReference, {
+          "interested_seen" : maxTimestamp
+        });
+        await t.update(interestedReference, {
+          "interested_seen" : maxTimestamp
+        });
+      });
+    }
+  }
+
+  printSomething() {
+    print("something yaya");
+    setState(() {
+      _receivedMessage = true;
+    });
+  }
+
+  printToken() async {
+    String token = await _fcm.getToken();
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    await firestore.collection("users").document(user.uid).collection("tokens").document(token).setData({
+      "id": token
+    });
+  }
 
   void getUserDetails() async {
     this.currentUser = await FirebaseAuth.instance.currentUser();
@@ -143,10 +218,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _textController.clear();
     DocumentSnapshot userDetails = await firestore.collection("users").document(this.currentUser.uid).get();
     Timestamp currentTime = Timestamp.now();
+    print("Rick " + widget.photoUserId);
     var message = {
       'sender': {'name': userDetails.data['name'], 'imageUrl': userDetails.data['photo_url']},
       'text': text,
-      'timestamp': currentTime
+      'timestamp': currentTime,
+      "receiver" : widget.photoUserId
     };
     print(collectionReference.path);
     collectionReference.add(message);
@@ -171,7 +248,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       content: Text('Loading old messages'),
       duration: Duration(milliseconds: 800),
     );
-
     // Find the Scaffold in the widget tree and use it to show a SnackBar.
     Scaffold.of(context).showSnackBar(snackBar);
     Timestamp minTimestamp = _messages.reversed.first.timestamp;
@@ -222,7 +298,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _scrollController.addListener(_currentScrollListener);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Chat"),
+        title: _receivedMessage ? Text("Received Message") : Text("Chat"),
         actions: <Widget>[
           Container(
             margin: EdgeInsets.fromLTRB(0, 5, 10, 5),

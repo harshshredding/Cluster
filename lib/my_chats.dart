@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'circular_photo.dart';
+import 'dart:async';
 import 'chat.dart';
 
 class MyChats extends StatefulWidget {
@@ -15,17 +16,28 @@ class MyChats extends StatefulWidget {
 /// Page that lists all the favorite events of the user
 class MyChatsState extends State<MyChats> {
   FirebaseUser currentUser;
+  QuerySnapshot chatSnapshots;
+  StreamSubscription<QuerySnapshot> chatsSubscription;
 
-  Future<QuerySnapshot> getChats() async {
-    currentUser = await FirebaseAuth.instance.currentUser();
-    return Firestore.instance
-        .collection("users")
-        .document(currentUser.uid)
-        .collection("chats")
-        .getDocuments();
+  initState() {
+    super.initState();
+    getSubscription();
   }
 
-  Widget buildCard(String proposalId, String photoUserId, String chatId) {
+  void getSubscription() async {
+    currentUser = await FirebaseAuth.instance.currentUser();
+    chatsSubscription = Firestore.instance
+        .collection("users")
+        .document(currentUser.uid)
+        .collection("chats").snapshots().listen((QuerySnapshot snapSnapshot) {
+      setState(() {
+        chatSnapshots = snapSnapshot;
+      });
+    }
+    );
+  }
+
+  Widget buildCard(String proposalId, String photoUserId, String chatId, bool newMessageReceived) {
     print(proposalId);
     return Container(
       margin: EdgeInsets.only(top: 1, bottom: 1),
@@ -40,6 +52,7 @@ class MyChatsState extends State<MyChats> {
                     return ListTile(
                       leading: CircularPhoto(photoUserId, 30),
                       title: Text(asyncSnapshot.data.data['title'], style: TextStyle(fontFamily: "Trajan Pro"),),
+                      trailing: newMessageReceived ? Text("NEW", style: TextStyle(color: Colors.lightBlueAccent.shade100),) : Container(width: 0, height: 0,)
                     );
                 } else {
                   return CircularProgressIndicator();
@@ -53,7 +66,7 @@ class MyChatsState extends State<MyChats> {
           ),
         ),
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, photoUserId)));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, photoUserId, proposalId)));
         }
         ,
       ),
@@ -94,28 +107,42 @@ class MyChatsState extends State<MyChats> {
         } else {
           selectedUserId = interestedId;
         }
-        return buildCard(currChat.data['proposal_id'], selectedUserId, chatId);
+        bool newMessageReceived = false;
+        // If no message has been sent, don't show the NEW message.
+        if (!((currChat['interested_seen'] == null) && (currChat['creator_seen'] == null))) {
+          if (interestedId == currentUser.uid) {
+            // We are the interested user
+            Timestamp seenTimestamp = currChat['interested_seen'];
+            Timestamp updateTimestamp = currChat['last_updated'];
+            if (updateTimestamp != null) {
+              if (seenTimestamp == null || seenTimestamp.compareTo(updateTimestamp) < 0) {
+                newMessageReceived = true;
+              }
+            }
+            selectedUserId = creatorId;
+          } else {
+            // We are the creator user
+            Timestamp seenTimestamp = currChat['creator_seen'];
+            Timestamp updateTimestamp = currChat['last_updated'];
+            if (updateTimestamp != null) {
+              if (seenTimestamp == null || seenTimestamp.compareTo(updateTimestamp) < 0) {
+                newMessageReceived = true;
+              }
+            }
+            selectedUserId = interestedId;
+          }
+        }
+        return buildCard(currChat.data['proposal_id'], selectedUserId, chatId, newMessageReceived);
       },
       itemCount: chats.length,
     );
   }
 
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        builder:
-            (BuildContext context, AsyncSnapshot<QuerySnapshot> asyncSnapshot) {
-          switch (asyncSnapshot.connectionState) {
-            case ConnectionState.done:
-              return buildCardsList(asyncSnapshot.data, context);
-              break;
-            case ConnectionState.active:
-            case ConnectionState.waiting:
-            case ConnectionState.none:
-            default:
-              return CircularProgressIndicator();
-              break;
-          }
-        },
-        future: getChats());
+    Widget subTree =  (chatSnapshots != null) ?
+        buildCardsList(chatSnapshots, context)
+    :
+        Center(child: CircularProgressIndicator(),);
+    return subTree;
   }
 }

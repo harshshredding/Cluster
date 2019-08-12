@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'proposals.dart';
 import 'user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'my_chats.dart';
 import 'groups.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 
 class Home extends StatefulWidget {
   HomeState createState() {
@@ -20,6 +22,25 @@ class HomeState extends State<Home> {
 
   List<Widget> _children;
 
+  final FirebaseMessaging _fcm = FirebaseMessaging();
+  StreamSubscription<IosNotificationSettings> iosSubscription;
+
+  void initState() {
+    super.initState();
+  }
+  
+  _saveDeviceToken() async {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    String fcmToken = await _fcm.getToken();
+    DocumentReference tokenDocument = Firestore.instance.collection("users")
+        .document(user.uid).collection("tokens").document(fcmToken);
+    await tokenDocument.setData({
+      'token': fcmToken,
+      'createdAt': FieldValue.serverTimestamp(),
+      'platform': Platform.operatingSystem
+    }
+    );
+  }
 
   HomeState() {
     _children = [

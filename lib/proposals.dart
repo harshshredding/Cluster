@@ -132,13 +132,13 @@ class ProposalsState extends State<Proposals> {
           "last_updated": currentTime
         };
         await Firestore.instance.runTransaction((Transaction t) async {
-          t.set(currentUserReference, dataToWrite);
-          t.set(creatorUserReference, dataToWrite);
-          t.set(chatReference, dataToWrite);
+          await t.set(currentUserReference, dataToWrite);
+          await t.set(creatorUserReference, dataToWrite);
+          await t.set(chatReference, dataToWrite);
           return null;
         });
       }
-      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, creatorUserId)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, creatorUserId, proposalId)));
     }
   }
 
