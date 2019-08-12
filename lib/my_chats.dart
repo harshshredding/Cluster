@@ -55,7 +55,7 @@ class MyChatsState extends State<MyChats> {
                       trailing: newMessageReceived ? Text("NEW", style: TextStyle(color: Colors.lightBlueAccent.shade100),) : Container(width: 0, height: 0,)
                     );
                 } else {
-                  return CircularProgressIndicator();
+                  return Container(width: 0, height: 0,);
                 }
               },
               future: Firestore.instance
@@ -142,7 +142,7 @@ class MyChatsState extends State<MyChats> {
     Widget subTree =  (chatSnapshots != null) ?
         buildCardsList(chatSnapshots, context)
     :
-        Center(child: CircularProgressIndicator(),);
+        Center(child: Container(width: 0, height: 0),);
     return subTree;
   }
 }

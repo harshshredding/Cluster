@@ -49,7 +49,7 @@ class CircularPhotoState extends State<CircularPhoto> {
             return Text("Error");
           }
         } else {
-          return CircularProgressIndicator();
+          return Container(height: 0, width: 0,);
         }
       },
       future: userFuture,

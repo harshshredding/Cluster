@@ -94,7 +94,7 @@ class MyProposalsState extends State<MyProposals> {
                                         },
                                       );
                                     } else {
-                                      return CircularProgressIndicator();
+                                      return Container(height: 0, width: 0);
                                     }
                                   },
                                   future: Firestore.instance
@@ -202,7 +202,7 @@ class MyProposalsState extends State<MyProposals> {
               case ConnectionState.waiting:
               case ConnectionState.none:
               default:
-                return CircularProgressIndicator();
+                return Container(width: 0, height: 0);
                 break;
             }
           },
