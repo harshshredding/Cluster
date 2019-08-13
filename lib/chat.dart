@@ -249,6 +249,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 child: TextField(
                   controller: _textController,
                   onChanged: _handleMessageChanged,
+                  maxLines: null,
                   decoration:
                       InputDecoration.collapsed(hintText: 'Send a message'),
                 ),
