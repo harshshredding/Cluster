@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'proposals_for_group.dart';
+import 'add_proposal.dart';
 
 class GroupDetails extends StatefulWidget {
   final String groupId;
@@ -48,18 +49,40 @@ class GroupDetailsState extends State<GroupDetails> {
                           " ... "),
                     )
                     ,
-                    Container(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              shouldShowFullText = !shouldShowFullText;
-                            });
-                          },
-                          icon: shouldShowFullText
-                              ? Icon(Icons.keyboard_arrow_up)
-                              : Icon(Icons.keyboard_arrow_down),
-                        )),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.only(left: 10),
+                          child: RaisedButton(
+                              onPressed: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                                  return AddProposalScreen(preSelectedGroups: [asyncSnapshot.data.data['title']]);
+                                }));
+                              },
+                              child: Text("Add Proposal"),
+                              color: Colors.brown,
+                          ),
+                        )
+                        ,
+                        Expanded(
+                          child: Container(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    shouldShowFullText = !shouldShowFullText;
+                                  });
+                                },
+                                icon: shouldShowFullText
+                                    ? Icon(Icons.keyboard_arrow_up)
+                                    : Icon(Icons.keyboard_arrow_down),
+                              )
+                          ),
+                        ),
+                      ],
+                    )
+                    ,
                     Divider(
                       color: Colors.grey,
                     ),

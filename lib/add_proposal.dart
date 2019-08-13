@@ -9,18 +9,24 @@ import 'package:uuid/uuid.dart';
 
 /// scaffolding of the add event screen
 class AddProposalScreen extends StatelessWidget {
+  final List<String> preSelectedGroups;
+
+  AddProposalScreen({this.preSelectedGroups});
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Make Proposal'),
       ),
-      body: Center(child: AddProposalForm()),
+      body: Center(child: AddProposalForm(preSelectedGroups)),
     );
   }
 }
 
 /// The forms user fills out to create an event.
 class AddProposalForm extends StatefulWidget {
+  final List<String> preSelectedGroups;
+  AddProposalForm(this.preSelectedGroups);
   AddProposalFormState createState() {
     return AddProposalFormState();
   }
@@ -35,41 +41,44 @@ class AddProposalFormState extends State<AddProposalForm> {
       TextEditingController(text: "");
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   Firestore _firestore = Firestore.instance;
-  List<String> categoriesSelected = new List();
+  List<String> groupsSelected = new List();
   bool submitting = false;
 
   @override
   void initState() {
     super.initState();
     _googleSignIn.signInSilently();
+    if (widget.preSelectedGroups != null) {
+      groupsSelected.addAll(widget.preSelectedGroups);
+    }
   }
 
   Widget makeChips() {
     List<Widget> allChips = new List();
-    for (String category in categoriesSelected) {
-      allChips.add(createChip(category));
+    for (String group in groupsSelected) {
+      allChips.add(createChip(group));
     }
     return Wrap(
       children: allChips,
     );
   }
 
-  Widget createChip(String category) {
+  Widget createChip(String group) {
     return InkWell(
       child: Container(
         margin: EdgeInsets.all(5),
         child:  Chip(
-          label: Text(category),
+          label: Text(group),
           backgroundColor: Colors.blueGrey,
           elevation: 4,
         )
       ),
       onTap: () {
         setState(() {
-          if (categoriesSelected.contains(category)) {
-            categoriesSelected.remove(category);
+          if (groupsSelected.contains(group)) {
+            groupsSelected.remove(group);
           } else {
-            categoriesSelected.add(category);
+            groupsSelected.add(group);
           }
         });
       },
@@ -107,10 +116,10 @@ class AddProposalFormState extends State<AddProposalForm> {
                   icon: Icon(Icons.add),
                   onPressed: () async {
                     List<String> result = await Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => TagSelector(categoriesSelected)));
+                        MaterialPageRoute(builder: (context) => TagSelector(groupsSelected)));
                       if (result != null) {
                         setState(() {
-                          categoriesSelected = result;
+                          groupsSelected = result;
                         });
                       }
                   },
@@ -139,8 +148,8 @@ class AddProposalFormState extends State<AddProposalForm> {
                     submitting = true;
                   });
                   Map<String, dynamic> map = Map();
-                  for (String category in categoriesSelected) {
-                    map[category] = true;
+                  for (String group in groupsSelected) {
+                    map[group] = true;
                   }
                   map["title"] = _controllerTitle.text;
                   map["summary"] = _controllerSummary.text;
