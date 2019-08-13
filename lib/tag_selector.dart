@@ -63,7 +63,7 @@ class TagSelectorState extends State<TagSelector> {
               }
               return Scaffold(
                 appBar: AppBar(
-                  title: Text("Choose Relevant Tags"),
+                  title: Text("Choose Relevant Groups"),
                 ),
                 body: Container(
                   child: SingleChildScrollView(
@@ -72,6 +72,19 @@ class TagSelectorState extends State<TagSelector> {
                           Wrap(
                             children: chips,
                           ),
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            margin: EdgeInsets.fromLTRB(25, 10, 30, 30),
+                            child: RaisedButton(
+                                color: Colors.blueGrey.shade100,
+                                elevation: 5,
+                                onPressed: () {
+                                  Navigator.pushNamed(context, "/add_group");
+                                },
+                                child: Text("Make New Group", style: TextStyle(color: Colors.black),),
+                                shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          )
                         ],
                       )),
                 ),

@@ -157,8 +157,15 @@ class AddProposalFormState extends State<AddProposalForm> {
                     await t.set(userProposal, {"id": proposalId});
                     return null;
                   });
-                  //await _firestore.collection("proposals").add(map);
-                  Navigator.pop(context);
+                  setState(() {
+                    submitting = true;
+                  });
+                  // Show a snackbar
+                  var snackbar = new SnackBar(
+                    duration: new Duration(seconds: 5),
+                    content: Text("Proposal Sucessfully Published!")
+                  );
+                  Scaffold.of(context).showSnackBar(snackbar);
                 },
                 child: Text("CREATE"),
                 elevation: 6,
