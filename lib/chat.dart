@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'platform_adaptive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'circular_photo.dart';
@@ -20,7 +19,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   List<ChatMessage> _messages = [];
   TextEditingController _textController = TextEditingController();
   bool _isComposing = false;
-  GoogleSignIn _googleSignIn = GoogleSignIn();
   var fireBaseSubscription;
   Firestore firestore = Firestore.instance;
   String roomId;
@@ -36,7 +34,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _googleSignIn.signInSilently();
     firestore = Firestore.instance;
     collectionReference =
         firestore.collection('chats').document(roomId).collection('chat_room');

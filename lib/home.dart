@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'my_chats.dart';
 import 'groups.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 
@@ -57,16 +56,11 @@ class HomeState extends State<Home> {
   HomeState() {
     _children = [
       Groups(),
-      Proposals(List<String>(), updateProposalsCallback),
+      // We pass in null as filters to indicate this is the first time
+      // proposals is being built.
+      Proposals(),
       MyChats()
     ];
-  }
-
-  void updateProposalsCallback(List<String> filters) {
-    print(filters);
-    setState(() {
-      _children[1] = Proposals(filters, updateProposalsCallback);
-    });
   }
 
   void _onTabTapped(int index) {
@@ -105,7 +99,7 @@ class HomeState extends State<Home> {
               title: Text("Log Out"),
               onTap: () async {
                 await FirebaseAuth.instance.signOut();
-                Navigator.pushReplacementNamed(context, "/login");
+                Navigator.pushReplacementNamed(context, "/login_home_logout");
               },
             ),
           ],
@@ -131,14 +125,16 @@ class HomeState extends State<Home> {
                 Text("proposal", style: TextStyle(fontSize: 10)),
               ],),
               onPressed: () {
-                Navigator.pushNamed(context, '/addProposal',
-                    arguments: ModalRoute.of(context).settings.arguments);
+                Navigator.pushNamed(context, '/addProposal');
               },
             ),
           )
         ],
       ),
-      body: _children[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _children,
+      ),
       bottomNavigationBar: BottomNavigationBar(
           backgroundColor: Colors.grey.shade800,
           onTap: _onTabTapped,

@@ -25,6 +25,8 @@ class UserProfileState extends State<UserProfile> {
       TextEditingController(text: "");
   final TextEditingController _controllerLinkedn =
       TextEditingController(text: "");
+  final TextEditingController _controllerName =
+      TextEditingController(text: "");
   bool _editMode = false;
   bool _hasEdited = false;
   File _selectedImage;
@@ -101,6 +103,7 @@ class UserProfileState extends State<UserProfile> {
       Scaffold.of(context).showSnackBar(snackbar);
       document.data["summary"] = _controllerSummary.text;
       document.data["linkedn"] = _controllerLinkedn.text;
+      document.data["name"] = _controllerName.text;
       document.data["photo_url"] = downloadUrl;
       await Firestore.instance
           .collection("users")
@@ -111,6 +114,7 @@ class UserProfileState extends State<UserProfile> {
     } else if (document.exists && (_selectedImage == null)) {
       document.data["summary"] = _controllerSummary.text;
       document.data["linkedn"] = _controllerLinkedn.text;
+      document.data["name"] = _controllerName.text;
       await Firestore.instance
           .collection("users")
           .document(user.uid)
@@ -171,11 +175,10 @@ class UserProfileState extends State<UserProfile> {
               ),
               Container(
                 alignment: Alignment.center,
-                child: Text(name,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontFamily: 'Trajan Pro',
-                    )),
+                child: TextField(
+                  enabled: _editMode,
+                  controller: _controllerName,
+                    ),
                 margin: EdgeInsets.all(20),
               ),
             ],
@@ -282,6 +285,8 @@ class UserProfileState extends State<UserProfile> {
                     _controllerSummary.text = (snapshot.data.data["summary"] ??
                         _controllerSummary.text);
                     _controllerLinkedn.text = (snapshot.data.data["linkedn"] ??
+                        _controllerLinkedn.text);
+                    _controllerName.text = (snapshot.data.data["name"] ??
                         _controllerLinkedn.text);
                   }
                   if (snapshot.hasError) {

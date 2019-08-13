@@ -1,34 +1,56 @@
 import 'package:flutter/material.dart';
 import 'map.dart';
 import 'add_proposal.dart';
-import 'login_uw.dart';
+import 'login_home.dart';
+import 'register.dart';
 import 'home.dart';
 import 'user_profile.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'my_proposals.dart';
 import 'create_group.dart';
+import 'login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-void main() => runApp(new MyApp());
+
+Future<String> _loginUser() async {
+  try {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    if (user != null) {
+      return user.uid;
+    }
+  } catch (err) {
+    print(err);
+  }
+  return null;
+}
+
+String _authenticatedUser;
+
+void main() async  {
+  _authenticatedUser = await _loginUser();
+  print(_authenticatedUser);
+  print('app loaded');
+  runApp(new MyApp());
+}
 
 /// This is our starting point to the app.
 class MyApp extends StatelessWidget {
-  final GoogleSignIn googleSignIn = new GoogleSignIn();
 
   Widget build(BuildContext context) {
     return new MaterialApp(
       title: 'Cluster',
       theme: ThemeData.dark(),
-      home:  Login(false),
-      //home: Center(child: Text("Text")),
       initialRoute: '/',
+      home: (_authenticatedUser != null) ? Home() : LoginHome(true),
       routes: {
-        '/login': (context) => Login(true),
+        '/login': (context) => Login(),
         '/map': (context) => MapScreen(),
         '/addProposal': (context) => AddProposalScreen(),
         '/userProfile': (context) => UserProfile(true),
         '/home': (context) => Home(),
         '/my_proposals': (context) => MyProposals(),
         '/add_group': (context) => AddGroupScreen(),
+        '/register': (context) => Register(),
+        '/login_home_logout': (context) => LoginHome(true),
       },
     );
   }

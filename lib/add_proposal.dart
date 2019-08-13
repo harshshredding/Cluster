@@ -39,7 +39,6 @@ class AddProposalFormState extends State<AddProposalForm> {
   // form to work. This is really weird but it seems to be working.
   final TextEditingController _controllerSummary =
       TextEditingController(text: "");
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
   Firestore _firestore = Firestore.instance;
   List<String> groupsSelected = new List();
   bool submitting = false;
@@ -47,7 +46,6 @@ class AddProposalFormState extends State<AddProposalForm> {
   @override
   void initState() {
     super.initState();
-    _googleSignIn.signInSilently();
     if (widget.preSelectedGroups != null) {
       groupsSelected.addAll(widget.preSelectedGroups);
     }

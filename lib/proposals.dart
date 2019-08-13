@@ -8,11 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'chat.dart';
 
 class Proposals extends StatefulWidget {
-  final List<String> _filters;
-  final Function updateFilters;
-  
-  Proposals(this._filters, this.updateFilters);
-  
   ProposalsState createState() {
     return ProposalsState();
   }
@@ -26,7 +21,6 @@ class ProposalsState extends State<Proposals> {
 
   void initState() {
     super.initState();
-    _filters = widget._filters ?? List<String>();
     getProposalsAtStart();
   }
 
@@ -46,9 +40,10 @@ class ProposalsState extends State<Proposals> {
   }
 
   getProposalsAtStart() async {
+    print("getProposalsAtStart");
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     DocumentSnapshot userDataSnap =  await Firestore.instance.collection("users").document(user.uid).get();
-    List<dynamic> filters = userDataSnap.data['filters'];
+    List<dynamic> filters = userDataSnap.data['filters'] ?? List<String>();
     if (filters != null) {
       for (String filter in filters) {
         _filters.add(filter);
@@ -61,26 +56,26 @@ class ProposalsState extends State<Proposals> {
     _proposals.clear();
     _subscriptions.clear();
     if (_filters.isEmpty) {
-      var subscription = _firestore
-          .collection("proposals")
-          .snapshots()
-          .listen((QuerySnapshot snapshot) {
-        List<DocumentSnapshot> newDocuments = snapshot.documents;
-        List<DocumentSnapshot> thingsToAdd = List();
-        for (DocumentSnapshot proposal in newDocuments) {
-          bool proposalDoesntExist =
-          _proposals.every((DocumentSnapshot oldProposal) {
-            return (oldProposal.documentID != proposal.documentID);
-          });
-          if (proposalDoesntExist) {
-            thingsToAdd.add(proposal);
-          }
-        }
-        setState(() {
-          _proposals.addAll(thingsToAdd);
-        });
-      });
-      _subscriptions.add(subscription);
+//      var subscription = _firestore
+//          .collection("proposals")
+//          .snapshots()
+//          .listen((QuerySnapshot snapshot) {
+//        List<DocumentSnapshot> newDocuments = snapshot.documents;
+//        List<DocumentSnapshot> thingsToAdd = List();
+//        for (DocumentSnapshot proposal in newDocuments) {
+//          bool proposalDoesntExist =
+//          _proposals.every((DocumentSnapshot oldProposal) {
+//            return (oldProposal.documentID != proposal.documentID);
+//          });
+//          if (proposalDoesntExist) {
+//            thingsToAdd.add(proposal);
+//          }
+//        }
+//        setState(() {
+//          _proposals.addAll(thingsToAdd);
+//        });
+//      });
+//      _subscriptions.add(subscription);
     } else {
       for (String filter in _filters) {
         var subscription = _firestore
@@ -112,7 +107,9 @@ class ProposalsState extends State<Proposals> {
   void configureFilter(BuildContext context) async {
     List<String> chosenFilters = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => TagSelector(_filters)));
-    widget.updateFilters(chosenFilters);
+    if (chosenFilters == null) {
+      chosenFilters = List<String>();
+    }
     _filters = chosenFilters ?? List<String>();
     getProposals();
     uploadUserFilters(chosenFilters);
@@ -328,7 +325,7 @@ class ProposalsState extends State<Proposals> {
                         configureFilter(context);
                       },
                       child: Text(
-                        "FILTER",
+                        "SUBS",
                         style: TextStyle(color: Colors.white),
                       ),
                       color: brownTextColor2,

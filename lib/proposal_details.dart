@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
 import 'tag_selector.dart';
@@ -40,7 +39,6 @@ class EditProposalFormState extends State<EditProposalForm> {
   // form to work. This is really weird but it seems to be working.
   final TextEditingController _controllerSummary =
   TextEditingController(text: "");
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
   Firestore _firestore = Firestore.instance;
   List<String> _categoriesSelected = new List();
   bool submitting = false;
@@ -49,7 +47,6 @@ class EditProposalFormState extends State<EditProposalForm> {
   @override
   void initState() {
     super.initState();
-    _googleSignIn.signInSilently();
     getProposalInformation();
   }
 
