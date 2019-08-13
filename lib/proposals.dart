@@ -27,7 +27,7 @@ class ProposalsState extends State<Proposals> {
   void initState() {
     super.initState();
     _filters = widget._filters ?? List<String>();
-    getProposals();
+    getProposalsAtStart();
   }
 
   List<Widget> createChips() {
@@ -44,7 +44,19 @@ class ProposalsState extends State<Proposals> {
     }
     return result;
   }
-  
+
+  getProposalsAtStart() async {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    DocumentSnapshot userDataSnap =  await Firestore.instance.collection("users").document(user.uid).get();
+    List<dynamic> filters = userDataSnap.data['filters'];
+    if (filters != null) {
+      for (String filter in filters) {
+        _filters.add(filter);
+      }
+      getProposals();
+    }
+  }
+
   void getProposals() {
     _proposals.clear();
     _subscriptions.clear();
@@ -103,6 +115,14 @@ class ProposalsState extends State<Proposals> {
     widget.updateFilters(chosenFilters);
     _filters = chosenFilters ?? List<String>();
     getProposals();
+    uploadUserFilters(chosenFilters);
+  }
+
+  uploadUserFilters(List<String> userFilters) async {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    Firestore.instance.collection("users").document(user.uid).updateData({
+      "filters" : userFilters
+    });
   }
 
   Future<void> createChatIfDoesntExist(String creatorUserId, String proposalId, BuildContext context) async {
