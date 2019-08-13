@@ -131,12 +131,11 @@ class ProposalsState extends State<Proposals> {
           "interested_id": currentUser.uid,
           "last_updated": currentTime
         };
-        await Firestore.instance.runTransaction((Transaction t) async {
-          await t.set(currentUserReference, dataToWrite);
-          await t.set(creatorUserReference, dataToWrite);
-          await t.set(chatReference, dataToWrite);
-          return null;
-        });
+        WriteBatch batch = _firestore.batch();
+        batch.setData(currentUserReference, dataToWrite);
+        batch.setData(creatorUserReference, dataToWrite);
+        batch.setData(chatReference, dataToWrite);
+        await batch.commit();
       }
       Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, creatorUserId, proposalId)));
     }

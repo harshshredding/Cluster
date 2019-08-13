@@ -77,23 +77,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       }
     });
     getUserDetails();
-     //Old
-    _fcm.configure(
-        onMessage: (message) async {
-          printSomething();
-        },
-        onResume: (message) async {
-          printSomething();
-        },
-        onLaunch: (message) async {
-          printSomething();
-        }
-    );
-    _fcm.requestNotificationPermissions(const IosNotificationSettings(sound: true, badge: true, alert: true));
-    _fcm.onIosSettingsRegistered.listen((IosNotificationSettings settings) {
-      print("Settings registered: $settings");
-    });
-    printToken();
   }
 
   // We keep track of when the maximum timestamp message that the user has seen.
@@ -136,14 +119,6 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     print("something yaya");
     setState(() {
       _receivedMessage = true;
-    });
-  }
-
-  printToken() async {
-    String token = await _fcm.getToken();
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    await firestore.collection("users").document(user.uid).collection("tokens").document(token).setData({
-      "id": token
     });
   }
 

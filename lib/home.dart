@@ -27,19 +27,31 @@ class HomeState extends State<Home> {
 
   void initState() {
     super.initState();
-  }
-  
-  _saveDeviceToken() async {
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    String fcmToken = await _fcm.getToken();
-    DocumentReference tokenDocument = Firestore.instance.collection("users")
-        .document(user.uid).collection("tokens").document(fcmToken);
-    await tokenDocument.setData({
-      'token': fcmToken,
-      'createdAt': FieldValue.serverTimestamp(),
-      'platform': Platform.operatingSystem
-    }
+    //Old
+    _fcm.configure(
+        onMessage: (message) async {
+          print("onMessage");
+        },
+        onResume: (message) async {
+          print("onResume");
+        },
+        onLaunch: (message) async {
+          print("onLaunch");
+        }
     );
+    _fcm.requestNotificationPermissions(const IosNotificationSettings(sound: true, badge: true, alert: true));
+    _fcm.onIosSettingsRegistered.listen((IosNotificationSettings settings) {
+      print("Settings registered: $settings");
+    });
+    registerToken();
+  }
+
+  registerToken() async {
+    String token = await _fcm.getToken();
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    await Firestore.instance.collection("users").document(user.uid).collection("tokens").document(token).setData({
+      "id": token
+    });
   }
 
   HomeState() {
