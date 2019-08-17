@@ -165,7 +165,7 @@ class AddProposalFormState extends State<AddProposalForm> {
                     return null;
                   });
                   setState(() {
-                    submitting = true;
+                    submitting = false;
                   });
                   // Show a snackbar
                   var snackbar = new SnackBar(

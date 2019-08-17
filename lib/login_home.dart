@@ -103,6 +103,29 @@ class LoginHomeState extends State<LoginHome> {
                     textColor: Colors.grey.shade800,
                     shape: new RoundedRectangleBorder(
                         borderRadius: new BorderRadius.circular(10.0))),
+                Container(
+                  margin: EdgeInsets.only(top: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      new RaisedButton(
+                          elevation: 0,
+                          onPressed: () => Navigator.pushNamed(context, "/forgot_pass"),
+                          child: new Text("Forgot Pass"),
+                          color: Colors.brown,
+                          textColor: Colors.white,
+                          shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                      new RaisedButton(
+                          elevation: 0,
+                          onPressed: () => Navigator.pushNamed(context, "/verification_email"),
+                          child: new Text("Resend Verification"),
+                          color: Colors.brown,
+                          textColor: Colors.white,
+                          shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(10)))
+                    ],
+                  ),
+                )
+                ,
               ],
             )));
   }

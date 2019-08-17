@@ -158,7 +158,8 @@ class ProposalsState extends State<Proposals> {
     }
   }
 
-  Widget createCard(String topic, String summary, String userId, String proposalId, BuildContext context) {
+  Widget createCard(String topic, String summary, String userId,
+      String proposalId, BuildContext context) {
     return Card(
       shape: BeveledRectangleBorder(
           borderRadius: BorderRadius.only(bottomRight: Radius.circular(20))),
@@ -182,119 +183,163 @@ class ProposalsState extends State<Proposals> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Flexible (
+              Flexible(
                 flex: 1,
                 child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.only(left: 10, top: 10),
-                        child: (userId != null)
-                            ? FutureBuilder(
-                          builder: (BuildContext context,
-                              AsyncSnapshot<DocumentSnapshot>
-                              asyncSnapshot) {
-                            if (asyncSnapshot.connectionState == ConnectionState.done) {
-                              String photoUrl =
-                              asyncSnapshot.data.data["photo_url"];
-                              return GestureDetector(
-                                child: CircleAvatar(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    FutureBuilder(
+                      builder: (BuildContext context,
+                          AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
+                        if (asyncSnapshot.connectionState ==
+                            ConnectionState.done) {
+                          return Row(
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.only(left: 10, top: 10),
+                                child: (userId != null)
+                                    ? GestureDetector(
+                                  child: CircleAvatar(
+                                    radius: 20,
+                                    backgroundImage: NetworkImage(
+                                        asyncSnapshot
+                                            .data.data["photo_url"] ?? ""),
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                  onTap: () {
+                                    if (asyncSnapshot.data.data != null) {
+                                      if (asyncSnapshot.data.documentID !=
+                                          null) {
+                                        Navigator.of(context).push<void>(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    UserProfile(false,
+                                                        userDocumentId:
+                                                        asyncSnapshot
+                                                            .data
+                                                            .documentID),
+                                                fullscreenDialog: true));
+                                      }
+                                    }
+                                  },
+                                )
+                                    : CircleAvatar(
                                   radius: 20,
-                                  backgroundImage: NetworkImage(photoUrl),
+                                  backgroundImage: AssetImage('images/default_event.jpg'),
                                   backgroundColor: Colors.transparent,
                                 ),
-                                onTap: () {
-                                  if (asyncSnapshot.data.data != null) {
-                                    if (asyncSnapshot.data.documentID != null) {
-                                      Navigator.of(context).push<void>(
-                                          MaterialPageRoute(
-                                            builder: (context) => UserProfile(false, userDocumentId:asyncSnapshot.data.documentID),
-                                            fullscreenDialog: true
-                                          )
-                                      );
-                                    }
-                                  }
-                                },
-                              );
-                            } else {
-                              return CircularProgressIndicator();
-                            }
-                          },
-                          future: Firestore.instance
-                              .collection("users")
-                              .document(userId)
-                              .get(),
-                        )
-                            : CircleAvatar(
-                          radius: 20,
-                          backgroundImage: NetworkImage(
-                              "https://firebasestorage.googleapis.com/v0/b/cluster-c7373.appspot.com/o/uglBgoTL4wbDe7F3vOJSYAsNAJq1d7ad0d20-b750-11e9-8d3f-77436f189394?alt=media&token=f856aba3-f8e5-4ee2-b3a6-26ed4ed823f9"),
-                          backgroundColor: Colors.transparent,
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: 20),
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Harsh Verma",
-                          style: TextStyle(fontSize: 15),
-                        ),
-                        padding: EdgeInsets.only(
-                            left: 10, right: 10, top: 0, bottom: 5),
-                      ),
-                      Expanded(
-                        child: Container(
-                          alignment: Alignment.centerRight,
-                          child: IconButton(
-                            icon: Icon(Icons.chat, size: 20),
-                            onPressed: () async {
-                              createChatIfDoesntExist(userId, proposalId, context);
-                            },
-                          ),
-                          margin:
-                          EdgeInsets.only(left: 10, right: 5, top: 5, bottom: 5),
-                        ),
-                      )
-                    ],
-                  ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "TOPIC :",
-                      style: TextStyle(
-                          color: Colors.brown.shade100, fontSize: 13),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 20),
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  asyncSnapshot.data.data != null ? asyncSnapshot.data.data["name"] : "",
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                padding: EdgeInsets.only(
+                                    left: 10, right: 10, top: 0, bottom: 5),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  alignment: Alignment.centerRight,
+                                  child: IconButton(
+                                    icon: Icon(Icons.chat, size: 20),
+                                    onPressed: () async {
+                                      createChatIfDoesntExist(
+                                          userId, proposalId, context);
+                                    },
+                                  ),
+                                  margin: EdgeInsets.only(
+                                      left: 10, right: 5, top: 5, bottom: 5),
+                                ),
+                              )
+                            ],
+                          );
+                        } else {
+                          return Row(
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.only(left: 10, top: 10),
+                                child:  CircleAvatar(
+                                  radius: 20,
+                                  backgroundImage: AssetImage('images/default_event.jpg'),
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 20),
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  "loading...",
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                padding: EdgeInsets.only(
+                                    left: 10, right: 10, top: 0, bottom: 5),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  alignment: Alignment.centerRight,
+                                  child: IconButton(
+                                    icon: Icon(Icons.chat, size: 20),
+                                    onPressed: () async {
+                                      createChatIfDoesntExist(
+                                          userId, proposalId, context);
+                                    },
+                                  ),
+                                  margin: EdgeInsets.only(
+                                      left: 10, right: 5, top: 5, bottom: 5),
+                                ),
+                              )
+                            ],
+                          );
+                        }
+                      },
+                      future: Firestore.instance
+                          .collection("users")
+                          .document(userId)
+                          .get(),
                     ),
-                    padding: EdgeInsets.only(
-                        left: 10, right: 10, top: 10, bottom: 5),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(right: 20),
-                    alignment: Alignment.centerLeft,
-                    child: Text(topic, style: TextStyle(fontSize: 15, fontFamily: "Trajan Pro")),
-                    padding: EdgeInsets.only(
-                        left: 10, right: 10, top: 0, bottom: 10),
-                  ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "SUMMARY :",
-                      style: TextStyle(
-                          color: Colors.brown.shade100, fontSize: 13),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "MEET TO DISCUSS :",
+                        style: TextStyle(
+                            color: Colors.brown.shade100, fontSize: 13),
+                      ),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 10, bottom: 5),
                     ),
-                    padding: EdgeInsets.only(
-                        left: 10, right: 10, top: 10, bottom: 5),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(right: 20),
-                    alignment: Alignment.centerLeft,
-                    child: Text(summary, style: TextStyle(fontSize: 15, fontFamily: "Trajan Pro")),
-                    padding: EdgeInsets.only(
-                        left: 10, right: 10, top: 0, bottom: 10),
-                  )
-                ],
-              ),),
+                    Container(
+                      margin: EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerLeft,
+                      child: Text(topic,
+                          style: TextStyle(
+                              fontSize: 15, fontFamily: "Trajan Pro")),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 0, bottom: 10),
+                    ),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "SUMMARY :",
+                        style: TextStyle(
+                            color: Colors.brown.shade100, fontSize: 13),
+                      ),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 10, bottom: 5),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerLeft,
+                      child: Text(summary,
+                          style: TextStyle(
+                              fontSize: 15, fontFamily: "Trajan Pro")),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 0, bottom: 10),
+                    )
+                  ],
+                ),
+              ),
             ],
           )
         ],

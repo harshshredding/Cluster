@@ -9,7 +9,8 @@ import 'my_proposals.dart';
 import 'create_group.dart';
 import 'login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'verification_email.dart';
+import 'package:CoffeeShop/ForgotPass.dart';
 
 Future<String> _loginUser() async {
   try {
@@ -51,6 +52,8 @@ class MyApp extends StatelessWidget {
         '/add_group': (context) => AddGroupScreen(),
         '/register': (context) => Register(),
         '/login_home_logout': (context) => LoginHome(true),
+        '/verification_email': (context) => VerificationEmail(),
+        '/forgot_pass': (context) => ForgotPass(),
       },
     );
   }
