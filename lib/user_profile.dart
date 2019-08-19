@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 
 class UserProfile extends StatefulWidget {
@@ -130,16 +131,20 @@ class UserProfileState extends State<UserProfile> {
   /// choose an image and display it on the screen by changing state
   void chooseImage() async {
     if (_editMode) {
-      File unCroppedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
-      File croppedImage = await ImageCropper.cropImage(sourcePath: unCroppedImage.path,
-          ratioX: 1.0,
-          ratioY: 1.0,
-          maxWidth: 512,
-          maxHeight: 512);
-      setState(() {
-        _selectedImage = croppedImage;
-      });
+      getImageAndCrop();
     }
+  }
+
+  void getImageAndCrop() async {
+    File unCroppedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
+    File croppedImage = await ImageCropper.cropImage(sourcePath: unCroppedImage.path,
+        ratioX: 1.0,
+        ratioY: 1.0,
+        maxWidth: 512,
+        maxHeight: 512);
+    setState(() {
+      _selectedImage = croppedImage;
+    });
   }
 
   Widget buildUserForm(String name, String photoUrl, String summary) {

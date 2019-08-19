@@ -38,8 +38,14 @@ class MyChatsState extends State<MyChats> {
     });
   }
 
-  Widget buildCard(String proposalId, String photoUserId, String chatId,
-      bool newMessageReceived, String lastMessage) {
+  Widget buildCard(
+      String proposalId,
+      String photoUserId,
+      String chatId,
+      bool newMessageReceived,
+      String lastMessage,
+      String creatorId,
+      String interestedId) {
     print(proposalId);
     return Container(
       margin: EdgeInsets.only(top: 1, bottom: 1),
@@ -51,27 +57,78 @@ class MyChatsState extends State<MyChats> {
               builder: (BuildContext context,
                   AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
                 if (asyncSnapshot.connectionState == ConnectionState.done) {
-                  return ListTile(
-                      leading: CircularPhoto(photoUserId, 30),
-                      title: Text(
-                        asyncSnapshot.data.data['title'],
-                        style: TextStyle(fontFamily: "Trajan Pro"),
+                  return Dismissible(
+                    // Show a red background as the item is swiped away.
+                    background: Container(
+                      color: Colors.red,
+                      padding: EdgeInsets.only(right: 10),
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        "DELETE",
+                        style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
-                      subtitle: Text(
-                        lastMessage,
-                        style: TextStyle(fontFamily: "Trajan Pro"),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: newMessageReceived
-                          ? Text(
-                              "NEW",
-                              style: TextStyle(
-                                  color: Colors.lightBlueAccent.shade100),
-                            )
-                          : Container(
-                              width: 0,
-                              height: 0,
-                            ));
+                    ),
+                    key: Key(chatId),
+                    onDismissed: (direction) async {
+                      DocumentReference chatReference = Firestore.instance
+                          .collection('chats')
+                          .document(chatId);
+                      DocumentReference creatorReference = Firestore.instance
+                          .collection("users")
+                          .document(creatorId)
+                          .collection("chats")
+                          .document(chatId);
+                      DocumentReference interestedReference = Firestore.instance
+                          .collection("users")
+                          .document(interestedId)
+                          .collection("chats")
+                          .document(chatId);
+                      try {
+                        if (creatorId != interestedId) {
+                          await Firestore.instance
+                              .runTransaction((Transaction t) async {
+                            await t.delete(chatReference);
+                            await t.delete(creatorReference);
+                            await t.delete(interestedReference);
+
+                          });
+                        } else {
+                          print("yay");
+                          await Firestore.instance
+                              .runTransaction((Transaction t) async {
+                            await t.delete(chatReference);
+                            await t.delete(interestedReference);
+                          });
+                        }
+                        Scaffold.of(context).showSnackBar(
+                            SnackBar(content: Text("Chat deleted")));
+                      } catch (err) {
+                        Scaffold.of(context).showSnackBar(
+                            SnackBar(content: Text("Error Deleting chat")));
+                      }
+                    },
+                    child: ListTile(
+                        leading: CircularPhoto(photoUserId, 30),
+                        title: Text(
+                          asyncSnapshot.data.data['title'],
+                          style: TextStyle(fontFamily: "Trajan Pro"),
+                        ),
+                        subtitle: Text(
+                          lastMessage,
+                          style: TextStyle(fontFamily: "Trajan Pro"),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: newMessageReceived
+                            ? Text(
+                                "NEW",
+                                style: TextStyle(
+                                    color: Colors.lightBlueAccent.shade100),
+                              )
+                            : Container(
+                                width: 0,
+                                height: 0,
+                              )),
+                  );
                 } else {
                   return Container(
                     width: 0,
@@ -159,8 +216,14 @@ class MyChatsState extends State<MyChats> {
             selectedUserId = interestedId;
           }
         }
-        return buildCard(currChat.data['proposal_id'], selectedUserId, chatId,
-            newMessageReceived, currChat.data['last_message'] ?? "");
+        return buildCard(
+            currChat.data['proposal_id'],
+            selectedUserId,
+            chatId,
+            newMessageReceived,
+            currChat.data['last_message'] ?? "",
+            creatorId,
+            interestedId);
       },
       itemCount: chats.length,
     );
