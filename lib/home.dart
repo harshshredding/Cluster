@@ -109,7 +109,7 @@ class HomeState extends State<Home> {
         leading: IconButton(icon: Icon(Icons.person, color: Colors.white,), onPressed: () {
           _scaffoldKey.currentState.openDrawer();
         }),
-        title: Text("CoffeeShop"),
+        title: Text("QuickCoffee"),
         actions: <Widget>[
           Container(
             margin: EdgeInsets.all(5),

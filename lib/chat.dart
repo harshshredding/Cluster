@@ -207,8 +207,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     DocumentReference interestedReference = firestore.collection("users").document(interestedId).collection("chats").document(roomId);
     firestore.runTransaction((Transaction t) async {
       await t.update(chatReference, {"last_updated": currentTime});
+      await t.update(chatReference, {"last_message": text});
       await t.update(creatorReference, {"last_updated": currentTime});
+      await t.update(creatorReference, {"last_message": text});
       await t.update(interestedReference, {"last_updated": currentTime});
+      await t.update(interestedReference, {"last_message": text});
     }).catchError((error) {print("yo");});
     setState(() {
       _isComposing = false;

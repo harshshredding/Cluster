@@ -56,24 +56,23 @@ class MyProposalsState extends State<MyProposals> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.only(left: 10, top: 10),
-                          child: (userId != null)
-                              ? FutureBuilder(
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<DocumentSnapshot>
-                                          asyncSnapshot) {
-                                    if (asyncSnapshot.connectionState ==
-                                        ConnectionState.done) {
-                                      String photoUrl =
-                                          asyncSnapshot.data.data["photo_url"];
-                                      return GestureDetector(
+                    FutureBuilder(
+                      builder: (BuildContext context,
+                          AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
+                        if (asyncSnapshot.connectionState ==
+                            ConnectionState.done) {
+                          return Row(
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.only(left: 10, top: 10),
+                                child: (userId != null)
+                                    ? GestureDetector(
                                         child: CircleAvatar(
                                           radius: 20,
-                                          backgroundImage:
-                                              NetworkImage(photoUrl),
+                                          backgroundImage: NetworkImage(
+                                              asyncSnapshot
+                                                      .data.data["photo_url"] ??
+                                                  ""),
                                           backgroundColor: Colors.transparent,
                                         ),
                                         onTap: () {
@@ -92,62 +91,115 @@ class MyProposalsState extends State<MyProposals> {
                                             }
                                           }
                                         },
-                                      );
-                                    } else {
-                                      return Container(height: 0, width: 0);
-                                    }
-                                  },
-                                  future: Firestore.instance
-                                      .collection("users")
-                                      .document(userId)
-                                      .get(),
-                                )
-                              : CircleAvatar(
+                                      )
+                                    : CircleAvatar(
+                                        radius: 20,
+                                        backgroundImage: AssetImage(
+                                            'images/default_event.jpg'),
+                                        backgroundColor: Colors.transparent,
+                                      ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 20),
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  asyncSnapshot.data.data != null
+                                      ? asyncSnapshot.data.data["name"]
+                                      : "",
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                padding: EdgeInsets.only(
+                                    left: 10, right: 10, top: 0, bottom: 5),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  alignment: Alignment.centerRight,
+                                  child: IconButton(
+                                      icon: Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditProposalScreen(
+                                                        proposalId)));
+                                      }),
+                                ),
+                              )
+                            ],
+                          );
+                        } else {
+                          return Row(
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.only(left: 10, top: 10),
+                                child: CircleAvatar(
                                   radius: 20,
-                                  backgroundImage: NetworkImage(
-                                      "https://firebasestorage.googleapis.com/v0/b/cluster-c7373.appspot.com/o/uglBgoTL4wbDe7F3vOJSYAsNAJq1d7ad0d20-b750-11e9-8d3f-77436f189394?alt=media&token=f856aba3-f8e5-4ee2-b3a6-26ed4ed823f9"),
+                                  backgroundImage:
+                                      AssetImage('images/default_event.jpg'),
                                   backgroundColor: Colors.transparent,
                                 ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(top: 20),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Harsh Verma",
-                            style: TextStyle(fontSize: 15),
-                          ),
-                          padding: EdgeInsets.only(
-                              left: 10, right: 10, top: 0, bottom: 5),
-                        ),
-                        Expanded(
-                          child: Container(
-                            alignment: Alignment.centerRight,
-                            child: IconButton(icon: Icon(Icons.edit, color: Colors.white,), onPressed: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) => EditProposalScreen(proposalId)));
-                            }),
-                          ),
-                        )
-                      ],
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 20),
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  "loading...",
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                padding: EdgeInsets.only(
+                                    left: 10, right: 10, top: 0, bottom: 5),
+                              ),
+                             Expanded(
+                              child: Container(
+                                alignment: Alignment.centerRight,
+                                child: IconButton(
+                                    icon: Icon(
+                                      Icons.edit,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EditProposalScreen(
+                                                      proposalId)));
+                                    }),
+                              ),
+                            )
+                            ],
+                          );
+                        }
+                      },
+                      future: Firestore.instance
+                          .collection("users")
+                          .document(userId)
+                          .get(),
                     ),
                     Container(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        "TOPIC :",
+                        "MEET TO DISCUSS :",
                         style: TextStyle(
                             color: Colors.brown.shade100, fontSize: 13),
                       ),
                       padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 5),
+                          left: 10, right: 10, top: 10, bottom: 5
+                      ),
                     ),
                     Container(
                       margin: EdgeInsets.only(right: 20),
                       alignment: Alignment.centerLeft,
-                      child: Text(topic ?? "",
+                      child: Text(topic,
                           style: TextStyle(
                               fontSize: 15, fontFamily: "Trajan Pro")),
                       padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 0, bottom: 10),
+                          left: 10, right: 10, top: 0, bottom: 10
+                      ),
                     ),
                     Container(
                       alignment: Alignment.centerLeft,
@@ -162,7 +214,7 @@ class MyProposalsState extends State<MyProposals> {
                     Container(
                       margin: EdgeInsets.only(right: 20),
                       alignment: Alignment.centerLeft,
-                      child: Text(summary ?? "",
+                      child: Text(summary,
                           style: TextStyle(
                               fontSize: 15, fontFamily: "Trajan Pro")),
                       padding: EdgeInsets.only(
