@@ -4,6 +4,7 @@ import 'dart:async';
 import 'user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'chat.dart';
+import 'proposals.dart';
 
 class ProposalsForOneGroup extends StatefulWidget {
   final List<String> _filters;
@@ -78,211 +79,6 @@ class ProposalsForOneGroupState extends State<ProposalsForOneGroup> {
     }
   }
 
-  Future<void> createChatIfDoesntExist(
-      String creatorUserId, String proposalId, BuildContext context) async {
-    if (creatorUserId == null || proposalId == null) {
-      var snackbar = new SnackBar(
-          duration: new Duration(seconds: 2),
-          content: Text("Some error occured."));
-      Scaffold.of(context).showSnackBar(snackbar);
-    } else {
-      FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
-      print(currentUser.uid);
-      String chatId = proposalId + creatorUserId + currentUser.uid;
-      DocumentReference currentUserReference = Firestore.instance
-          .collection("users")
-          .document(currentUser.uid)
-          .collection("chats")
-          .document(chatId);
-      DocumentReference creatorUserReference = Firestore.instance
-          .collection("users")
-          .document(creatorUserId)
-          .collection("chats")
-          .document(chatId);
-      DocumentReference chatReference =
-          Firestore.instance.collection("chats").document(chatId);
-      DocumentSnapshot chat = await chatReference.get();
-      if (!chat.exists) {
-        Map<String, dynamic> dataToWrite = {
-          "id": chatId,
-          "proposal_id": proposalId,
-          "creator_id": creatorUserId,
-          "interested_id": currentUser.uid
-        };
-        await Firestore.instance.runTransaction((Transaction t) async {
-          t.set(currentUserReference, dataToWrite);
-          t.set(creatorUserReference, dataToWrite);
-          t.set(chatReference, dataToWrite);
-          return null;
-        });
-      }
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  ChatScreen(chatId, creatorUserId, proposalId)));
-    }
-  }
-
-  Widget createCard(String topic, String summary, String userId,
-      String proposalId, BuildContext context) {
-    return Card(
-      shape: BeveledRectangleBorder(
-          borderRadius: BorderRadius.only(bottomRight: Radius.circular(20))),
-      elevation: 5,
-      child: Column(
-        children: <Widget>[
-          Container(
-            alignment: Alignment.center,
-            color: Colors.brown,
-            child: Text(
-              "DISCUSSION",
-              style: TextStyle(
-                color: Colors.brown.shade200,
-                fontSize: 15,
-                fontFamily: 'CarterOne',
-                letterSpacing: 3,
-              ),
-            ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Flexible(
-                flex: 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    FutureBuilder(
-                      builder: (BuildContext context,
-                          AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
-                        if (asyncSnapshot.connectionState ==
-                            ConnectionState.done) {
-                          return Row(
-                            children: <Widget>[
-                              Container(
-                                margin: EdgeInsets.only(left: 10, top: 10),
-                                child: (userId != null)
-                                    ? GestureDetector(
-                                        child: CircleAvatar(
-                                          radius: 20,
-                                          backgroundImage: NetworkImage(
-                                              asyncSnapshot
-                                                  .data.data["photo_url"] ?? ""),
-                                          backgroundColor: Colors.transparent,
-                                        ),
-                                        onTap: () {
-                                          if (asyncSnapshot.data.data != null) {
-                                            if (asyncSnapshot.data.documentID !=
-                                                null) {
-                                              Navigator.of(context).push<void>(
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          UserProfile(false,
-                                                              userDocumentId:
-                                                                  asyncSnapshot
-                                                                      .data
-                                                                      .documentID),
-                                                      fullscreenDialog: true));
-                                            }
-                                          }
-                                        },
-                                      )
-                                    : CircleAvatar(
-                                        radius: 20,
-                                        backgroundImage: NetworkImage(
-                                            "https://firebasestorage.googleapis.com/v0/b/cluster-c7373.appspot.com/o/uglBgoTL4wbDe7F3vOJSYAsNAJq1d7ad0d20-b750-11e9-8d3f-77436f189394?alt=media&token=f856aba3-f8e5-4ee2-b3a6-26ed4ed823f9"),
-                                        backgroundColor: Colors.transparent,
-                                      ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(top: 20),
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  asyncSnapshot.data.data != null ? asyncSnapshot.data.data["name"] : "",
-                                  style: TextStyle(fontSize: 15),
-                                ),
-                                padding: EdgeInsets.only(
-                                    left: 10, right: 10, top: 0, bottom: 5),
-                              ),
-                              Expanded(
-                                child: Container(
-                                  alignment: Alignment.centerRight,
-                                  child: IconButton(
-                                    icon: Icon(Icons.chat, size: 20),
-                                    onPressed: () async {
-                                      createChatIfDoesntExist(
-                                          userId, proposalId, context);
-                                    },
-                                  ),
-                                  margin: EdgeInsets.only(
-                                      left: 10, right: 5, top: 5, bottom: 5),
-                                ),
-                              )
-                            ],
-                          );
-                        } else {
-                          return Container(
-                            width: 0,
-                            height: 0,
-                          );
-                        }
-                      },
-                      future: Firestore.instance
-                          .collection("users")
-                          .document(userId)
-                          .get(),
-                    ),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "MEET TO DISCUSS :",
-                        style: TextStyle(
-                            color: Colors.brown.shade100, fontSize: 13),
-                      ),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 5),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(right: 20),
-                      alignment: Alignment.centerLeft,
-                      child: Text(topic,
-                          style: TextStyle(
-                              fontSize: 15, fontFamily: "Trajan Pro")),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 0, bottom: 10),
-                    ),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "SUMMARY :",
-                        style: TextStyle(
-                            color: Colors.brown.shade100, fontSize: 13),
-                      ),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 5),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(right: 20),
-                      alignment: Alignment.centerLeft,
-                      child: Text(summary,
-                          style: TextStyle(
-                              fontSize: 15, fontFamily: "Trajan Pro")),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 0, bottom: 10),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
-      margin: EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
-    );
-  }
-
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
@@ -294,7 +90,7 @@ class ProposalsForOneGroupState extends State<ProposalsForOneGroup> {
               String topic = currEvent.data["title"] ?? "";
               String summary = currEvent.data["summary"] ?? "";
               String userId = currEvent.data["user_id"];
-              return createCard(
+              return ProposalsState.createCard(
                   topic, summary, userId, currEvent.documentID, context);
             },
             itemCount: _proposals.length,

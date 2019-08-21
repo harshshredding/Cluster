@@ -55,28 +55,7 @@ class ProposalsState extends State<Proposals> {
   void getProposals() {
     _proposals.clear();
     _subscriptions.clear();
-    if (_filters.isEmpty) {
-//      var subscription = _firestore
-//          .collection("proposals")
-//          .snapshots()
-//          .listen((QuerySnapshot snapshot) {
-//        List<DocumentSnapshot> newDocuments = snapshot.documents;
-//        List<DocumentSnapshot> thingsToAdd = List();
-//        for (DocumentSnapshot proposal in newDocuments) {
-//          bool proposalDoesntExist =
-//          _proposals.every((DocumentSnapshot oldProposal) {
-//            return (oldProposal.documentID != proposal.documentID);
-//          });
-//          if (proposalDoesntExist) {
-//            thingsToAdd.add(proposal);
-//          }
-//        }
-//        setState(() {
-//          _proposals.addAll(thingsToAdd);
-//        });
-//      });
-//      _subscriptions.add(subscription);
-    } else {
+    if (_filters.isNotEmpty) {
       for (String filter in _filters) {
         var subscription = _firestore
             .collection("proposals")
@@ -122,7 +101,7 @@ class ProposalsState extends State<Proposals> {
     });
   }
 
-  Future<void> createChatIfDoesntExist(String creatorUserId, String proposalId, BuildContext context) async {
+  static Future<void> createChatIfDoesntExist(String creatorUserId, String proposalId, BuildContext context) async {
     if (creatorUserId == null || proposalId == null) {
       var snackbar = new SnackBar(
         duration: new Duration(seconds: 2),
@@ -148,7 +127,7 @@ class ProposalsState extends State<Proposals> {
           "interested_id": currentUser.uid,
           "last_updated": currentTime
         };
-        WriteBatch batch = _firestore.batch();
+        WriteBatch batch = Firestore.instance.batch();
         batch.setData(currentUserReference, dataToWrite);
         batch.setData(creatorUserReference, dataToWrite);
         batch.setData(chatReference, dataToWrite);
@@ -158,7 +137,7 @@ class ProposalsState extends State<Proposals> {
     }
   }
 
-  Widget createCard(String topic, String summary, String userId,
+  static Widget createCard(String topic, String summary, String userId,
       String proposalId, BuildContext context) {
     return Card(
       shape: BeveledRectangleBorder(

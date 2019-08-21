@@ -8,7 +8,6 @@ import 'dart:io';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 
 class UserProfile extends StatefulWidget {
