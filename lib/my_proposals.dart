@@ -153,24 +153,24 @@ class MyProposalsState extends State<MyProposals> {
                                 padding: EdgeInsets.only(
                                     left: 10, right: 10, top: 0, bottom: 5),
                               ),
-                             Expanded(
-                              child: Container(
-                                alignment: Alignment.centerRight,
-                                child: IconButton(
-                                    icon: Icon(
-                                      Icons.edit,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  EditProposalScreen(
-                                                      proposalId)));
-                                    }),
-                              ),
-                            )
+                              Expanded(
+                                child: Container(
+                                  alignment: Alignment.centerRight,
+                                  child: IconButton(
+                                      icon: Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditProposalScreen(
+                                                        proposalId)));
+                                      }),
+                                ),
+                              )
                             ],
                           );
                         }
@@ -188,8 +188,7 @@ class MyProposalsState extends State<MyProposals> {
                             color: Colors.brown.shade100, fontSize: 13),
                       ),
                       padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 5
-                      ),
+                          left: 10, right: 10, top: 10, bottom: 5),
                     ),
                     Container(
                       margin: EdgeInsets.only(right: 20),
@@ -198,8 +197,7 @@ class MyProposalsState extends State<MyProposals> {
                           style: TextStyle(
                               fontSize: 15, fontFamily: "Trajan Pro")),
                       padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 0, bottom: 10
-                      ),
+                          left: 10, right: 10, top: 0, bottom: 10),
                     ),
                     Container(
                       alignment: Alignment.centerLeft,

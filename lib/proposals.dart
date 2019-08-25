@@ -15,7 +15,7 @@ class Proposals extends StatefulWidget {
 
 class ProposalsState extends State<Proposals> {
   final Firestore _firestore = Firestore.instance;
-  List<DocumentSnapshot> _proposals = new List();
+  ListOfProposals _proposals = new ListOfProposals();
   List<StreamSubscription<QuerySnapshot>> _subscriptions = new List();
   List<String> _filters = List<String>();
 
@@ -42,7 +42,8 @@ class ProposalsState extends State<Proposals> {
   getProposalsAtStart() async {
     print("getProposalsAtStart");
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    DocumentSnapshot userDataSnap =  await Firestore.instance.collection("users").document(user.uid).get();
+    DocumentSnapshot userDataSnap =
+        await Firestore.instance.collection("users").document(user.uid).get();
     List<dynamic> filters = userDataSnap.data['filters'] ?? List<String>();
     if (filters != null) {
       for (String filter in filters) {
@@ -65,23 +66,21 @@ class ProposalsState extends State<Proposals> {
           List<DocumentSnapshot> newDocuments = snapshot.documents;
           List<DocumentSnapshot> thingsToAdd = List();
           for (DocumentSnapshot proposal in newDocuments) {
-            bool proposalDoesntExist =
-            _proposals.every((DocumentSnapshot oldProposal) {
-              return (oldProposal.documentID != proposal.documentID);
-            });
+            bool proposalDoesntExist = !_proposals.proposalExists(proposal.documentID);
             if (proposalDoesntExist) {
               thingsToAdd.add(proposal);
             }
           }
           setState(() {
-            _proposals.addAll(thingsToAdd);
+            for (DocumentSnapshot thing in thingsToAdd) {
+              _proposals.addProposal(thing);
+            }
           });
         });
         _subscriptions.add(subscription);
       }
     }
   }
-  
 
   void configureFilter(BuildContext context) async {
     List<String> chosenFilters = await Navigator.of(context)
@@ -96,32 +95,40 @@ class ProposalsState extends State<Proposals> {
 
   uploadUserFilters(List<String> userFilters) async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    Firestore.instance.collection("users").document(user.uid).updateData({
-      "filters" : userFilters
-    });
+    Firestore.instance
+        .collection("users")
+        .document(user.uid)
+        .updateData({"filters": userFilters});
   }
 
-  static Future<void> createChatIfDoesntExist(String creatorUserId, String proposalId, BuildContext context) async {
+  static Future<void> createChatIfDoesntExist(
+      String creatorUserId, String proposalId, BuildContext context) async {
     if (creatorUserId == null || proposalId == null) {
       var snackbar = new SnackBar(
-        duration: new Duration(seconds: 2),
-        content: Text("Some error occured.")
-      );
+          duration: new Duration(seconds: 2),
+          content: Text("Some error occured."));
       Scaffold.of(context).showSnackBar(snackbar);
     } else {
       FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
       print(currentUser.uid);
       String chatId = proposalId + creatorUserId + currentUser.uid;
       DocumentReference currentUserReference = Firestore.instance
-          .collection("users").document(currentUser.uid).collection("chats").document(chatId);
-      DocumentReference creatorUserReference = Firestore
-          .instance.collection("users").document(creatorUserId).collection("chats").document(chatId);
-      DocumentReference chatReference = Firestore.instance.collection("chats").document(chatId);
+          .collection("users")
+          .document(currentUser.uid)
+          .collection("chats")
+          .document(chatId);
+      DocumentReference creatorUserReference = Firestore.instance
+          .collection("users")
+          .document(creatorUserId)
+          .collection("chats")
+          .document(chatId);
+      DocumentReference chatReference =
+          Firestore.instance.collection("chats").document(chatId);
       DocumentSnapshot chat = await chatReference.get();
       Timestamp currentTime = Timestamp.now();
       if (!chat.exists) {
         Map<String, dynamic> dataToWrite = {
-          "id" : chatId,
+          "id": chatId,
           "proposal_id": proposalId,
           "creator_id": creatorUserId,
           "interested_id": currentUser.uid,
@@ -133,7 +140,11 @@ class ProposalsState extends State<Proposals> {
         batch.setData(chatReference, dataToWrite);
         await batch.commit();
       }
-      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(chatId, creatorUserId, proposalId)));
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  ChatScreen(chatId, creatorUserId, proposalId)));
     }
   }
 
@@ -178,33 +189,87 @@ class ProposalsState extends State<Proposals> {
                                 margin: EdgeInsets.only(left: 10, top: 10),
                                 child: (userId != null)
                                     ? GestureDetector(
-                                  child: CircleAvatar(
-                                    radius: 20,
-                                    backgroundImage: NetworkImage(
-                                        asyncSnapshot
-                                            .data.data["photo_url"] ?? ""),
-                                    backgroundColor: Colors.transparent,
-                                  ),
-                                  onTap: () {
-                                    if (asyncSnapshot.data.data != null) {
-                                      if (asyncSnapshot.data.documentID !=
-                                          null) {
-                                        Navigator.of(context).push<void>(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    UserProfile(false,
-                                                        userDocumentId:
-                                                        asyncSnapshot
-                                                            .data
-                                                            .documentID),
-                                                fullscreenDialog: true));
-                                      }
-                                    }
-                                  },
-                                )
+                                        child: CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage: NetworkImage(
+                                              asyncSnapshot
+                                                      .data.data["photo_url"] ??
+                                                  ""),
+                                          backgroundColor: Colors.transparent,
+                                        ),
+                                        onTap: () {
+                                          if (asyncSnapshot.data.data != null) {
+                                            if (asyncSnapshot.data.documentID !=
+                                                null) {
+                                              Navigator.of(context).push<void>(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          UserProfile(false,
+                                                              userDocumentId:
+                                                                  asyncSnapshot
+                                                                      .data
+                                                                      .documentID),
+                                                      fullscreenDialog: true));
+                                            }
+                                          }
+                                        },
+                                      )
                                     : CircleAvatar(
+                                        radius: 20,
+                                        backgroundImage: AssetImage(
+                                            'images/default_event.jpg'),
+                                        backgroundColor: Colors.transparent,
+                                      ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 20),
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  asyncSnapshot.data.data != null
+                                      ? asyncSnapshot.data.data["name"]
+                                      : "",
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                padding: EdgeInsets.only(
+                                    left: 10, right: 10, top: 0, bottom: 5),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  alignment: Alignment.centerRight,
+                                  child: Row(
+                                    children: <Widget>[
+                                      IconButton(
+                                        icon: Icon(Icons.chat, size: 20),
+                                        onPressed: () async {
+                                          createChatIfDoesntExist(
+                                              userId, proposalId, context);
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.chat, size: 20),
+                                        onPressed: () async {
+                                          createChatIfDoesntExist(
+                                              userId, proposalId, context);
+                                        },
+                                      )
+                                    ],
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                  ),
+                                  margin: EdgeInsets.only(
+                                      left: 10, right: 5, top: 5, bottom: 5),
+                                ),
+                              )
+                            ],
+                          );
+                        } else {
+                          return Row(
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.only(left: 10, top: 10),
+                                child: CircleAvatar(
                                   radius: 20,
-                                  backgroundImage: AssetImage('images/default_event.jpg'),
+                                  backgroundImage:
+                                      AssetImage('images/default_event.jpg'),
                                   backgroundColor: Colors.transparent,
                                 ),
                               ),
@@ -212,7 +277,7 @@ class ProposalsState extends State<Proposals> {
                                 margin: EdgeInsets.only(top: 20),
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  asyncSnapshot.data.data != null ? asyncSnapshot.data.data["name"] : "",
+                                  "loading...",
                                   style: TextStyle(fontSize: 15),
                                 ),
                                 padding: EdgeInsets.only(
@@ -234,14 +299,195 @@ class ProposalsState extends State<Proposals> {
                               )
                             ],
                           );
+                        }
+                      },
+                      future: Firestore.instance
+                          .collection("users")
+                          .document(userId)
+                          .get(),
+                    ),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "MEET TO DISCUSS :",
+                        style: TextStyle(
+                            color: Colors.brown.shade100, fontSize: 13),
+                      ),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 10, bottom: 5),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerLeft,
+                      child: Text(topic,
+                          style: TextStyle(
+                              fontSize: 15, fontFamily: "Trajan Pro")),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 0, bottom: 10),
+                    ),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "SUMMARY :",
+                        style: TextStyle(
+                            color: Colors.brown.shade100, fontSize: 13),
+                      ),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 10, bottom: 5),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerLeft,
+                      child: Text(summary,
+                          style: TextStyle(
+                              fontSize: 15, fontFamily: "Trajan Pro")),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 0, bottom: 10),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+      margin: EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
+    );
+  }
+
+  Widget createCard2(String topic, String summary, String userId,
+      String proposalId, BuildContext context, bool isFavorite) {
+    return Card(
+      shape: BeveledRectangleBorder(
+          borderRadius: BorderRadius.only(bottomRight: Radius.circular(20))),
+      elevation: 5,
+      child: Column(
+        children: <Widget>[
+          Container(
+            alignment: Alignment.center,
+            color: Colors.brown,
+            child: Text(
+              "DISCUSSION",
+              style: TextStyle(
+                color: Colors.brown.shade200,
+                fontSize: 15,
+                fontFamily: 'CarterOne',
+                letterSpacing: 3,
+              ),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Flexible(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    FutureBuilder(
+                      builder: (BuildContext context,
+                          AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
+                        if (asyncSnapshot.connectionState ==
+                            ConnectionState.done) {
+                          return Row(
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.only(left: 10, top: 10),
+                                child: (userId != null)
+                                    ? GestureDetector(
+                                        child: CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage: NetworkImage(
+                                              asyncSnapshot
+                                                      .data.data["photo_url"] ??
+                                                  ""),
+                                          backgroundColor: Colors.transparent,
+                                        ),
+                                        onTap: () {
+                                          if (asyncSnapshot.data.data != null) {
+                                            if (asyncSnapshot.data.documentID !=
+                                                null) {
+                                              Navigator.of(context).push<void>(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          UserProfile(false,
+                                                              userDocumentId:
+                                                                  asyncSnapshot
+                                                                      .data
+                                                                      .documentID),
+                                                      fullscreenDialog: true));
+                                            }
+                                          }
+                                        },
+                                      )
+                                    : CircleAvatar(
+                                        radius: 20,
+                                        backgroundImage: AssetImage(
+                                            'images/default_event.jpg'),
+                                        backgroundColor: Colors.transparent,
+                                      ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 20),
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  asyncSnapshot.data.data != null
+                                      ? asyncSnapshot.data.data["name"]
+                                      : "",
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                padding: EdgeInsets.only(
+                                    left: 10, right: 10, top: 0, bottom: 5),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  alignment: Alignment.centerRight,
+                                  child: Row(
+                                    children: <Widget>[
+                                      isFavorite ?
+                                      IconButton(
+                                        icon: Icon(Icons.star, size: 20, color: Colors.yellow,),
+                                        onPressed: () async {
+                                          setState(() {
+                                            _proposals.markNotFavorite(proposalId);
+                                          });
+                                        },
+                                      ):
+                                      IconButton(
+                                        icon: Icon(Icons.star, size: 20),
+                                        onPressed: () async {
+                                          setState(() {
+                                            _proposals.markFavorite(proposalId);
+                                          });
+                                        },
+                                      )
+                                      ,
+                                      IconButton(
+                                        icon: Icon(Icons.chat, size: 20),
+                                        onPressed: () async {
+                                          createChatIfDoesntExist(
+                                              userId, proposalId, context);
+                                        },
+                                      )
+                                    ],
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                  ),
+                                  margin: EdgeInsets.only(
+                                      left: 10, right: 5, top: 5, bottom: 5),
+                                ),
+                              )
+                            ],
+                          );
                         } else {
                           return Row(
                             children: <Widget>[
                               Container(
                                 margin: EdgeInsets.only(left: 10, top: 10),
-                                child:  CircleAvatar(
+                                child: CircleAvatar(
                                   radius: 20,
-                                  backgroundImage: AssetImage('images/default_event.jpg'),
+                                  backgroundImage:
+                                      AssetImage('images/default_event.jpg'),
                                   backgroundColor: Colors.transparent,
                                 ),
                               ),
@@ -369,16 +615,90 @@ class ProposalsState extends State<Proposals> {
           child: ListView.builder(
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
-              DocumentSnapshot currEvent = _proposals[index];
+              DocumentSnapshot currEvent = _proposals.get(index);
               String topic = currEvent.data["title"] ?? "";
               String summary = currEvent.data["summary"] ?? "";
               String userId = currEvent.data["user_id"];
-              return createCard(topic, summary, userId, currEvent.documentID, context);
+              return createCard2(
+                  topic, summary, userId, currEvent.documentID, context, _proposals.isFavorite(index));
             },
-            itemCount: _proposals.length,
+            itemCount: _proposals.size(),
           ),
         ),
       ],
     );
+  }
+}
+
+
+class ListOfProposals {
+  List<DocumentSnapshot> _proposals = new List();
+  List<bool> _markFavoriteList = new List();
+
+  void clear() {
+    _proposals.clear();
+    _markFavoriteList.clear();
+  }
+
+  void addProposal(DocumentSnapshot snapshot) {
+    _proposals.add(snapshot);
+    _markFavoriteList.add(false);
+  }
+
+  void markFavorite(String documentId) {
+    print("marking fav" + documentId);
+    for (int i = 0; i < _markFavoriteList.length; i++) {
+      print("prop " + _proposals[i].documentID);
+      if (_proposals[i].documentID == documentId) {
+        _markFavoriteList[i] = true;
+        break;
+      }
+    }
+  }
+
+  void markNotFavorite(String documentId) {
+    print("marking not fav" + documentId);
+    for (int i = 0; i < _markFavoriteList.length; i++) {
+      if (_proposals[i].documentID == documentId) {
+        _markFavoriteList[i] = false;
+        break;
+      }
+    }
+  }
+
+  void markFavorites(List<String> documentIds) {
+    for (int i = 0; i < documentIds.length; i++) {
+      markFavorite(documentIds[i]);
+    }
+  }
+
+  int size() {
+    return _proposals.length;
+  }
+
+  DocumentSnapshot get(int index) {
+    if (index >= 0 && index < size()) {
+      return _proposals[index];
+    } else {
+      return null;
+    }
+  }
+
+  bool proposalExists(String proposalId) {
+    for (int i = 0; i < _proposals.length; i++) {
+      if (proposalId == _proposals[i].documentID) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  bool isFavorite(int index) {
+    print(_markFavoriteList);
+    if (index >= 0 && index < size()) {
+      return _markFavoriteList[index];
+    } else {
+      return false;
+    }
   }
 }
