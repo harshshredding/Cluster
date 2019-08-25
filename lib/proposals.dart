@@ -8,6 +8,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'chat.dart';
 
 class Proposals extends StatefulWidget {
+  final bool dontShowFilterBar;
+  final String groupName;
+
+  Proposals()
+      : this.dontShowFilterBar = false,
+        groupName = null;
+
+  Proposals.withoutFilter(this.groupName) : this.dontShowFilterBar = true;
+
   ProposalsState createState() {
     return ProposalsState();
   }
@@ -16,14 +25,24 @@ class Proposals extends StatefulWidget {
 class ProposalsState extends State<Proposals> {
   final Firestore _firestore = Firestore.instance;
   ListOfProposals _proposals = new ListOfProposals();
-  List<StreamSubscription<QuerySnapshot>> _subscriptions = new List();
+  List<StreamSubscription<QuerySnapshot>> _proposalSubscriptions = new List();
   List<String> _filters = List<String>();
+  StreamSubscription<QuerySnapshot> _favoritesSubscription;
 
   void initState() {
     super.initState();
-    getProposalsAtStart();
+    if (widget.dontShowFilterBar) {
+      if (widget.groupName != null) {
+        getProposalsForGroup(widget.groupName);
+      }
+    } else {
+      getProposalsAtStart();
+    }
+    getFavoritesSubscription();
   }
 
+  /// Creates group chips to display the group
+  /// the user is subscribed to.
   List<Widget> createChips() {
     List<Widget> result = List();
     for (String filter in _filters) {
@@ -39,11 +58,40 @@ class ProposalsState extends State<Proposals> {
     return result;
   }
 
+  /// Display proposals of one group.
+  getProposalsForGroup(String groupName) {
+    if (widget.groupName != null) {
+      _filters.add(groupName);
+      getProposals();
+    }
+  }
+
+  getFavoritesSubscription() async {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    // get favorites information and store subscription.
+    _favoritesSubscription = Firestore.instance
+        .collection("users")
+        .document(user.uid)
+        .collection("favorites")
+        .snapshots()
+        .listen((QuerySnapshot snapshot) {
+      List<DocumentSnapshot> favorites = snapshot.documents;
+      if (favorites != null) {
+        setState(() {
+          _proposals.setFavorites(favorites);
+        });
+      }
+    });
+  }
+
+  /// Used to display the proposals when the screen loads
+  /// for the first time.
   getProposalsAtStart() async {
     print("getProposalsAtStart");
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     DocumentSnapshot userDataSnap =
         await Firestore.instance.collection("users").document(user.uid).get();
+
     List<dynamic> filters = userDataSnap.data['filters'] ?? List<String>();
     if (filters != null) {
       for (String filter in filters) {
@@ -53,9 +101,11 @@ class ProposalsState extends State<Proposals> {
     }
   }
 
+  /// The main method which gets all the subscriptions that are used to
+  /// update add proposals on the screen.
   void getProposals() {
     _proposals.clear();
-    _subscriptions.clear();
+    _proposalSubscriptions.clear();
     if (_filters.isNotEmpty) {
       for (String filter in _filters) {
         var subscription = _firestore
@@ -66,7 +116,8 @@ class ProposalsState extends State<Proposals> {
           List<DocumentSnapshot> newDocuments = snapshot.documents;
           List<DocumentSnapshot> thingsToAdd = List();
           for (DocumentSnapshot proposal in newDocuments) {
-            bool proposalDoesntExist = !_proposals.proposalExists(proposal.documentID);
+            bool proposalDoesntExist =
+                !_proposals.proposalExists(proposal.documentID);
             if (proposalDoesntExist) {
               thingsToAdd.add(proposal);
             }
@@ -77,11 +128,12 @@ class ProposalsState extends State<Proposals> {
             }
           });
         });
-        _subscriptions.add(subscription);
+        _proposalSubscriptions.add(subscription);
       }
     }
   }
 
+  /// Show the subscription choosing screen and upload filters.
   void configureFilter(BuildContext context) async {
     List<String> chosenFilters = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => TagSelector(_filters)));
@@ -93,6 +145,7 @@ class ProposalsState extends State<Proposals> {
     uploadUserFilters(chosenFilters);
   }
 
+  /// Upload the filters chosen by the user
   uploadUserFilters(List<String> userFilters) async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     Firestore.instance
@@ -148,214 +201,7 @@ class ProposalsState extends State<Proposals> {
     }
   }
 
-  static Widget createCard(String topic, String summary, String userId,
-      String proposalId, BuildContext context) {
-    return Card(
-      shape: BeveledRectangleBorder(
-          borderRadius: BorderRadius.only(bottomRight: Radius.circular(20))),
-      elevation: 5,
-      child: Column(
-        children: <Widget>[
-          Container(
-            alignment: Alignment.center,
-            color: Colors.brown,
-            child: Text(
-              "DISCUSSION",
-              style: TextStyle(
-                color: Colors.brown.shade200,
-                fontSize: 15,
-                fontFamily: 'CarterOne',
-                letterSpacing: 3,
-              ),
-            ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Flexible(
-                flex: 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    FutureBuilder(
-                      builder: (BuildContext context,
-                          AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
-                        if (asyncSnapshot.connectionState ==
-                            ConnectionState.done) {
-                          return Row(
-                            children: <Widget>[
-                              Container(
-                                margin: EdgeInsets.only(left: 10, top: 10),
-                                child: (userId != null)
-                                    ? GestureDetector(
-                                        child: CircleAvatar(
-                                          radius: 20,
-                                          backgroundImage: NetworkImage(
-                                              asyncSnapshot
-                                                      .data.data["photo_url"] ??
-                                                  ""),
-                                          backgroundColor: Colors.transparent,
-                                        ),
-                                        onTap: () {
-                                          if (asyncSnapshot.data.data != null) {
-                                            if (asyncSnapshot.data.documentID !=
-                                                null) {
-                                              Navigator.of(context).push<void>(
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          UserProfile(false,
-                                                              userDocumentId:
-                                                                  asyncSnapshot
-                                                                      .data
-                                                                      .documentID),
-                                                      fullscreenDialog: true));
-                                            }
-                                          }
-                                        },
-                                      )
-                                    : CircleAvatar(
-                                        radius: 20,
-                                        backgroundImage: AssetImage(
-                                            'images/default_event.jpg'),
-                                        backgroundColor: Colors.transparent,
-                                      ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(top: 20),
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  asyncSnapshot.data.data != null
-                                      ? asyncSnapshot.data.data["name"]
-                                      : "",
-                                  style: TextStyle(fontSize: 15),
-                                ),
-                                padding: EdgeInsets.only(
-                                    left: 10, right: 10, top: 0, bottom: 5),
-                              ),
-                              Expanded(
-                                child: Container(
-                                  alignment: Alignment.centerRight,
-                                  child: Row(
-                                    children: <Widget>[
-                                      IconButton(
-                                        icon: Icon(Icons.chat, size: 20),
-                                        onPressed: () async {
-                                          createChatIfDoesntExist(
-                                              userId, proposalId, context);
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.chat, size: 20),
-                                        onPressed: () async {
-                                          createChatIfDoesntExist(
-                                              userId, proposalId, context);
-                                        },
-                                      )
-                                    ],
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                  ),
-                                  margin: EdgeInsets.only(
-                                      left: 10, right: 5, top: 5, bottom: 5),
-                                ),
-                              )
-                            ],
-                          );
-                        } else {
-                          return Row(
-                            children: <Widget>[
-                              Container(
-                                margin: EdgeInsets.only(left: 10, top: 10),
-                                child: CircleAvatar(
-                                  radius: 20,
-                                  backgroundImage:
-                                      AssetImage('images/default_event.jpg'),
-                                  backgroundColor: Colors.transparent,
-                                ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(top: 20),
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  "loading...",
-                                  style: TextStyle(fontSize: 15),
-                                ),
-                                padding: EdgeInsets.only(
-                                    left: 10, right: 10, top: 0, bottom: 5),
-                              ),
-                              Expanded(
-                                child: Container(
-                                  alignment: Alignment.centerRight,
-                                  child: IconButton(
-                                    icon: Icon(Icons.chat, size: 20),
-                                    onPressed: () async {
-                                      createChatIfDoesntExist(
-                                          userId, proposalId, context);
-                                    },
-                                  ),
-                                  margin: EdgeInsets.only(
-                                      left: 10, right: 5, top: 5, bottom: 5),
-                                ),
-                              )
-                            ],
-                          );
-                        }
-                      },
-                      future: Firestore.instance
-                          .collection("users")
-                          .document(userId)
-                          .get(),
-                    ),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "MEET TO DISCUSS :",
-                        style: TextStyle(
-                            color: Colors.brown.shade100, fontSize: 13),
-                      ),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 5),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(right: 20),
-                      alignment: Alignment.centerLeft,
-                      child: Text(topic,
-                          style: TextStyle(
-                              fontSize: 15, fontFamily: "Trajan Pro")),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 0, bottom: 10),
-                    ),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "SUMMARY :",
-                        style: TextStyle(
-                            color: Colors.brown.shade100, fontSize: 13),
-                      ),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 10, bottom: 5),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(right: 20),
-                      alignment: Alignment.centerLeft,
-                      child: Text(summary,
-                          style: TextStyle(
-                              fontSize: 15, fontFamily: "Trajan Pro")),
-                      padding: EdgeInsets.only(
-                          left: 10, right: 10, top: 0, bottom: 10),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
-      margin: EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
-    );
-  }
-
-  Widget createCard2(String topic, String summary, String userId,
+  Widget createCard(String topic, String summary, String userId,
       String proposalId, BuildContext context, bool isFavorite) {
     return Card(
       shape: BeveledRectangleBorder(
@@ -432,7 +278,7 @@ class ProposalsState extends State<Proposals> {
                                 margin: EdgeInsets.only(top: 20),
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  asyncSnapshot.data.data != null
+                                  (asyncSnapshot.data != null) && (asyncSnapshot.data.data != null)
                                       ? asyncSnapshot.data.data["name"]
                                       : "",
                                   style: TextStyle(fontSize: 15),
@@ -445,24 +291,74 @@ class ProposalsState extends State<Proposals> {
                                   alignment: Alignment.centerRight,
                                   child: Row(
                                     children: <Widget>[
-                                      isFavorite ?
-                                      IconButton(
-                                        icon: Icon(Icons.star, size: 20, color: Colors.yellow,),
-                                        onPressed: () async {
-                                          setState(() {
-                                            _proposals.markNotFavorite(proposalId);
-                                          });
-                                        },
-                                      ):
-                                      IconButton(
-                                        icon: Icon(Icons.star, size: 20),
-                                        onPressed: () async {
-                                          setState(() {
-                                            _proposals.markFavorite(proposalId);
-                                          });
-                                        },
-                                      )
-                                      ,
+                                      isFavorite
+                                          ? IconButton(
+                                              icon: Icon(
+                                                Icons.star,
+                                                size: 20,
+                                                color: Colors.yellow,
+                                              ),
+                                              onPressed: () async {
+                                                FirebaseUser user =
+                                                    await FirebaseAuth.instance
+                                                        .currentUser();
+                                                if (user != null) {
+                                                  DocumentReference favDocRef =
+                                                      Firestore.instance
+                                                          .collection("users")
+                                                          .document(user.uid)
+                                                          .collection(
+                                                              "favorites")
+                                                          .document(proposalId);
+                                                  try {
+                                                    await favDocRef.delete();
+                                                  } catch (err) {
+                                                    print(err);
+                                                    var snackbar = new SnackBar(
+                                                        duration: new Duration(
+                                                            seconds: 2),
+                                                        content: Text(
+                                                            "Error While Un-favoriting. Try Again."));
+                                                    Scaffold.of(context)
+                                                        .showSnackBar(snackbar);
+                                                  }
+                                                } else {
+                                                  // TODO harsh please !!!
+                                                }
+                                              },
+                                            )
+                                          : IconButton(
+                                              icon: Icon(Icons.star, size: 20),
+                                              onPressed: () async {
+                                                FirebaseUser user =
+                                                    await FirebaseAuth.instance
+                                                        .currentUser();
+                                                if (user != null) {
+                                                  DocumentReference favDocRef =
+                                                      Firestore.instance
+                                                          .collection("users")
+                                                          .document(user.uid)
+                                                          .collection(
+                                                              "favorites")
+                                                          .document(proposalId);
+                                                  try {
+                                                    await favDocRef.setData(
+                                                        {"id": proposalId});
+                                                  } catch (err) {
+                                                    print(err);
+                                                    var snackbar = new SnackBar(
+                                                        duration: new Duration(
+                                                            seconds: 2),
+                                                        content: Text(
+                                                            "Error While Favoriting. Try again."));
+                                                    Scaffold.of(context)
+                                                        .showSnackBar(snackbar);
+                                                  }
+                                                } else {
+                                                  // TODO harsh please !!!
+                                                }
+                                              },
+                                            ),
                                       IconButton(
                                         icon: Icon(Icons.chat, size: 20),
                                         onPressed: () async {
@@ -576,41 +472,46 @@ class ProposalsState extends State<Proposals> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Container(
-          height: 60,
-          color: Colors.grey.shade900,
-          alignment: Alignment.centerLeft,
-          padding: EdgeInsets.only(left: 14),
-          child: Row(
-            children: <Widget>[
-              Container(
-                  margin: EdgeInsets.only(right: 10),
-                  child: ButtonTheme(
-                    minWidth: 30,
-                    shape: BeveledRectangleBorder(
-                        borderRadius: BorderRadius.circular(5)),
-                    child: RaisedButton(
-                      elevation: 15,
-                      onPressed: () {
-                        configureFilter(context);
-                      },
-                      child: Text(
-                        "SUBS",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      color: brownTextColor2,
-                    ),
-                  )),
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  children: createChips(),
-                ),
+        widget.dontShowFilterBar
+            ? Container(
+                width: 0,
+                height: 0,
               )
-            ],
-          ),
-        ),
+            : Container(
+                height: 60,
+                color: Colors.grey.shade900,
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.only(left: 14),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                        margin: EdgeInsets.only(right: 10),
+                        child: ButtonTheme(
+                          minWidth: 30,
+                          shape: BeveledRectangleBorder(
+                              borderRadius: BorderRadius.circular(5)),
+                          child: RaisedButton(
+                            elevation: 15,
+                            onPressed: () {
+                              configureFilter(context);
+                            },
+                            child: Text(
+                              "SUBS",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            color: brownTextColor2,
+                          ),
+                        )),
+                    Flexible(
+                      child: ListView(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        children: createChips(),
+                      ),
+                    )
+                  ],
+                ),
+              ),
         Flexible(
           child: ListView.builder(
             shrinkWrap: true,
@@ -619,8 +520,8 @@ class ProposalsState extends State<Proposals> {
               String topic = currEvent.data["title"] ?? "";
               String summary = currEvent.data["summary"] ?? "";
               String userId = currEvent.data["user_id"];
-              return createCard2(
-                  topic, summary, userId, currEvent.documentID, context, _proposals.isFavorite(index));
+              return createCard(topic, summary, userId, currEvent.documentID,
+                  context, _proposals.isFavorite(currEvent.documentID));
             },
             itemCount: _proposals.size(),
           ),
@@ -630,46 +531,16 @@ class ProposalsState extends State<Proposals> {
   }
 }
 
-
 class ListOfProposals {
   List<DocumentSnapshot> _proposals = new List();
-  List<bool> _markFavoriteList = new List();
+  List<DocumentSnapshot> _favorites = new List();
 
   void clear() {
     _proposals.clear();
-    _markFavoriteList.clear();
   }
 
   void addProposal(DocumentSnapshot snapshot) {
     _proposals.add(snapshot);
-    _markFavoriteList.add(false);
-  }
-
-  void markFavorite(String documentId) {
-    print("marking fav" + documentId);
-    for (int i = 0; i < _markFavoriteList.length; i++) {
-      print("prop " + _proposals[i].documentID);
-      if (_proposals[i].documentID == documentId) {
-        _markFavoriteList[i] = true;
-        break;
-      }
-    }
-  }
-
-  void markNotFavorite(String documentId) {
-    print("marking not fav" + documentId);
-    for (int i = 0; i < _markFavoriteList.length; i++) {
-      if (_proposals[i].documentID == documentId) {
-        _markFavoriteList[i] = false;
-        break;
-      }
-    }
-  }
-
-  void markFavorites(List<String> documentIds) {
-    for (int i = 0; i < documentIds.length; i++) {
-      markFavorite(documentIds[i]);
-    }
   }
 
   int size() {
@@ -692,13 +563,19 @@ class ListOfProposals {
     }
     return false;
   }
-  
-  bool isFavorite(int index) {
-    print(_markFavoriteList);
-    if (index >= 0 && index < size()) {
-      return _markFavoriteList[index];
-    } else {
-      return false;
+
+  void setFavorites(List<DocumentSnapshot> favorites) {
+    if (favorites != null) {
+      this._favorites = favorites;
     }
+  }
+
+  bool isFavorite(String proposalId) {
+    for (DocumentSnapshot favSnap in _favorites) {
+      if (favSnap.documentID == proposalId) {
+        return true;
+      }
+    }
+    return false;
   }
 }

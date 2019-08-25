@@ -86,7 +86,7 @@ class GroupDetailsState extends State<GroupDetails> {
                     Divider(
                       color: Colors.grey,
                     ),
-                    Flexible(child: ProposalsForOneGroup([asyncSnapshot.data.data["title"]]))
+                    Flexible(child: ProposalsForOneGroup(asyncSnapshot.data.data["title"]))
                   ],
                 ),
               );
