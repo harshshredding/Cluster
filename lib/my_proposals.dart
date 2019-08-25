@@ -229,6 +229,120 @@ class MyProposalsState extends State<MyProposals> {
     );
   }
 
+  Widget createDefaultCard() {
+    return Card(
+      shape: BeveledRectangleBorder(
+          borderRadius: BorderRadius.only(bottomRight: Radius.circular(20))),
+      elevation: 5,
+      child: Column(
+        children: <Widget>[
+          Container(
+            alignment: Alignment.center,
+            color: Colors.brown,
+            child: Text(
+              "DISCUSSION",
+              style: TextStyle(
+                color: Colors.brown.shade200,
+                fontSize: 15,
+                fontFamily: 'CarterOne',
+                letterSpacing: 3,
+              ),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Flexible(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                       Row(
+                        children: <Widget>[
+                          Container(
+                            margin: EdgeInsets.only(left: 10, top: 10),
+                            child:  CircleAvatar(
+                              radius: 20,
+                              backgroundImage: AssetImage(
+                                  'images/default_event.jpg'),
+                              backgroundColor: Colors.transparent,
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.only(top: 20),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                             "loading",
+                              style: TextStyle(fontSize: 15),
+                            ),
+                            padding: EdgeInsets.only(
+                                left: 10, right: 10, top: 0, bottom: 5),
+                          ),
+                          Expanded(
+                            child: Container(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                  icon: Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
+                                  ),
+                                onPressed: () {},
+                            ),
+                            )
+                          )
+                        ],
+                      )
+                      ,
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "MEET TO DISCUSS :",
+                        style: TextStyle(
+                            color: Colors.brown.shade100, fontSize: 13),
+                      ),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 10, bottom: 5),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerLeft,
+                      child: Text("Loading",
+                          style: TextStyle(
+                              fontSize: 15, fontFamily: "Trajan Pro")),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 0, bottom: 10),
+                    ),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "SUMMARY :",
+                        style: TextStyle(
+                            color: Colors.brown.shade100, fontSize: 13),
+                      ),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 10, bottom: 5),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerLeft,
+                      child: Text("Loading",
+                          style: TextStyle(
+                              fontSize: 15, fontFamily: "Trajan Pro")),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 0, bottom: 10),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+      margin: EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
+    );
+  }
+
   Widget buildCardsList(QuerySnapshot querySnapshot, context) {
     List<DocumentSnapshot> proposals = querySnapshot.documents;
     return ListView.builder(
@@ -252,8 +366,7 @@ class MyProposalsState extends State<MyProposals> {
               case ConnectionState.waiting:
               case ConnectionState.none:
               default:
-                return Container(width: 0, height: 0);
-                break;
+                return createDefaultCard();
             }
           },
           future: Firestore.instance
