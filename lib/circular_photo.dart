@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_profile.dart';
 
-
+/// Represents the avatar photo of the user.
+/// Takes a userId and the radius of the photo
+/// If userId == null, default photo is shown.
 class CircularPhoto extends StatefulWidget {
   final String userId;
   final double radius;
@@ -46,13 +48,35 @@ class CircularPhotoState extends State<CircularPhoto> {
               },
             );
           } else {
-            return Text("Error");
+            return CircleAvatar(
+              radius: widget.radius,
+              backgroundImage: AssetImage('images/default_event.jpg'),
+              backgroundColor: Colors.transparent,
+            );
           }
         } else {
-          return Container(height: 0, width: 0,);
+          return CircleAvatar(
+            radius: widget.radius,
+            backgroundImage: AssetImage('images/default_event.jpg'),
+            backgroundColor: Colors.transparent,
+          );
         }
       },
       future: userFuture,
+    );
+  }
+}
+
+class DefaultCircularPhoto extends StatelessWidget {
+  final double radius;
+
+  DefaultCircularPhoto(this.radius);
+
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: this.radius,
+      backgroundImage: AssetImage('images/default_event.jpg'),
+      backgroundColor: Colors.transparent,
     );
   }
 }

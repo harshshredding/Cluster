@@ -93,7 +93,6 @@ class MyChatsState extends State<MyChats> {
 
                           });
                         } else {
-                          print("yay");
                           await Firestore.instance
                               .runTransaction((Transaction t) async {
                             await t.delete(chatReference);
@@ -130,9 +129,27 @@ class MyChatsState extends State<MyChats> {
                               )),
                   );
                 } else {
-                  return Container(
-                    width: 0,
-                    height: 0,
+                  return ListTile(
+                      leading: CircularPhoto(photoUserId, 30),
+                      title: Text(
+                        "Loading...",
+                        style: TextStyle(fontFamily: "Trajan Pro"),
+                      ),
+                      subtitle: Text(
+                        "Loading...",
+                        style: TextStyle(fontFamily: "Trajan Pro"),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: newMessageReceived
+                          ? Text(
+                        "NEW",
+                        style: TextStyle(
+                            color: Colors.lightBlueAccent.shade100),
+                      )
+                          : Container(
+                        width: 0,
+                        height: 0,
+                      )
                   );
                 }
               },

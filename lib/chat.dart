@@ -205,13 +205,20 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     String interestedId = chat.data['interested_id'];
     DocumentReference creatorReference = firestore.collection("users").document(creatorId).collection("chats").document(roomId);
     DocumentReference interestedReference = firestore.collection("users").document(interestedId).collection("chats").document(roomId);
+
+    String firstName;
+    if (userDetails.data['name'] != null) {
+      String name =  userDetails.data['name'];
+      firstName = name.split(new RegExp('\\s+'))[0];
+    }
+    firstName = (firstName ?? "");
     firestore.runTransaction((Transaction t) async {
       await t.update(chatReference, {"last_updated": currentTime});
-      await t.update(chatReference, {"last_message": text});
+      await t.update(chatReference, {"last_message": firstName + " : " + text});
       await t.update(creatorReference, {"last_updated": currentTime});
-      await t.update(creatorReference, {"last_message": text});
+      await t.update(creatorReference, {"last_message": firstName + " : " + text});
       await t.update(interestedReference, {"last_updated": currentTime});
-      await t.update(interestedReference, {"last_message": text});
+      await t.update(interestedReference, {"last_message": firstName + " : " + text});
     }).catchError((error) {print("yo");});
     setState(() {
       _isComposing = false;
