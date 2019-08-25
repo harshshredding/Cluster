@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'user_profile.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'proposal_details.dart';
 import 'proposals.dart';
 
 class MyFavoriteProposals extends StatefulWidget {
@@ -232,6 +231,119 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
     );
   }
 
+  Widget createDefaultCard() {
+    return Card(
+      shape: BeveledRectangleBorder(
+          borderRadius: BorderRadius.only(bottomRight: Radius.circular(20))),
+      elevation: 5,
+      child: Column(
+        children: <Widget>[
+          Container(
+            alignment: Alignment.center,
+            color: Colors.brown,
+            child: Text(
+              "DISCUSSION",
+              style: TextStyle(
+                color: Colors.brown.shade200,
+                fontSize: 15,
+                fontFamily: 'CarterOne',
+                letterSpacing: 3,
+              ),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Flexible(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.only(left: 10, top: 10),
+                          child:  CircleAvatar(
+                            radius: 20,
+                            backgroundImage: AssetImage(
+                                'images/default_event.jpg'),
+                            backgroundColor: Colors.transparent,
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(top: 20),
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "loading",
+                            style: TextStyle(fontSize: 15),
+                          ),
+                          padding: EdgeInsets.only(
+                              left: 10, right: 10, top: 0, bottom: 5),
+                        ),
+                        Expanded(
+                            child: Container(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                icon: Icon(Icons.chat, size: 20),
+                                onPressed: () async {
+                                  // We do nothing !
+                                },
+                              ),
+                            )
+                        )
+                      ],
+                    )
+                    ,
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "MEET TO DISCUSS :",
+                        style: TextStyle(
+                            color: Colors.brown.shade100, fontSize: 13),
+                      ),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 10, bottom: 5),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerLeft,
+                      child: Text("Loading",
+                          style: TextStyle(
+                              fontSize: 15, fontFamily: "Trajan Pro")),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 0, bottom: 10),
+                    ),
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "SUMMARY :",
+                        style: TextStyle(
+                            color: Colors.brown.shade100, fontSize: 13),
+                      ),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 10, bottom: 5),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerLeft,
+                      child: Text("Loading",
+                          style: TextStyle(
+                              fontSize: 15, fontFamily: "Trajan Pro")),
+                      padding: EdgeInsets.only(
+                          left: 10, right: 10, top: 0, bottom: 10),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+      margin: EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
+    );
+  }
+
   Widget buildCardsList(QuerySnapshot querySnapshot, context) {
     List<DocumentSnapshot> proposals = querySnapshot.documents;
     return ListView.builder(
@@ -255,8 +367,7 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
               case ConnectionState.waiting:
               case ConnectionState.none:
               default:
-                return createCard(
-                    "Loading", "Loading", "Loading", "Loading", context);
+                return createDefaultCard();
                 break;
             }
           },
