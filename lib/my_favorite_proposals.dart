@@ -68,43 +68,47 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
                                 margin: EdgeInsets.only(left: 10, top: 10),
                                 child: (userId != null)
                                     ? GestureDetector(
-                                  child: CircleAvatar(
-                                    radius: 20,
-                                    backgroundImage: NetworkImage(
-                                        asyncSnapshot
-                                            .data.data["photo_url"] ??
-                                            ""),
-                                    backgroundColor: Colors.transparent,
-                                  ),
-                                  onTap: () {
-                                    if (asyncSnapshot.data.data != null) {
-                                      if (asyncSnapshot.data.documentID !=
-                                          null) {
-                                        Navigator.of(context).push<void>(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    UserProfile(false,
-                                                        userDocumentId:
-                                                        asyncSnapshot
-                                                            .data
-                                                            .documentID),
-                                                fullscreenDialog: true));
-                                      }
-                                    }
-                                  },
-                                )
+                                        child: CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage:
+                                          asyncSnapshot.data != null ?
+                                          NetworkImage(
+                                              asyncSnapshot.data.data[
+                                                              "photo_url"] ?? ""):
+                                          NetworkImage("")
+                                          ,
+                                          backgroundColor: Colors.transparent,
+                                        ),
+                                        onTap: () {
+                                          if (asyncSnapshot.data.data != null) {
+                                            if (asyncSnapshot.data.documentID !=
+                                                null) {
+                                              Navigator.of(context).push<void>(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          UserProfile(false,
+                                                              userDocumentId:
+                                                                  asyncSnapshot
+                                                                      .data
+                                                                      .documentID),
+                                                      fullscreenDialog: true));
+                                            }
+                                          }
+                                        },
+                                      )
                                     : CircleAvatar(
-                                  radius: 20,
-                                  backgroundImage: AssetImage(
-                                      'images/default_event.jpg'),
-                                  backgroundColor: Colors.transparent,
-                                ),
+                                        radius: 20,
+                                        backgroundImage: AssetImage(
+                                            'images/default_event.jpg'),
+                                        backgroundColor: Colors.transparent,
+                                      ),
                               ),
                               Container(
                                 margin: EdgeInsets.only(top: 20),
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  asyncSnapshot.data.data != null
+                                  (asyncSnapshot.data != null) &&
+                                          (asyncSnapshot.data.data != null)
                                       ? asyncSnapshot.data.data["name"]
                                       : "",
                                   style: TextStyle(fontSize: 15),
@@ -115,18 +119,27 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
                               Expanded(
                                 child: Container(
                                   alignment: Alignment.centerRight,
-                                  child: IconButton(
-                                    icon: Icon(Icons.chat, size: 20),
-                                    onPressed: () async {
-                                      ProposalsState.createChatIfDoesntExist(
-                                          userId, proposalId, context);
-                                    },
+                                  child: Row(
+                                    children: <Widget>[
+                                      IconButton(
+                                        icon: Icon(Icons.chat, size: 20),
+                                        onPressed: () async {
+                                          ProposalsState
+                                              .createChatIfDoesntExist(
+                                                  userId, proposalId, context);
+                                        },
+                                      )
+                                    ],
+                                    mainAxisAlignment: MainAxisAlignment.end,
                                   ),
+                                  margin: EdgeInsets.only(
+                                      left: 10, right: 5, top: 5, bottom: 5),
                                 ),
                               )
                             ],
                           );
                         } else {
+                          // If stuff hasn't loaded yet
                           return Row(
                             children: <Widget>[
                               Container(
@@ -134,7 +147,7 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
                                 child: CircleAvatar(
                                   radius: 20,
                                   backgroundImage:
-                                  AssetImage('images/default_event.jpg'),
+                                      AssetImage('images/default_event.jpg'),
                                   backgroundColor: Colors.transparent,
                                 ),
                               ),
@@ -154,10 +167,11 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
                                   child: IconButton(
                                     icon: Icon(Icons.chat, size: 20),
                                     onPressed: () async {
-                                      ProposalsState.createChatIfDoesntExist(
-                                          userId, proposalId, context);
+                                      // We do nothing !
                                     },
                                   ),
+                                  margin: EdgeInsets.only(
+                                      left: 10, right: 5, top: 5, bottom: 5),
                                 ),
                               )
                             ],
@@ -241,7 +255,8 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
               case ConnectionState.waiting:
               case ConnectionState.none:
               default:
-                return Container(width: 0, height: 0);
+                return createCard(
+                    "Loading", "Loading", "Loading", "Loading", context);
                 break;
             }
           },
