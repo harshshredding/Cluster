@@ -96,6 +96,13 @@ class HomeState extends State<Home> {
               },
             ),
             ListTile(
+              title: Text("My Favorites"),
+              onTap: () async {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, "/my_favorites");
+              },
+            ),
+            ListTile(
               title: Text("Log Out"),
               onTap: () async {
                 await FirebaseAuth.instance.signOut();
