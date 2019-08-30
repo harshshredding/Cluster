@@ -2,15 +2,19 @@
 
 First things first :
 
+Download the app at [this link](https://apps.apple.com/bm/app/quickcoffee/id1473773572?fbclid=IwAR2wVjpWUgG6cYsAxXocVAO4wsDIAsG5YNLS-r-gFsCdU23vtfLWBKNg-qc)
+
 [landing page](https://harshv5.wixsite.com/kluzter)
 
-Available for UW students only. 
+Available for UW students only (right now). 
 Easily have in-person, in-depth conversations on topics you care about. Find people based on discussion topics. Create new groups easily.
 
 Create a discussion proposal so that people can find you(and you can find them). People interested in your discussion proposal will contact you. Set up an in-person meeting, or set up video chat sessions very easily using our chat-bot. Post your discussion proposal in specific groups to find better people. Explore groups to meet interesting people.
 
 # HELP ME
 Every crumble of code is appreciated.
+The code might be overwhelming to some of you. I want you to PLEASE complain if it is using curse-words : we value code readability a lot here. It is usually never the reader's fault if something is super complex.
+I (Harsh) am always there for you, always. Disturb me if you are stuck for more than an hour on some stupid thing.
 
 # Setup
 
