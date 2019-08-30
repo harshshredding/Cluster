@@ -1,4 +1,4 @@
-# cluster
+# QuickCoffee
 
 First things first :
 
@@ -55,7 +55,6 @@ I recommend using Android Studio.
 For help getting started with Flutter, view our 
 [online documentation](https://flutter.dev/docs), which offers tutorials, 
 samples, guidance on mobile development, and a full API reference.
-
 Also watch this below video to understand how easy it is to work with UI in flutter.
 - [Lab: Flutter Widget position](https://fireship.io/lessons/flutter-widget-positioning-guide/)
 Also watch the following series to understand Firestore. The Distributed NoSQL database
@@ -65,6 +64,11 @@ Watch the entire series :), the guys is awesome.
 Read design_doc.md in root
 I think you are now ready to dive in. Simply ask me questions if you don't understand some
 concept.
+- [Flutter State management](https://www.youtube.com/watch?v=3tm-R7ymwhc)
+Watch this video to understand what `State` in flutter is and how to manage it to create complicated applications.
+- [How to Layout Stuff in Flutter](https://www.youtube.com/watch?v=u0e2L5yoxFI)
+Watch this video to understand how to lay out widgets in a flutter application.
+
 
 
  
