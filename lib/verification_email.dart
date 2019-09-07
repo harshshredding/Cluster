@@ -21,7 +21,7 @@ class VerificationEmailState extends State<VerificationEmail> {
   String _error;
   bool _passVisible = false;
 
-  _login(BuildContext context) async {
+  void _login(BuildContext context) async {
     try {
       FirebaseUser user = await _auth.signInWithEmailAndPassword(
           email: _controllerEmail.text,

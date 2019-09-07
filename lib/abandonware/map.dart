@@ -7,7 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/cupertino.dart';
 import 'event_details_static.dart';
 import 'favorite_events.dart';
-import 'helper.dart';
+import 'package:CoffeeShop/helper.dart';
 
 class MapScreen extends StatefulWidget {
   MapScreenState createState() {

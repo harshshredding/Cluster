@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+/// This page represents the first screen that users when they first
+/// open the app. It will show them an option to register.
 class LoginHome extends StatefulWidget {
   final bool shouldLogout;
 

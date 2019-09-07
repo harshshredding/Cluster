@@ -87,5 +87,9 @@ Read design_doc.md in root
 I think you are now ready to dive in. Simply ask me questions if you don't understand some
 concept.
 
-
- 
+# Best Practices
+I know we are developing quickly, but it always helps to respect and follow some practices
+so that we don't get too excited and make major mistakes. Practices are : 
+- Lint code before pushing.
+- Write at least one test before pushing.
+- Think a lot before naming a variable.

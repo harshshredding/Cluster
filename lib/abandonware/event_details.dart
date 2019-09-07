@@ -6,11 +6,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'chat.dart';
+import 'package:CoffeeShop/chat.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'helper.dart';
-import 'user_profile.dart';
+import 'package:CoffeeShop/helper.dart';
+import 'package:CoffeeShop/user_profile.dart';
 
 class DetailsScreen extends StatefulWidget {
   final String id;

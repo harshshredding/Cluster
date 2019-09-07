@@ -9,7 +9,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:uuid/uuid.dart';
-import 'helper.dart';
+import 'package:CoffeeShop/helper.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -119,9 +119,10 @@ class AddEventState extends State<AddEventForm> {
   }
 
   Future<DocumentReference> _pushEventToFirestoreWithoutImage(
-      summary, geoPoint, title, date, time, place, userId, userPhotoUrl,
-      userDisplayName) async {
-    return _firestore.collection('events').add({
+      dynamic summary, dynamic geoPoint, dynamic title, dynamic date,
+      dynamic time, dynamic place, dynamic userId, dynamic userPhotoUrl,
+      dynamic userDisplayName) async {
+    return _firestore.collection('events').add(<String, dynamic>{
       'summary': summary,
       'position': geoPoint.data,
       'title': title,
@@ -135,9 +136,11 @@ class AddEventState extends State<AddEventForm> {
   }
 
   Future<DocumentReference> _pushEventToFirestoreWithImage(
-      summary, geoPoint, title, date, time, place, downloadUrl,
-      userId, userPhotoUrl, userDisplayName) async {
-    return _firestore.collection('events').add({
+      dynamic summary, dynamic geoPoint, dynamic title, dynamic date, dynamic time,
+      dynamic place, dynamic downloadUrl,
+      dynamic userId, dynamic userPhotoUrl,
+      dynamic userDisplayName) async {
+    return _firestore.collection('events').add(<String, dynamic>{
       'summary': summary,
       'position': geoPoint.data,
       'title': title,
@@ -217,12 +220,12 @@ class AddEventState extends State<AddEventForm> {
                 StorageUploadTask uploadTask = storageRef.putFile(_image);
 
                 // Show a snackbar
-                var snackbar = new SnackBar(
-                  duration: new Duration(seconds: 60),
-                  content: new Row(
+                var snackbar = SnackBar(
+                  duration: Duration(seconds: 60),
+                  content: Row(
                     children: <Widget>[
-                      new CircularProgressIndicator(),
-                      new Text("Uploading Image")
+                      CircularProgressIndicator(),
+                      Text("Uploading Image")
                     ],
                   ),
                 );
@@ -237,8 +240,8 @@ class AddEventState extends State<AddEventForm> {
                   duration: new Duration(seconds: 60),
                   content: new Row(
                     children: <Widget>[
-                      new CircularProgressIndicator(),
-                      new Text("Publishing event")
+                       CircularProgressIndicator(),
+                       Text("Publishing event")
                     ],
                   ),
                 );

@@ -5,6 +5,7 @@ import 'user_profile.dart';
 /// Represents the avatar photo of the user.
 /// Takes a userId and the radius of the photo
 /// If userId == null, default photo is shown.
+/// Clicking on this photo redirects to user profile.
 class CircularPhoto extends StatefulWidget {
   final String userId;
   final double radius;
@@ -67,6 +68,7 @@ class CircularPhotoState extends State<CircularPhoto> {
   }
 }
 
+/// Represents a circular photo with default image.
 class DefaultCircularPhoto extends StatelessWidget {
   final double radius;
 

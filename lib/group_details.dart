@@ -56,7 +56,8 @@ class GroupDetailsState extends State<GroupDetails> {
                           margin: EdgeInsets.only(left: 10),
                           child: RaisedButton(
                               onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) {
                                   return AddProposalScreen(preSelectedGroups: [asyncSnapshot.data.data['title']]);
                                 }));
                               },

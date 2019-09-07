@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'map.dart';
+import 'package:CoffeeShop/abandonware/map.dart';
 import 'add_proposal.dart';
 import 'login_home.dart';
 import 'register.dart';
@@ -10,7 +10,7 @@ import 'create_group.dart';
 import 'login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'verification_email.dart';
-import 'package:CoffeeShop/ForgotPass.dart';
+import 'package:CoffeeShop/forgot_pass.dart';
 import 'my_favorite_proposals.dart';
 
 Future<String> _loginUser() async {
@@ -28,6 +28,7 @@ Future<String> _loginUser() async {
 String _authenticatedUser;
 
 void main() async  {
+  // IMPORTANT : NOTE how we try to lo
   _authenticatedUser = await _loginUser();
   print(_authenticatedUser);
   print('app loaded');

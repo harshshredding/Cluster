@@ -17,7 +17,7 @@ class ForgotPassState extends State<ForgotPass> {
   TextEditingController(text: "");
   String _error;
 
-  _sendEmail(BuildContext context) async {
+  void _sendEmail(BuildContext context) async {
     try {
       await _auth.sendPasswordResetEmail(email: _controllerEmail.text);
       var snackbar = new SnackBar(

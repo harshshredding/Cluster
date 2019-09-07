@@ -135,8 +135,8 @@ class UserProfileState extends State<UserProfile> {
   }
 
   void getImageAndCrop() async {
-    File unCroppedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
-    File croppedImage = await ImageCropper.cropImage(sourcePath: unCroppedImage.path,
+    final File unCroppedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
+    final File croppedImage = await ImageCropper.cropImage(sourcePath: unCroppedImage.path,
         ratioX: 1.0,
         ratioY: 1.0,
         maxWidth: 512,
@@ -163,7 +163,7 @@ class UserProfileState extends State<UserProfile> {
                   ),
                   onTap: chooseImage,
                 ),
-                margin: EdgeInsets.only(top: 20),
+                margin: const EdgeInsets.only(top: 20),
               )
                   :
               Container(
@@ -175,7 +175,7 @@ class UserProfileState extends State<UserProfile> {
                   ),
                   onTap: chooseImage,
                 ),
-                margin: EdgeInsets.only(top: 20),
+                margin: const EdgeInsets.only(top: 20),
               ),
               Container(
                 alignment: Alignment.center,
@@ -189,7 +189,7 @@ class UserProfileState extends State<UserProfile> {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(top: 35, left: 22),
+          margin: const EdgeInsets.only(top: 35, left: 22),
           alignment: Alignment.centerLeft,
           child: Text('ABOUT ME',
               style: TextStyle(
@@ -207,7 +207,7 @@ class UserProfileState extends State<UserProfile> {
               border: OutlineInputBorder(),
             ),
           ),
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
         ),
         Container(
           margin: EdgeInsets.only(top: 20, left: 22),
@@ -218,7 +218,7 @@ class UserProfileState extends State<UserProfile> {
                   fontFamily: 'Heebo-Black',
                   color: Colors.grey.shade200)),
         ),
-        (_editMode)
+        _editMode
             ? Container(
           alignment: Alignment.centerLeft,
           child: TextField(
@@ -247,7 +247,7 @@ class UserProfileState extends State<UserProfile> {
                             LinkednPage(_controllerLinkedn.text)));
               },
               child: Text(
-                "My Linkedn",
+                'My Linkedn',
                 style: TextStyle(color: Colors.white),
               ),
             ))
@@ -263,7 +263,7 @@ class UserProfileState extends State<UserProfile> {
               onPressed: null,
               color: Colors.grey,
               child: Text(
-                "Linkedn N/A",
+                'Linkedn N/A',
                 style: TextStyle(color: Colors.white),
               ),
             ))
@@ -286,12 +286,12 @@ class UserProfileState extends State<UserProfile> {
               case ConnectionState.done:
                 {
                   if (!_hasEdited) {
-                    _controllerSummary.text = (snapshot.data.data["summary"] ??
-                        _controllerSummary.text);
-                    _controllerLinkedn.text = (snapshot.data.data["linkedn"] ??
-                        _controllerLinkedn.text);
-                    _controllerName.text = (snapshot.data.data["name"] ??
-                        _controllerLinkedn.text);
+                    _controllerSummary.text = snapshot.data.data['summary'] ??
+                        _controllerSummary.text;
+                    _controllerLinkedn.text = snapshot.data.data['linkedn'] ??
+                        _controllerLinkedn.text;
+                    _controllerName.text = snapshot.data.data['name'] ??
+                        _controllerLinkedn.text;
                   }
                   if (snapshot.hasError) {
                     return Center(child: Text("Error occured"));
@@ -299,9 +299,9 @@ class UserProfileState extends State<UserProfile> {
                     return SingleChildScrollView(
                         child: Column(children: [
                           buildUserForm(
-                              snapshot.data.data['name'] ?? "",
-                              snapshot.data.data['photo_url'] ?? "",
-                              snapshot.data.data['summary'] ?? "",
+                              snapshot.data.data['name'] ?? '',
+                              snapshot.data.data['photo_url'] ?? '',
+                              snapshot.data.data['summary'] ?? '',
                               ),
                           _editMode
                               ? RaisedButton(
@@ -330,7 +330,7 @@ class UserProfileState extends State<UserProfile> {
   }
 
   Widget build(BuildContext context) {
-    return new Scaffold(
+    return Scaffold(
         appBar: AppBar(
             title: Text("Profile"),
           actions: <Widget>[
@@ -351,7 +351,7 @@ class UserProfileState extends State<UserProfile> {
         body: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            FocusScope.of(context).requestFocus(new FocusNode());
+            FocusScope.of(context).requestFocus(FocusNode());
           },
           child: getUserProfile(context),
         )

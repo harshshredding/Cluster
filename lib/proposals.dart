@@ -197,7 +197,7 @@ class ProposalsState extends State<Proposals> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  ChatScreen(chatId, creatorUserId, proposalId)));
+                  ChatScreen(chatId, creatorUserId)));
     }
   }
 

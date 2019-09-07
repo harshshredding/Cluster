@@ -28,7 +28,7 @@ class Event {
 
 /// If the field exists in the snapshot result,
 /// create a widget using the given "factory" method.
-Widget createIfFieldExists(DocumentSnapshot snapshot, List<String> fields, factory) {
+Widget createIfFieldExists(DocumentSnapshot snapshot, List<String> fields, Function factory) {
   for (String field in fields) {
     if (snapshot.data[field] == null) {
       return Container(height: 0, width: 0,);

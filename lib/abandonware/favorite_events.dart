@@ -2,11 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'chat.dart';
+import 'package:CoffeeShop/chat.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'helper.dart';
-import 'event_details.dart';
+import 'package:CoffeeShop/helper.dart';
+import 'package:CoffeeShop/abandonware/event_details.dart';
 
 /// Page that lists all the favorite events of the user
 class FavoritesList extends StatelessWidget {

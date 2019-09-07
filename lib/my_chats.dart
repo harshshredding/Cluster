@@ -165,7 +165,7 @@ class MyChatsState extends State<MyChats> {
               context,
               MaterialPageRoute(
                   builder: (context) =>
-                      ChatScreen(chatId, photoUserId, proposalId)));
+                      ChatScreen(chatId, photoUserId)));
         },
       ),
     );
