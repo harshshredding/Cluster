@@ -159,7 +159,9 @@ class ProposalsState extends State<Proposals> {
     if (creatorUserId == null || proposalId == null) {
       var snackbar = new SnackBar(
           duration: new Duration(seconds: 2),
-          content: Text("Some error occured."));
+          content: Text("Some error occured."),
+          backgroundColor: Colors.red,
+      );
       Scaffold.of(context).showSnackBar(snackbar);
     } else {
       FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
@@ -318,7 +320,9 @@ class ProposalsState extends State<Proposals> {
                                                         duration: new Duration(
                                                             seconds: 2),
                                                         content: Text(
-                                                            "Error While Un-favoriting. Try Again."));
+                                                            "Error While Un-favoriting. Try Again."),
+                                                      backgroundColor: Colors.red,
+                                                    );
                                                     Scaffold.of(context)
                                                         .showSnackBar(snackbar);
                                                   }
@@ -350,7 +354,9 @@ class ProposalsState extends State<Proposals> {
                                                         duration: new Duration(
                                                             seconds: 2),
                                                         content: Text(
-                                                            "Error While Favoriting. Try again."));
+                                                            "Error While Favoriting. Try again."),
+                                                        backgroundColor: Colors.red,
+                                                    );
                                                     Scaffold.of(context)
                                                         .showSnackBar(snackbar);
                                                   }

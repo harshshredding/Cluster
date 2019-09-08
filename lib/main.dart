@@ -12,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'verification_email.dart';
 import 'package:CoffeeShop/forgot_pass.dart';
 import 'my_favorite_proposals.dart';
+import 'my_groups.dart';
 
 Future<String> _loginUser() async {
   try {
@@ -57,6 +58,7 @@ class MyApp extends StatelessWidget {
         '/verification_email': (context) => VerificationEmail(),
         '/forgot_pass': (context) => ForgotPass(),
         '/my_favorites': (context) => MyFavoriteProposals(),
+        '/my_groups': (context) => MyGroups(),
       },
     );
   }

@@ -24,7 +24,9 @@ class RegisterState extends State<Register> {
       await _userToVerify.sendEmailVerification();
       var snackbar = new SnackBar(
           duration: new Duration(seconds: 4),
-          content: Text("Verfication Email Sent"));
+          content: Text("Verfication Email Sent"),
+          backgroundColor: Colors.green,
+      );
       Scaffold.of(context).showSnackBar(snackbar);
     } catch (err) {
       print("failed to send verification email");
@@ -39,7 +41,9 @@ class RegisterState extends State<Register> {
       await user.sendEmailVerification();
       var snackbar = new SnackBar(
           duration: new Duration(seconds: 4),
-          content: Text("Verfication Email Sent"));
+          content: Text("Verfication Email Sent"),
+          backgroundColor: Colors.green,
+      );
       Scaffold.of(context).showSnackBar(snackbar);
       setState(() {
         _userToVerify = user;

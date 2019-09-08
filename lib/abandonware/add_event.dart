@@ -228,6 +228,7 @@ class AddEventState extends State<AddEventForm> {
                       Text("Uploading Image")
                     ],
                   ),
+                  backgroundColor: Colors.green,
                 );
                 Scaffold.of(context).showSnackBar(snackbar);
 
@@ -244,6 +245,7 @@ class AddEventState extends State<AddEventForm> {
                        Text("Publishing event")
                     ],
                   ),
+                  backgroundColor: Colors.green,
                 );
 
                 Scaffold.of(context).showSnackBar(snackbar);

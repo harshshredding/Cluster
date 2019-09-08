@@ -100,10 +100,10 @@ class MyChatsState extends State<MyChats> {
                           });
                         }
                         Scaffold.of(context).showSnackBar(
-                            SnackBar(content: Text("Chat deleted")));
+                            SnackBar(content: Text("Chat deleted"), backgroundColor: Colors.green,));
                       } catch (err) {
                         Scaffold.of(context).showSnackBar(
-                            SnackBar(content: Text("Error Deleting chat")));
+                            SnackBar(content: Text("Error Deleting chat",), backgroundColor: Colors.red,));
                       }
                     },
                     child: ListTile(

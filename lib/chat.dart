@@ -244,6 +244,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final snackBar = SnackBar(
       content: Text('Loading old messages'),
       duration: Duration(milliseconds: 800),
+      backgroundColor: Colors.green,
     );
     // Find the Scaffold in the widget tree and use it to show a SnackBar.
     Scaffold.of(context).showSnackBar(snackBar);

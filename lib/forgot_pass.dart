@@ -22,7 +22,9 @@ class ForgotPassState extends State<ForgotPass> {
       await _auth.sendPasswordResetEmail(email: _controllerEmail.text);
       var snackbar = new SnackBar(
           duration: new Duration(seconds: 4),
-          content: Text("Reset Password Email Sent"));
+          content: Text("Reset Password Email Sent"),
+          backgroundColor: Colors.green,
+      );
       Scaffold.of(context).showSnackBar(snackbar);
     } catch (exp) {
       print(exp.code);

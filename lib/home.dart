@@ -103,6 +103,13 @@ class HomeState extends State<Home> {
               },
             ),
             ListTile(
+              title: Text("My Groups"),
+              onTap: () async {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, "/my_groups");
+              },
+            ),
+            ListTile(
               title: Text("Log Out"),
               onTap: () async {
                 await FirebaseAuth.instance.signOut();

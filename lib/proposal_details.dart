@@ -175,6 +175,7 @@ class EditProposalFormState extends State<EditProposalForm> {
                     var snackbar = new SnackBar(
                       duration: new Duration(seconds: 2),
                       content: Text("Proposal Updated"),
+                      backgroundColor: Colors.green,
                     );
                     Scaffold.of(context).showSnackBar(snackbar);
                     setState(() {

@@ -125,7 +125,7 @@ class AddProposalFormState extends State<AddProposalForm> {
     // Show a snackbar
     var snackbar = new SnackBar(
         duration: new Duration(seconds: 5),
-        content: Text("Proposal Sucessfully Published!"));
+        content: Text("Proposal Sucessfully Published!"), backgroundColor: Colors.green,);
     Scaffold.of(context).showSnackBar(snackbar);
   }
 

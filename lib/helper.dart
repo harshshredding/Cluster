@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 /// This class represents a data object that
 /// contains the logged in user's full name.
@@ -24,6 +25,23 @@ class Event {
 
   Event(this.id, this.geoPoint, this.title, this.summary, this.date, this.time,
     this.userDisplayName, this.userPhotoUrl, this.eventImageUrl, this.address, this.creatorId);
+}
+
+class LoadingSpinner extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Center(
+      child: SpinKitFadingCircle(
+        itemBuilder: (_, int index) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color:
+              index.isEven ? Colors.brown : Colors.grey,
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
 
 /// If the field exists in the snapshot result,

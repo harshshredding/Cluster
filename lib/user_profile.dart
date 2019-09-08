@@ -83,6 +83,7 @@ class UserProfileState extends State<UserProfile> {
             new Text("Uploading Image")
           ],
         ),
+        backgroundColor: Colors.green,
       );
       Scaffold.of(context).showSnackBar(snackbar);
 
@@ -99,6 +100,7 @@ class UserProfileState extends State<UserProfile> {
             new Text("Publishing event")
           ],
         ),
+        backgroundColor: Colors.green,
       );
       Scaffold.of(context).showSnackBar(snackbar);
       document.data["summary"] = _controllerSummary.text;
@@ -123,6 +125,7 @@ class UserProfileState extends State<UserProfile> {
     var snackbar = new SnackBar(
       duration: new Duration(seconds: 2),
       content: Text("Profile Updated"),
+      backgroundColor: Colors.green,
     );
     Scaffold.of(context).showSnackBar(snackbar);
   }
