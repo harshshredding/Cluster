@@ -107,10 +107,12 @@ class ProposalsState extends State<Proposals> {
     _proposals.clear();
     _proposalSubscriptions.clear();
     if (_filters.isNotEmpty) {
+      Timestamp timeNow = Timestamp.now();
       for (String filter in _filters) {
         var subscription = _firestore
             .collection("proposals")
             .where(filter, isEqualTo: true)
+            .where('expiry', isGreaterThan: timeNow)
             .snapshots()
             .listen((QuerySnapshot snapshot) {
           List<DocumentSnapshot> newDocuments = snapshot.documents;

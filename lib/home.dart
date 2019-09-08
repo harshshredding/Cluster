@@ -45,7 +45,7 @@ class HomeState extends State<Home> {
     registerToken();
   }
 
-  registerToken() async {
+  void registerToken() async {
     String token = await _fcm.getToken();
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     await Firestore.instance.collection("users").document(user.uid).collection("tokens").document(token).setData({

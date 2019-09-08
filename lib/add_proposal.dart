@@ -31,13 +31,22 @@ class AddProposalForm extends StatefulWidget {
   AddProposalFormState createState() {
     return AddProposalFormState();
   }
+
   final List<String> preSelectedGroups;
+}
+
+enum LIFETIME {
+  oneWeek,
+  twoWeeks,
+  threeWeeks,
+  oneMonth,
 }
 
 class AddProposalFormState extends State<AddProposalForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _controllerTitle = TextEditingController();
-  // IMPORTANT !!!!!!!
+
+  // IMPORTANT :
   // Had to initialize the below controller with empty string for the entire
   // form to work. This is really weird but it seems to be working.
   final TextEditingController _controllerSummary =
@@ -47,6 +56,7 @@ class AddProposalFormState extends State<AddProposalForm> {
   // wants to publish to
   bool submitting =
       false; // indicates whether we are in the process of submiting
+  LIFETIME _selectedLifeValue = LIFETIME.twoWeeks;
 
   @override
   void initState() {
@@ -91,6 +101,26 @@ class AddProposalFormState extends State<AddProposalForm> {
       },
     );
   }
+  
+  Timestamp getExpiry(Timestamp now, LIFETIME life) {
+    switch (life) {
+      case LIFETIME.oneWeek: {
+        return Timestamp.fromDate(now.toDate().add(Duration(days: 7)));
+      }
+      break;
+      case LIFETIME.twoWeeks: {
+        return Timestamp.fromDate(now.toDate().add(Duration(days: 14)));
+      }
+      break;
+      case LIFETIME.threeWeeks: {
+        return Timestamp.fromDate(now.toDate().add(Duration(days: 21)));
+      }
+      break;
+      case LIFETIME.oneMonth: {
+        return Timestamp.fromDate(now.toDate().add(Duration(days: 31)));
+      }
+    }
+  }
 
   /// we upload our proposal using the following method
   /// we pass in context to show the snackbar
@@ -102,31 +132,53 @@ class AddProposalFormState extends State<AddProposalForm> {
     for (String group in groupsSelected) {
       dataToSend[group] = true;
     }
-    dataToSend["title"] = _controllerTitle.text;
-    dataToSend["summary"] = _controllerSummary.text;
+    dataToSend['title'] = _controllerTitle.text;
+    dataToSend['summary'] = _controllerSummary.text;
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    dataToSend["user_id"] = user.uid;
-    String proposalId = Uuid().v1() + user.uid;
+    dataToSend['user_id'] = user.uid;
+    final String proposalId = Uuid().v1() + user.uid;
+    final Timestamp timeNow = Timestamp.now();
+    final Timestamp expiryTime = getExpiry(timeNow, _selectedLifeValue);
+    dataToSend['expiry'] = expiryTime;
+    dataToSend['created'] = timeNow;
     DocumentReference userProposal = _firestore
-        .collection("users")
+        .collection('users')
         .document(user.uid)
-        .collection("proposals")
+        .collection('proposals')
         .document(proposalId);
     DocumentReference proposalEntry =
-        _firestore.collection("proposals").document(proposalId);
+        _firestore.collection('proposals').document(proposalId);
     await _firestore.runTransaction((Transaction t) async {
       await t.set(proposalEntry, dataToSend);
-      await t.set(userProposal, <String, dynamic>{"id": proposalId});
+      await t.set(userProposal, <String, dynamic>{'id': proposalId});
       return null;
     });
     setState(() {
       submitting = false;
     });
     // Show a snackbar
-    var snackbar = new SnackBar(
-        duration: new Duration(seconds: 5),
-        content: Text("Proposal Sucessfully Published!"), backgroundColor: Colors.green,);
+    var snackbar = SnackBar(
+      duration: Duration(seconds: 5),
+      content: const Text('Proposal Sucessfully Published!'),
+      backgroundColor: Colors.green,
+    );
     Scaffold.of(context).showSnackBar(snackbar);
+  }
+
+  String getStringFromEnum(LIFETIME enumValue) {
+    if (enumValue == LIFETIME.oneWeek) {
+      return 'one week';
+    }
+    if (enumValue == LIFETIME.twoWeeks) {
+      return 'two weeks';
+    }
+    if (enumValue == LIFETIME.threeWeeks) {
+      return 'three weeks';
+    }
+    if (enumValue == LIFETIME.oneMonth) {
+      return 'one month';
+    }
+    throw const FormatException('Encoutered a lifetime which has not been registered');
   }
 
   @override
@@ -140,30 +192,47 @@ class AddProposalFormState extends State<AddProposalForm> {
               children: <Widget>[
                 ListTile(
                   title: TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Title',
-                    ),
-                    maxLines: 5,
-                    controller: _controllerTitle,
-                    validator: (String value) {
-                      if (value.isEmpty) {
-                        return 'Please enter some text';
-                      }
-                      return null;
-                    }
-                  ),
+                      decoration: InputDecoration(
+                        labelText: 'Title',
+                      ),
+                      maxLines: 5,
+                      controller: _controllerTitle,
+                      validator: (String value) {
+                        if (value.isEmpty) {
+                          return 'Please enter some text';
+                        }
+                        return null;
+                      }),
                 ),
                 ListTile(
                   title: TextFormField(
-                    decoration: InputDecoration(labelText: 'Summary'),
-                    maxLines: 20,
-                    controller: _controllerSummary,
-                    validator: (String value) {
-                      if (value.isEmpty) {
-                        return 'Please enter some text';
-                      }
-                      return null;
-                    }
+                      decoration: InputDecoration(labelText: 'Summary'),
+                      maxLines: 20,
+                      controller: _controllerSummary,
+                      validator: (String value) {
+                        if (value.isEmpty) {
+                          return 'Please enter some text';
+                        }
+                        return null;
+                      }),
+                ),
+                ListTile(
+                  title: const Text('Choose Lifetime'),
+                  subtitle: const Text('You can always renew life later'),
+                  trailing: DropdownButton<LIFETIME>(
+                    value: _selectedLifeValue,
+                    onChanged: (LIFETIME newLifeTime) {
+                      setState(() {
+                        _selectedLifeValue = newLifeTime;
+                      });
+                    },
+                    items: <LIFETIME>[LIFETIME.oneWeek, LIFETIME.twoWeeks, LIFETIME.threeWeeks, LIFETIME.oneMonth]
+                        .map<DropdownMenuItem<LIFETIME>>((LIFETIME value) {
+                      return DropdownMenuItem<LIFETIME>(
+                        value: value,
+                        child: Text(getStringFromEnum(value)),
+                      );
+                    }).toList(),
                   ),
                 ),
                 Container(
@@ -174,7 +243,8 @@ class AddProposalFormState extends State<AddProposalForm> {
                       onPressed: () async {
                         List<String> result = await Navigator.of(context).push(
                             MaterialPageRoute(
-                                builder: (context) => TagSelector(groupsSelected)));
+                                builder: (context) =>
+                                    TagSelector(groupsSelected)));
                         if (result != null) {
                           setState(() {
                             groupsSelected = result;
@@ -193,30 +263,30 @@ class AddProposalFormState extends State<AddProposalForm> {
                   padding: const EdgeInsets.all(20),
                   child: submitting
                       ? SpinKitFadingCircle(
-                    itemBuilder: (_, int index) {
-                      return DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: index.isEven ? Colors.brown : Colors.grey,
-                        ),
-                      );
-                    },
-                  )
+                          itemBuilder: (_, int index) {
+                            return DecoratedBox(
+                              decoration: BoxDecoration(
+                                color:
+                                    index.isEven ? Colors.brown : Colors.grey,
+                              ),
+                            );
+                          },
+                        )
                       : RaisedButton(
-                    color: brownBackground,
-                    onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        submitProposal(context);
-                      }
-                    },
-                    child: Text("CREATE"),
-                    elevation: 6,
-                    shape: BeveledRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
+                          color: brownBackground,
+                          onPressed: () {
+                            if (_formKey.currentState.validate()) {
+                              submitProposal(context);
+                            }
+                          },
+                          child: Text("CREATE"),
+                          elevation: 6,
+                          shape: BeveledRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
                 ),
               ],
-            ))
-        ,
+            )),
       ),
     );
   }
