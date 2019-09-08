@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'proposals_for_group.dart';
 import 'add_proposal.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
+import 'edit_group.dart';
 
 class GroupDetails extends StatefulWidget {
   final String groupId;
@@ -28,11 +31,11 @@ class GroupDetailsState extends State<GroupDetails> {
   Widget build(BuildContext context) {
     return FutureBuilder(
         builder: (BuildContext context,
-            AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
-          switch (asyncSnapshot.connectionState) {
+            AsyncSnapshot<DocumentSnapshot> groupAsyncSnapshot) {
+          switch (groupAsyncSnapshot.connectionState) {
             case ConnectionState.done:
-              String groupDescriptionText = asyncSnapshot.data.data['purpose'];
-              String rules = asyncSnapshot.data.data['rules'] ?? "";
+              String groupDescriptionText = groupAsyncSnapshot.data.data['purpose'];
+              String rules = groupAsyncSnapshot.data.data['rules'] ?? "";
               int trimEnd = (groupDescriptionText.length < 100)
                   ? groupDescriptionText.length
                   : 100;
@@ -42,7 +45,7 @@ class GroupDetailsState extends State<GroupDetails> {
                   : groupDescriptionText.substring(0, trimEnd) + " ... ";
               return Scaffold(
                 appBar: AppBar(
-                  title: Text(asyncSnapshot.data.data["title"]),
+                  title: Text(groupAsyncSnapshot.data.data["title"]),
                 ),
                 body: Column(
                   children: <Widget>[
@@ -82,7 +85,7 @@ class GroupDetailsState extends State<GroupDetails> {
                               Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
                                 return AddProposalScreen(preSelectedGroups: [
-                                  asyncSnapshot.data.data['title']
+                                  groupAsyncSnapshot.data.data['title']
                                 ]);
                               }));
                             },
@@ -91,18 +94,57 @@ class GroupDetailsState extends State<GroupDetails> {
                           ),
                         ),
                         Expanded(
-                          child: Container(
-                              alignment: Alignment.centerRight,
-                              child: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    shouldShowFullText = !shouldShowFullText;
-                                  });
-                                },
-                                icon: shouldShowFullText
-                                    ? Icon(Icons.keyboard_arrow_up)
-                                    : Icon(Icons.keyboard_arrow_down),
-                              )),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              FutureBuilder<FirebaseUser>(builder: (BuildContext context, AsyncSnapshot<FirebaseUser> asyncSnapshotUser) {
+                                if (asyncSnapshotUser.connectionState == ConnectionState.done) {
+                                  print("yolo");
+                                  print(groupAsyncSnapshot.data.data['user_id']);
+                                  if (asyncSnapshotUser.data != null && (asyncSnapshotUser.data.uid == groupAsyncSnapshot.data.data['user_id'])) {
+                                    return Container(
+                                        alignment: Alignment.centerRight,
+                                        child: RaisedButton(
+                                          onPressed: () {
+                                            DocumentSnapshot groupSnap = groupAsyncSnapshot.data;
+                                            if (groupSnap != null) {
+                                              Navigator.push(context,
+                                                  MaterialPageRoute(builder: (BuildContext context) {
+                                                    return EditGroupScreen(
+                                                        groupSnap.data['title'] ?? '',
+                                                        groupSnap.data['purpose'] ?? '',
+                                                        groupSnap.data['rules'] ?? '',
+                                                        groupSnap.documentID ?? ''
+                                                    );
+                                                  }));
+                                            }
+                                          },
+                                          child: Text("Edit"),
+                                          color: Colors.brown,
+                                        )
+                                    );
+                                  }
+                                }
+                                return Container(height: 0, width: 0,);
+                              },
+                              future: FirebaseAuth.instance.currentUser(),
+                              )
+                              ,
+                              Container(
+                                  alignment: Alignment.centerRight,
+                                  child: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        shouldShowFullText =
+                                            !shouldShowFullText;
+                                      });
+                                    },
+                                    icon: shouldShowFullText
+                                        ? Icon(Icons.keyboard_arrow_up)
+                                        : Icon(Icons.keyboard_arrow_down),
+                                  ))
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -111,7 +153,7 @@ class GroupDetailsState extends State<GroupDetails> {
                     ),
                     Flexible(
                         child: ProposalsForOneGroup(
-                            asyncSnapshot.data.data["title"]))
+                            groupAsyncSnapshot.data.data["title"]))
                   ],
                 ),
               );
