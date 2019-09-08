@@ -35,8 +35,8 @@ class AddProposalForm extends StatefulWidget {
 }
 
 class AddProposalFormState extends State<AddProposalForm> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _controllerTitle = TextEditingController();
-
   // IMPORTANT !!!!!!!
   // Had to initialize the below controller with empty string for the entire
   // form to work. This is really weird but it seems to be working.
@@ -133,72 +133,90 @@ class AddProposalFormState extends State<AddProposalForm> {
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ListTile(
-              title: TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Title',
-                ),
-                controller: _controllerTitle,
-              ),
-            ),
-            ListTile(
-              title: TextFormField(
-                decoration: InputDecoration(labelText: 'Summary'),
-                maxLines: null,
-                controller: _controllerSummary,
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 20, bottom: 15, left: 12),
-              child: Row(children: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: () async {
-                    List<String> result = await Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (context) => TagSelector(groupsSelected)));
-                    if (result != null) {
-                      setState(() {
-                        groupsSelected = result;
-                      });
+        child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ListTile(
+                  title: TextFormField(
+                    decoration: InputDecoration(
+                      labelText: 'Title',
+                    ),
+                    maxLines: 5,
+                    controller: _controllerTitle,
+                    validator: (String value) {
+                      if (value.isEmpty) {
+                        return 'Please enter some text';
+                      }
+                      return null;
                     }
-                  },
+                  ),
+                ),
+                ListTile(
+                  title: TextFormField(
+                    decoration: InputDecoration(labelText: 'Summary'),
+                    maxLines: 20,
+                    controller: _controllerSummary,
+                    validator: (String value) {
+                      if (value.isEmpty) {
+                        return 'Please enter some text';
+                      }
+                      return null;
+                    }
+                  ),
                 ),
                 Container(
-                    margin: EdgeInsets.only(left: 10),
-                    child: Text("choose groups to publish to",
-                        style: TextStyle(color: Colors.grey))),
-              ]),
-            ),
-            makeChips(),
-            Container(
-              padding: const EdgeInsets.all(20),
-              child: submitting
-                  ? SpinKitFadingCircle(
-                      itemBuilder: (_, int index) {
-                        return DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: index.isEven ? Colors.brown : Colors.grey,
-                          ),
-                        );
+                  margin: EdgeInsets.only(top: 20, bottom: 15, left: 12),
+                  child: Row(children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.add),
+                      onPressed: () async {
+                        List<String> result = await Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (context) => TagSelector(groupsSelected)));
+                        if (result != null) {
+                          setState(() {
+                            groupsSelected = result;
+                          });
+                        }
                       },
-                    )
-                  : RaisedButton(
-                      color: brownBackground,
-                      onPressed: () {
-                        submitProposal(context);
-                      },
-                      child: Text("CREATE"),
-                      elevation: 6,
-                      shape: BeveledRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
                     ),
-            ),
-          ],
-        ),
+                    Container(
+                        margin: EdgeInsets.only(left: 10),
+                        child: Text("choose groups to publish to",
+                            style: TextStyle(color: Colors.grey))),
+                  ]),
+                ),
+                makeChips(),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  child: submitting
+                      ? SpinKitFadingCircle(
+                    itemBuilder: (_, int index) {
+                      return DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: index.isEven ? Colors.brown : Colors.grey,
+                        ),
+                      );
+                    },
+                  )
+                      : RaisedButton(
+                    color: brownBackground,
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        submitProposal(context);
+                      }
+                    },
+                    child: Text("CREATE"),
+                    elevation: 6,
+                    shape: BeveledRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ],
+            ))
+        ,
       ),
     );
   }
