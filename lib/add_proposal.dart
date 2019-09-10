@@ -137,10 +137,10 @@ class AddProposalFormState extends State<AddProposalForm> {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     dataToSend['user_id'] = user.uid;
     final String proposalId = Uuid().v1() + user.uid;
-//    final Timestamp timeNow = Timestamp.now();
+    final Timestamp timeNow = Timestamp.now();
 ////    final Timestamp expiryTime = getExpiry(timeNow, _selectedLifeValue);
 ////    dataToSend['expiry'] = expiryTime;
-////    dataToSend['created'] = timeNow;
+    dataToSend['created'] = timeNow;
     DocumentReference userProposal = _firestore
         .collection('users')
         .document(user.uid)
