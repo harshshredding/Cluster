@@ -137,10 +137,10 @@ class AddProposalFormState extends State<AddProposalForm> {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     dataToSend['user_id'] = user.uid;
     final String proposalId = Uuid().v1() + user.uid;
-    final Timestamp timeNow = Timestamp.now();
-    final Timestamp expiryTime = getExpiry(timeNow, _selectedLifeValue);
-    dataToSend['expiry'] = expiryTime;
-    dataToSend['created'] = timeNow;
+//    final Timestamp timeNow = Timestamp.now();
+////    final Timestamp expiryTime = getExpiry(timeNow, _selectedLifeValue);
+////    dataToSend['expiry'] = expiryTime;
+////    dataToSend['created'] = timeNow;
     DocumentReference userProposal = _firestore
         .collection('users')
         .document(user.uid)
@@ -216,25 +216,25 @@ class AddProposalFormState extends State<AddProposalForm> {
                         return null;
                       }),
                 ),
-                ListTile(
-                  title: const Text('Choose Lifetime'),
-                  subtitle: const Text('You can always renew life later'),
-                  trailing: DropdownButton<LIFETIME>(
-                    value: _selectedLifeValue,
-                    onChanged: (LIFETIME newLifeTime) {
-                      setState(() {
-                        _selectedLifeValue = newLifeTime;
-                      });
-                    },
-                    items: <LIFETIME>[LIFETIME.oneWeek, LIFETIME.twoWeeks, LIFETIME.threeWeeks, LIFETIME.oneMonth]
-                        .map<DropdownMenuItem<LIFETIME>>((LIFETIME value) {
-                      return DropdownMenuItem<LIFETIME>(
-                        value: value,
-                        child: Text(getStringFromEnum(value)),
-                      );
-                    }).toList(),
-                  ),
-                ),
+//                ListTile(
+//                  title: const Text('Choose Lifetime'),
+//                  subtitle: const Text('You can always renew life later'),
+//                  trailing: DropdownButton<LIFETIME>(
+//                    value: _selectedLifeValue,
+//                    onChanged: (LIFETIME newLifeTime) {
+//                      setState(() {
+//                        _selectedLifeValue = newLifeTime;
+//                      });
+//                    },
+//                    items: <LIFETIME>[LIFETIME.oneWeek, LIFETIME.twoWeeks, LIFETIME.threeWeeks, LIFETIME.oneMonth]
+//                        .map<DropdownMenuItem<LIFETIME>>((LIFETIME value) {
+//                      return DropdownMenuItem<LIFETIME>(
+//                        value: value,
+//                        child: Text(getStringFromEnum(value)),
+//                      );
+//                    }).toList(),
+//                  ),
+//                ),
                 Container(
                   margin: EdgeInsets.only(top: 20, bottom: 15, left: 12),
                   child: Row(children: <Widget>[

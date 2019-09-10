@@ -59,14 +59,14 @@ class ProposalsState extends State<Proposals> {
   }
 
   /// Display proposals of one group.
-  getProposalsForGroup(String groupName) {
+  void getProposalsForGroup(String groupName) {
     if (widget.groupName != null) {
       _filters.add(groupName);
       getProposals();
     }
   }
 
-  getFavoritesSubscription() async {
+  void getFavoritesSubscription() async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     // get favorites information and store subscription.
     _favoritesSubscription = Firestore.instance
@@ -86,7 +86,7 @@ class ProposalsState extends State<Proposals> {
 
   /// Used to display the proposals when the screen loads
   /// for the first time.
-  getProposalsAtStart() async {
+  void getProposalsAtStart() async {
     print("getProposalsAtStart");
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     DocumentSnapshot userDataSnap =
@@ -112,7 +112,7 @@ class ProposalsState extends State<Proposals> {
         var subscription = _firestore
             .collection("proposals")
             .where(filter, isEqualTo: true)
-            .where('expiry', isGreaterThan: timeNow)
+            //.where('expiry', isGreaterThan: timeNow)
             .snapshots()
             .listen((QuerySnapshot snapshot) {
           List<DocumentSnapshot> newDocuments = snapshot.documents;
@@ -148,7 +148,7 @@ class ProposalsState extends State<Proposals> {
   }
 
   /// Upload the filters chosen by the user
-  uploadUserFilters(List<String> userFilters) async {
+  void uploadUserFilters(List<String> userFilters) async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     Firestore.instance
         .collection("users")
@@ -184,7 +184,7 @@ class ProposalsState extends State<Proposals> {
       DocumentSnapshot chat = await chatReference.get();
       Timestamp currentTime = Timestamp.now();
       if (!chat.exists) {
-        Map<String, dynamic> dataToWrite = {
+        Map<String, dynamic> dataToWrite = <String, dynamic>{
           "id": chatId,
           "proposal_id": proposalId,
           "creator_id": creatorUserId,
@@ -539,16 +539,37 @@ class ProposalsState extends State<Proposals> {
   }
 }
 
+/// Represents an ordered list of proposals that are sorted by
+/// `created`. The list can also store data regarding which proposals
+/// have been added to favorites by user.
 class ListOfProposals {
-  List<DocumentSnapshot> _proposals = new List();
-  List<DocumentSnapshot> _favorites = new List();
+  List<DocumentSnapshot> _proposals = <DocumentSnapshot>[];
+  List<DocumentSnapshot> _favorites = <DocumentSnapshot>[];
 
   void clear() {
     _proposals.clear();
   }
 
+  /// Higher the timestamp, lower the value
+  /// null value is always more
+  /// two null values are equal
+  int compareProposals(DocumentSnapshot p1, DocumentSnapshot p2) {
+    final Timestamp t1 = p1.data['created'];
+    final Timestamp t2 = p2.data['created'];
+    if (t1 == null && t2 != null) {
+      return 1;
+    } else if (t1 != null && t2 == null) {
+      return -1;
+    } else if (t1 == null && t2 == null) {
+      return 0;
+    } else {
+      return -1*t1.compareTo(t2);
+    }
+  }
+
   void addProposal(DocumentSnapshot snapshot) {
     _proposals.add(snapshot);
+    _proposals.sort(compareProposals);
   }
 
   int size() {
@@ -574,7 +595,7 @@ class ListOfProposals {
 
   void setFavorites(List<DocumentSnapshot> favorites) {
     if (favorites != null) {
-      this._favorites = favorites;
+      _favorites = favorites;
     }
   }
 
