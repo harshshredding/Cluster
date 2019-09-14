@@ -26,6 +26,80 @@ class MyProposalsState extends State<MyProposals> {
         .getDocuments();
   }
 
+  // Deletes proposal AND all related information.
+  void deleteProposal(String proposalId, BuildContext context) async {
+    bool decision = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Proposal'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to delete this proposal ?'),
+                Text('ALL related information will be deleted'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Yes'),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+            ),
+            FlatButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+            )
+          ],
+        );
+      },
+    );
+    if (decision) {
+      final DocumentReference proposalInProposalCollection = Firestore.instance
+          .collection('proposals').document(proposalId);
+      final DocumentReference proposalInUsersCollection = Firestore.instance
+          .collection('users').document(currentUser.uid).collection('proposals')
+          .document(proposalId);
+      try {
+        QuerySnapshot chatsQueryResult = await Firestore.instance.collection("chats").where("proposal_id", isEqualTo: proposalId).getDocuments();
+        List<DocumentSnapshot> chatsToDelete = [];
+        chatsToDelete.addAll(chatsQueryResult.documents);
+        // We are removing all the chats that don't exist to prevent doing the
+        // same check during the transaction because a failure in transaction
+        // syntax causes an application CRASH. really bad on Google's part.
+        chatsToDelete.retainWhere((DocumentSnapshot chat) {
+          return chat.exists;
+        });
+        await Firestore.instance.runTransaction((Transaction t) async {
+          DocumentSnapshot proposalEntry = await t.get(proposalInProposalCollection);
+          DocumentSnapshot userEntry = await t.get(proposalInUsersCollection);
+          if (proposalEntry != null) {
+            await t.delete(proposalInProposalCollection);
+          }
+          if (userEntry != null) {
+            await t.delete(proposalInUsersCollection);
+          }
+          for (DocumentSnapshot chat in chatsToDelete) {
+            await t.delete(chat.reference);
+          }
+          return null;
+        });
+        print("Proposal sucessfully deleted");
+        Scaffold.of(context).showSnackBar(
+            SnackBar(content: Text("Proposal sucessfully deleted"), backgroundColor: Colors.orange,));
+      } catch (error) {
+        print(error);
+        Scaffold.of(context).showSnackBar(
+            SnackBar(content: Text('There was an error while deleting proposal :('), backgroundColor: Colors.red,));
+      }
+    }
+  }
+
   Widget createCard(String topic, String summary, String userId,
       String proposalId, BuildContext context) {
     return Card(
@@ -217,6 +291,11 @@ class MyProposalsState extends State<MyProposals> {
                               fontSize: 15, fontFamily: "Trajan Pro")),
                       padding: EdgeInsets.only(
                           left: 10, right: 10, top: 0, bottom: 10),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(right: 20),
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(icon: Icon(Icons.delete), color: Colors.redAccent, onPressed: () {deleteProposal(proposalId, context);}),
                     )
                   ],
                 ),
@@ -355,12 +434,16 @@ class MyProposalsState extends State<MyProposals> {
             switch (asyncSnapshot.connectionState) {
               case ConnectionState.done:
                 DocumentSnapshot proposal = asyncSnapshot.data;
-                return createCard(
-                    proposal.data['title'],
-                    proposal.data['summary'],
-                    proposal.data['user_id'],
-                    proposal.documentID,
-                    context);
+                if (proposal.data != null) {
+                  return createCard(
+                      proposal.data['title'],
+                      proposal.data['summary'],
+                      proposal.data['user_id'],
+                      proposal.documentID,
+                      context);
+                } else {
+                  return createDefaultCard();
+                }
                 break;
               case ConnectionState.active:
               case ConnectionState.waiting:

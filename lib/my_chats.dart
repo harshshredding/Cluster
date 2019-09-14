@@ -17,7 +17,9 @@ class MyChats extends StatefulWidget {
 class MyChatsState extends State<MyChats> {
   FirebaseUser currentUser;
   QuerySnapshot chatSnapshots;
+  QuerySnapshot chatSnapshots2;
   StreamSubscription<QuerySnapshot> chatsSubscription;
+  StreamSubscription<QuerySnapshot> chatsSubscription2;
 
   initState() {
     super.initState();
@@ -27,13 +29,21 @@ class MyChatsState extends State<MyChats> {
   void getSubscription() async {
     currentUser = await FirebaseAuth.instance.currentUser();
     chatsSubscription = Firestore.instance
-        .collection("users")
-        .document(currentUser.uid)
         .collection("chats")
+        .where("creator_id", isEqualTo: currentUser.uid)
         .snapshots()
-        .listen((QuerySnapshot snapSnapshot) {
+        .listen((QuerySnapshot queryResult) {
       setState(() {
-        chatSnapshots = snapSnapshot;
+        chatSnapshots = queryResult;
+      });
+    });
+    chatsSubscription2 = Firestore.instance
+        .collection("chats")
+        .where("interested_id", isEqualTo: currentUser.uid)
+        .snapshots()
+        .listen((QuerySnapshot queryResult) {
+      setState(() {
+        chatSnapshots2 = queryResult;
       });
     });
   }
@@ -73,37 +83,16 @@ class MyChatsState extends State<MyChats> {
                       DocumentReference chatReference = Firestore.instance
                           .collection('chats')
                           .document(chatId);
-                      DocumentReference creatorReference = Firestore.instance
-                          .collection("users")
-                          .document(creatorId)
-                          .collection("chats")
-                          .document(chatId);
-                      DocumentReference interestedReference = Firestore.instance
-                          .collection("users")
-                          .document(interestedId)
-                          .collection("chats")
-                          .document(chatId);
                       try {
-                        if (creatorId != interestedId) {
-                          await Firestore.instance
-                              .runTransaction((Transaction t) async {
-                            await t.delete(chatReference);
-                            await t.delete(creatorReference);
-                            await t.delete(interestedReference);
-
-                          });
-                        } else {
-                          await Firestore.instance
-                              .runTransaction((Transaction t) async {
-                            await t.delete(chatReference);
-                            await t.delete(interestedReference);
-                          });
-                        }
+                        await Firestore.instance
+                            .runTransaction((Transaction t) async {
+                          await t.delete(chatReference);
+                        });
                         Scaffold.of(context).showSnackBar(
-                            SnackBar(content: Text("Chat deleted"), backgroundColor: Colors.green,));
+                            SnackBar(content: Text('Chat deleted'), backgroundColor: Colors.green,));
                       } catch (err) {
                         Scaffold.of(context).showSnackBar(
-                            SnackBar(content: Text("Error Deleting chat",), backgroundColor: Colors.red,));
+                            SnackBar(content: Text('Error Deleting chat',), backgroundColor: Colors.red,));
                       }
                     },
                     child: ListTile(
@@ -186,8 +175,25 @@ class MyChatsState extends State<MyChats> {
     }
   }
 
-  Widget buildCardsList(QuerySnapshot querySnapshot, context) {
-    List<DocumentSnapshot> chats = querySnapshot.documents;
+  bool chatExists(List<DocumentSnapshot> listOfChats, DocumentSnapshot chat) {
+    for (DocumentSnapshot currChat in listOfChats) {
+      if (currChat.documentID == chat.documentID) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  Widget buildCardsList(QuerySnapshot querySnapshot, QuerySnapshot querySnapshot2, BuildContext context) {
+    List<DocumentSnapshot> chats1 = querySnapshot.documents;
+    List<DocumentSnapshot> chats2 = querySnapshot2.documents;
+    List<DocumentSnapshot> chats = <DocumentSnapshot>[];
+    chats.addAll(chats1);
+    for (DocumentSnapshot currChat in chats2) {
+      if (!chatExists(chats, currChat)) {
+        chats.add(currChat);
+      }
+    }
     for (DocumentSnapshot chat in chats) {
       print(chat.data['last_updated']);
     }
@@ -248,7 +254,7 @@ class MyChatsState extends State<MyChats> {
 
   Widget build(BuildContext context) {
     Widget subTree = (chatSnapshots != null)
-        ? buildCardsList(chatSnapshots, context)
+        ? buildCardsList(chatSnapshots, chatSnapshots2, context)
         : Center(
             child: Container(width: 0, height: 0),
           );

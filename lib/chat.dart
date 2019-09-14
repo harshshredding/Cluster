@@ -91,29 +91,15 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     DocumentReference chatReference = firestore.collection("chats").document(roomId);
     DocumentSnapshot chat = await chatReference.get();
     FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
-    DocumentReference creatorReference = firestore.collection("users").document(chat.data['creator_id']).collection("chats").document(roomId);
-    DocumentReference interestedReference = firestore.collection("users").document(chat.data['interested_id']).collection("chats").document(roomId);
     if (chat.data['creator_id'] == currentUser.uid) {
       firestore.runTransaction((Transaction t) async {
         await t.update(chatReference, <String, dynamic>{
-          "creator_seen" : maxTimestamp
-        });
-        await t.update(creatorReference, <String, dynamic>{
-          "creator_seen" : maxTimestamp
-        });
-        await t.update(interestedReference, <String, dynamic>{
           "creator_seen" : maxTimestamp
         });
       });
     } else  {
       firestore.runTransaction((Transaction t) async {
         await t.update(chatReference, <String, dynamic>{
-          "interested_seen" : maxTimestamp
-        });
-        await t.update(creatorReference, <String, dynamic>{
-          "interested_seen" : maxTimestamp
-        });
-        await t.update(interestedReference, <String, dynamic>{
           "interested_seen" : maxTimestamp
         });
       });
@@ -208,16 +194,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       'timestamp': currentTime,
       "receiver" : widget.photoUserId
     };
-
-    print(roomCollectionReference.path);
     roomCollectionReference.add(message);
     DocumentReference chatReference = firestore.collection('chats').document(roomId);
-    DocumentSnapshot chat = await chatReference.get();
-    String creatorId = chat.data['creator_id'];
-    String interestedId = chat.data['interested_id'];
-    DocumentReference creatorReference = firestore.collection("users").document(creatorId).collection("chats").document(roomId);
-    DocumentReference interestedReference = firestore.collection("users").document(interestedId).collection("chats").document(roomId);
-
     // below we store the timestamp indicating when the last update to the
     // chat was made. We also store the last message which caused this update.
     String firstName;
@@ -229,11 +207,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     firestore.runTransaction((Transaction t) async {
       await t.update(chatReference, <String, dynamic>{"last_updated": currentTime});
       await t.update(chatReference, <String, dynamic>{"last_message": firstName + " : " + text});
-      await t.update(creatorReference, <String, dynamic>{"last_updated": currentTime});
-      await t.update(creatorReference, <String, dynamic>{"last_message": firstName + " : " + text});
-      await t.update(interestedReference, <String, dynamic>{"last_updated": currentTime});
-      await t.update(interestedReference, <String, dynamic>{"last_message": firstName + " : " + text});
-    }).catchError((error) {print("yo");});
+    });
     setState(() {
       _isComposing = false;
     });
@@ -250,7 +224,7 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     Scaffold.of(context).showSnackBar(snackBar);
     Timestamp minTimestamp = _messages.reversed.first.timestamp;
     QuerySnapshot querySnapshot = await roomCollectionReference
-        .limit(5)
+        .limit(15)
         .orderBy("timestamp", descending: true)
         .startAfter(<dynamic>[minTimestamp]).getDocuments();
     for (DocumentSnapshot docSnapshot in querySnapshot.documents) {

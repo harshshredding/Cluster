@@ -169,16 +169,6 @@ class ProposalsState extends State<Proposals> {
       FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
       print(currentUser.uid);
       String chatId = proposalId + creatorUserId + currentUser.uid;
-      DocumentReference currentUserReference = Firestore.instance
-          .collection("users")
-          .document(currentUser.uid)
-          .collection("chats")
-          .document(chatId);
-      DocumentReference creatorUserReference = Firestore.instance
-          .collection("users")
-          .document(creatorUserId)
-          .collection("chats")
-          .document(chatId);
       DocumentReference chatReference =
           Firestore.instance.collection("chats").document(chatId);
       DocumentSnapshot chat = await chatReference.get();
@@ -192,8 +182,6 @@ class ProposalsState extends State<Proposals> {
           "last_updated": currentTime
         };
         WriteBatch batch = Firestore.instance.batch();
-        batch.setData(currentUserReference, dataToWrite);
-        batch.setData(creatorUserReference, dataToWrite);
         batch.setData(chatReference, dataToWrite);
         await batch.commit();
       }
