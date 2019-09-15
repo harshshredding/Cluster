@@ -20,9 +20,8 @@ class MyProposalsState extends State<MyProposals> {
   Future<QuerySnapshot> getMyProposals() async {
     currentUser = await FirebaseAuth.instance.currentUser();
     return Firestore.instance
-        .collection("users")
-        .document(currentUser.uid)
-        .collection("proposals")
+        .collection('proposals')
+        .where('user_id', isEqualTo: currentUser.uid)
         .getDocuments();
   }
 
@@ -427,36 +426,17 @@ class MyProposalsState extends State<MyProposals> {
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
         DocumentSnapshot currProposal = proposals[index];
-        String proposalId = currProposal.data['id'];
-        return FutureBuilder(
-          builder: (BuildContext context,
-              AsyncSnapshot<DocumentSnapshot> asyncSnapshot) {
-            switch (asyncSnapshot.connectionState) {
-              case ConnectionState.done:
-                DocumentSnapshot proposal = asyncSnapshot.data;
-                if (proposal.data != null) {
-                  return createCard(
-                      proposal.data['title'],
-                      proposal.data['summary'],
-                      proposal.data['user_id'],
-                      proposal.documentID,
-                      context);
-                } else {
-                  return createDefaultCard();
-                }
-                break;
-              case ConnectionState.active:
-              case ConnectionState.waiting:
-              case ConnectionState.none:
-              default:
-                return createDefaultCard();
-            }
-          },
-          future: Firestore.instance
-              .collection("proposals")
-              .document(proposalId)
-              .get(),
-        );
+        if (currProposal.data != null) {
+          return createCard(
+              currProposal.data['title'] ?? "",
+              currProposal.data['summary'] ?? "",
+              currProposal.data['user_id'] ?? "",
+              currProposal.documentID ?? "",
+              context
+          );
+        } else {
+          return createDefaultCard();
+        }
       },
       itemCount: proposals.length,
     );
