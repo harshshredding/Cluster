@@ -107,7 +107,6 @@ class ProposalsState extends State<Proposals> {
     _proposals.clear();
     _proposalSubscriptions.clear();
     if (_filters.isNotEmpty) {
-      Timestamp timeNow = Timestamp.now();
       for (String filter in _filters) {
         var subscription = _firestore
             .collection("proposals")
@@ -115,20 +114,14 @@ class ProposalsState extends State<Proposals> {
             //.where('expiry', isGreaterThan: timeNow)
             .snapshots()
             .listen((QuerySnapshot snapshot) {
-          List<DocumentSnapshot> newDocuments = snapshot.documents;
-          List<DocumentSnapshot> thingsToAdd = List();
-          for (DocumentSnapshot proposal in newDocuments) {
-            bool proposalDoesntExist =
-                !_proposals.proposalExists(proposal.documentID);
-            if (proposalDoesntExist) {
-              thingsToAdd.add(proposal);
-            }
-          }
-          setState(() {
-            for (DocumentSnapshot thing in thingsToAdd) {
-              _proposals.addProposal(thing);
-            }
-          });
+              List<DocumentSnapshot> newProposals = snapshot.documents;
+              setState(() {
+                // We remove proposals to account for deletes.
+                _proposals.removeProposalsWithFilter(filter);
+                for (DocumentSnapshot proposal in newProposals) {
+                  _proposals.addProposal(proposal);
+                }
+              });
         });
         _proposalSubscriptions.add(subscription);
       }
@@ -594,5 +587,15 @@ class ListOfProposals {
       }
     }
     return false;
+  }
+
+  void removeProposalsWithFilter(String filter) {
+    Function hasFilter = (DocumentSnapshot proposalSnapshot) {
+      if (proposalSnapshot.data != null) {
+        return proposalSnapshot.data[filter] == true;
+      }
+      return false;
+    };
+    _proposals.removeWhere(hasFilter);
   }
 }

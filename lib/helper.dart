@@ -55,8 +55,13 @@ Widget createIfFieldExists(DocumentSnapshot snapshot, List<String> fields, Funct
   return factory(snapshot);
 }
 
-/// Checks if the attribute exists. If not, return empty string.
-String notNull(DocumentSnapshot snapshot, String attribute) {
-  String result = (snapshot.data[attribute] != null) ? snapshot.data[attribute] : "";
-  return result;
+/// Returns the given `attribute` from snapshot.
+/// If snapshot's data field is null, returns "".
+String safeAccess(DocumentSnapshot snapshot, String attribute) {
+  if (snapshot.data != null) {
+    if (snapshot.data[attribute] != null) {
+      return snapshot.data[attribute];
+    }
+  }
+  return "";
 }

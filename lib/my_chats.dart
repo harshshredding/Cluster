@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'circular_photo.dart';
 import 'dart:async';
 import 'chat.dart';
+import 'helper.dart';
 
 class MyChats extends StatefulWidget {
   MyChatsState createState() {
@@ -16,8 +17,8 @@ class MyChats extends StatefulWidget {
 /// Page that lists all the favorite events of the user
 class MyChatsState extends State<MyChats> {
   FirebaseUser currentUser;
-  QuerySnapshot chatSnapshots;
-  QuerySnapshot chatSnapshots2;
+  QuerySnapshot creatorSnapshots; // These are chats where we are creator
+  QuerySnapshot interestedSnapshots; // These are chats where we are the interested person.
   StreamSubscription<QuerySnapshot> chatsSubscription;
   StreamSubscription<QuerySnapshot> chatsSubscription2;
 
@@ -34,7 +35,7 @@ class MyChatsState extends State<MyChats> {
         .snapshots()
         .listen((QuerySnapshot queryResult) {
       setState(() {
-        chatSnapshots = queryResult;
+        creatorSnapshots = queryResult;
       });
     });
     chatsSubscription2 = Firestore.instance
@@ -43,7 +44,7 @@ class MyChatsState extends State<MyChats> {
         .snapshots()
         .listen((QuerySnapshot queryResult) {
       setState(() {
-        chatSnapshots2 = queryResult;
+        interestedSnapshots = queryResult;
       });
     });
   }
@@ -98,7 +99,7 @@ class MyChatsState extends State<MyChats> {
                     child: ListTile(
                         leading: CircularPhoto(photoUserId, 30),
                         title: Text(
-                          asyncSnapshot.data.data['title'],
+                          safeAccess(asyncSnapshot.data, 'title'),
                           style: TextStyle(fontFamily: "Trajan Pro"),
                         ),
                         subtitle: Text(
@@ -183,10 +184,8 @@ class MyChatsState extends State<MyChats> {
     }
     return false;
   }
-  
-  Widget buildCardsList(QuerySnapshot querySnapshot, QuerySnapshot querySnapshot2, BuildContext context) {
-    List<DocumentSnapshot> chats1 = querySnapshot.documents;
-    List<DocumentSnapshot> chats2 = querySnapshot2.documents;
+
+  List<DocumentSnapshot> combineChats(List<DocumentSnapshot> chats1, List<DocumentSnapshot> chats2) {
     List<DocumentSnapshot> chats = <DocumentSnapshot>[];
     chats.addAll(chats1);
     for (DocumentSnapshot currChat in chats2) {
@@ -194,6 +193,11 @@ class MyChatsState extends State<MyChats> {
         chats.add(currChat);
       }
     }
+    return chats;
+  }
+
+  Widget buildCardsList(QuerySnapshot querySnapshot, QuerySnapshot querySnapshot2, BuildContext context) {
+    List<DocumentSnapshot> chats = combineChats(querySnapshot.documents, querySnapshot2.documents);
     for (DocumentSnapshot chat in chats) {
       print(chat.data['last_updated']);
     }
@@ -253,8 +257,8 @@ class MyChatsState extends State<MyChats> {
   }
 
   Widget build(BuildContext context) {
-    Widget subTree = (chatSnapshots != null)
-        ? buildCardsList(chatSnapshots, chatSnapshots2, context)
+    Widget subTree = (creatorSnapshots != null)
+        ? buildCardsList(creatorSnapshots, interestedSnapshots, context)
         : Center(
             child: Container(width: 0, height: 0),
           );
