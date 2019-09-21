@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
 import 'tag_selector.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:uuid/uuid.dart';
+import 'helper.dart';
 
 /// Here we just wrap the form in a scaffold.
 /// TODO: Maybe there is no need for this class.
@@ -42,7 +42,7 @@ enum LIFETIME {
   oneMonth,
 }
 
-class AddProposalFormState extends State<AddProposalForm> {
+class AddProposalFormState extends CustomState<AddProposalForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _controllerTitle = TextEditingController();
 
@@ -50,12 +50,12 @@ class AddProposalFormState extends State<AddProposalForm> {
   // Had to initialize the below controller with empty string for the entire
   // form to work. This is really weird but it seems to be working.
   final TextEditingController _controllerSummary =
-      TextEditingController(text: '');
+  TextEditingController(text: '');
   final Firestore _firestore = Firestore.instance;
   List<String> groupsSelected = <String>[]; // Represents groups that the user
   // wants to publish to
   bool submitting =
-      false; // indicates whether we are in the process of submiting
+  false; // indicates whether we are in the process of submiting
   LIFETIME _selectedLifeValue = LIFETIME.twoWeeks;
 
   @override
@@ -134,16 +134,15 @@ class AddProposalFormState extends State<AddProposalForm> {
     }
     dataToSend['title'] = _controllerTitle.text;
     dataToSend['summary'] = _controllerSummary.text;
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    dataToSend['user_id'] = user.uid;
-    final String proposalId = Uuid().v1() + user.uid;
+    dataToSend['user_id'] = getUser().uid;
+    final String proposalId = Uuid().v1() + getUser().uid;
     final Timestamp timeNow = Timestamp.now();
 ////    final Timestamp expiryTime = getExpiry(timeNow, _selectedLifeValue);
 ////    dataToSend['expiry'] = expiryTime;
     dataToSend['created'] = timeNow;
     DocumentReference userProposal = _firestore
         .collection('users')
-        .document(user.uid)
+        .document(getUser().uid)
         .collection('proposals')
         .document(proposalId);
     DocumentReference proposalEntry =
@@ -276,7 +275,9 @@ class AddProposalFormState extends State<AddProposalForm> {
                           color: brownBackground,
                           onPressed: () {
                             if (_formKey.currentState.validate()) {
-                              submitProposal(context);
+                              if (getUser() != null) {
+                                submitProposal(context);
+                              }
                             }
                           },
                           child: Text("CREATE"),

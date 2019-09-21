@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// This class represents a data object that
 /// contains the logged in user's full name.
@@ -64,4 +65,25 @@ String safeAccess(DocumentSnapshot snapshot, String attribute) {
     }
   }
   return "";
+}
+
+/// This is a wrapper for State class which makes user information
+/// easily available for subclass.
+abstract class CustomState<T extends StatefulWidget> extends State<T> {
+  FirebaseUser currentUser;
+  
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchUserDetails();
+  }
+  
+  fetchUserDetails() async {
+    currentUser = await FirebaseAuth.instance.currentUser();
+  }
+
+  FirebaseUser getUser() {
+    return this.currentUser;
+  }
 }
