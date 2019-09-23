@@ -18,6 +18,8 @@ class MyGroupsState extends State<MyGroups> {
   Future<QuerySnapshot> getMyGroups() async {
     FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     return Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
         .collection('groups')
         .where('user_id', isEqualTo: currentUser.uid)
         .getDocuments();

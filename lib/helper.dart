@@ -28,6 +28,7 @@ class Event {
     this.userDisplayName, this.userPhotoUrl, this.eventImageUrl, this.address, this.creatorId);
 }
 
+/// Use this when you want to show the loading icon.
 class LoadingSpinner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
@@ -67,23 +68,16 @@ String safeAccess(DocumentSnapshot snapshot, String attribute) {
   return "";
 }
 
-/// This is a wrapper for State class which makes user information
-/// easily available for subclass.
-abstract class CustomState<T extends StatefulWidget> extends State<T> {
-  FirebaseUser currentUser;
-  
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    fetchUserDetails();
+/// returns the organization of `givenUser`.
+/// Returns null when the organization is not found, or an error occurs.
+String getUserOrganization(FirebaseUser givenUser) {
+  if (givenUser != null) {
+    String userEmail = givenUser.email;
+    int positionOfAt = userEmail.indexOf("@");
+    if (positionOfAt != -1) {
+      String organization = userEmail.substring(positionOfAt);
+      return organization;
+    }
   }
-  
-  fetchUserDetails() async {
-    currentUser = await FirebaseAuth.instance.currentUser();
-  }
-
-  FirebaseUser getUser() {
-    return this.currentUser;
-  }
+  return null;
 }

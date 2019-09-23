@@ -42,7 +42,7 @@ enum LIFETIME {
   oneMonth,
 }
 
-class AddProposalFormState extends CustomState<AddProposalForm> {
+class AddProposalFormState extends State<AddProposalForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _controllerTitle = TextEditingController();
 
@@ -132,21 +132,27 @@ class AddProposalFormState extends CustomState<AddProposalForm> {
     for (String group in groupsSelected) {
       dataToSend[group] = true;
     }
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     dataToSend['title'] = _controllerTitle.text;
     dataToSend['summary'] = _controllerSummary.text;
-    dataToSend['user_id'] = getUser().uid;
-    final String proposalId = Uuid().v1() + getUser().uid;
+    dataToSend['user_id'] = currentUser.uid;
+    final String proposalId = Uuid().v1() + currentUser.uid;
     final Timestamp timeNow = Timestamp.now();
 ////    final Timestamp expiryTime = getExpiry(timeNow, _selectedLifeValue);
 ////    dataToSend['expiry'] = expiryTime;
     dataToSend['created'] = timeNow;
     DocumentReference userProposal = _firestore
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
         .collection('users')
-        .document(getUser().uid)
+        .document(currentUser.uid)
         .collection('proposals')
         .document(proposalId);
-    DocumentReference proposalEntry =
-        _firestore.collection('proposals').document(proposalId);
+    DocumentReference proposalEntry = _firestore
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection('proposals')
+        .document(proposalId);
     await _firestore.runTransaction((Transaction t) async {
       await t.set(proposalEntry, dataToSend);
       await t.set(userProposal, <String, dynamic>{'id': proposalId});
@@ -273,9 +279,10 @@ class AddProposalFormState extends CustomState<AddProposalForm> {
                         )
                       : RaisedButton(
                           color: brownBackground,
-                          onPressed: () {
+                          onPressed: () async {
+                            FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
                             if (_formKey.currentState.validate()) {
-                              if (getUser() != null) {
+                              if (currentUser != null) {
                                 submitProposal(context);
                               }
                             }

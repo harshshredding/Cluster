@@ -6,6 +6,7 @@ import 'dart:async';
 import 'user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'chat.dart';
+import 'helper.dart';
 
 class Proposals extends StatefulWidget {
   final bool dontShowFilterBar;
@@ -67,11 +68,13 @@ class ProposalsState extends State<Proposals> {
   }
 
   void getFavoritesSubscription() async {
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     // get favorites information and store subscription.
     _favoritesSubscription = Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
         .collection("users")
-        .document(user.uid)
+        .document(currentUser.uid)
         .collection("favorites")
         .snapshots()
         .listen((QuerySnapshot snapshot) {
@@ -88,9 +91,13 @@ class ProposalsState extends State<Proposals> {
   /// for the first time.
   void getProposalsAtStart() async {
     print("getProposalsAtStart");
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    DocumentSnapshot userDataSnap =
-        await Firestore.instance.collection("users").document(user.uid).get();
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    DocumentSnapshot userDataSnap = await Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection("users")
+        .document(currentUser.uid)
+        .get();
 
     List<dynamic> filters = userDataSnap.data['filters'] ?? List<String>();
     if (filters != null) {
@@ -103,12 +110,15 @@ class ProposalsState extends State<Proposals> {
 
   /// The main method which gets all the subscriptions that are used to
   /// update add proposals on the screen.
-  void getProposals() {
+  void getProposals() async {
     _proposals.clear();
     _proposalSubscriptions.clear();
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     if (_filters.isNotEmpty) {
       for (String filter in _filters) {
         var subscription = _firestore
+            .collection("kingdoms")
+            .document(getUserOrganization(currentUser) ?? "")
             .collection("proposals")
             .where(filter, isEqualTo: true)
             //.where('expiry', isGreaterThan: timeNow)
@@ -142,10 +152,12 @@ class ProposalsState extends State<Proposals> {
 
   /// Upload the filters chosen by the user
   void uploadUserFilters(List<String> userFilters) async {
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
         .collection("users")
-        .document(user.uid)
+        .document(currentUser.uid)
         .updateData({"filters": userFilters});
   }
 
@@ -162,8 +174,11 @@ class ProposalsState extends State<Proposals> {
       FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
       print(currentUser.uid);
       String chatId = proposalId + creatorUserId + currentUser.uid;
-      DocumentReference chatReference =
-          Firestore.instance.collection("chats").document(chatId);
+      DocumentReference chatReference = Firestore.instance
+              .collection("kingdoms")
+              .document(getUserOrganization(currentUser) ?? "")
+              .collection("chats")
+              .document(chatId);
       DocumentSnapshot chat = await chatReference.get();
       Timestamp currentTime = Timestamp.now();
       if (!chat.exists) {
@@ -184,6 +199,16 @@ class ProposalsState extends State<Proposals> {
               builder: (context) =>
                   ChatScreen(chatId, creatorUserId)));
     }
+  }
+
+  Future<DocumentSnapshot> getUserInformation(String userId) async {
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    return Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection("users")
+        .document(userId)
+        .get();
   }
 
   Widget createCard(String topic, String summary, String userId,
@@ -255,7 +280,8 @@ class ProposalsState extends State<Proposals> {
                                     : CircleAvatar(
                                         radius: 20,
                                         backgroundImage: AssetImage(
-                                            'images/default_event.jpg'),
+                                            'images/default_event.jpg'
+                                        ),
                                         backgroundColor: Colors.transparent,
                                       ),
                               ),
@@ -284,14 +310,17 @@ class ProposalsState extends State<Proposals> {
                                                 color: Colors.yellow,
                                               ),
                                               onPressed: () async {
-                                                FirebaseUser user =
+                                                // TODO: Refactor stuff please
+                                                FirebaseUser currentUser =
                                                     await FirebaseAuth.instance
                                                         .currentUser();
-                                                if (user != null) {
+                                                if (currentUser != null) {
                                                   DocumentReference favDocRef =
                                                       Firestore.instance
+                                                          .collection("kingdoms")
+                                                          .document(getUserOrganization(currentUser) ?? "")
                                                           .collection("users")
-                                                          .document(user.uid)
+                                                          .document(currentUser.uid)
                                                           .collection(
                                                               "favorites")
                                                           .document(proposalId);
@@ -317,14 +346,16 @@ class ProposalsState extends State<Proposals> {
                                           : IconButton(
                                               icon: Icon(Icons.star, size: 20),
                                               onPressed: () async {
-                                                FirebaseUser user =
+                                                FirebaseUser currentUser =
                                                     await FirebaseAuth.instance
                                                         .currentUser();
-                                                if (user != null) {
+                                                if (currentUser != null) {
                                                   DocumentReference favDocRef =
                                                       Firestore.instance
+                                                          .collection("kingdoms")
+                                                          .document(getUserOrganization(currentUser) ?? "")
                                                           .collection("users")
-                                                          .document(user.uid)
+                                                          .document(currentUser.uid)
                                                           .collection(
                                                               "favorites")
                                                           .document(proposalId);
@@ -404,10 +435,7 @@ class ProposalsState extends State<Proposals> {
                           );
                         }
                       },
-                      future: Firestore.instance
-                          .collection("users")
-                          .document(userId)
-                          .get(),
+                      future: getUserInformation(userId),
                     ),
                     Container(
                       alignment: Alignment.centerLeft,

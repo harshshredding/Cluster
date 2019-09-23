@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'helper.dart';
 
 class TagSelector extends StatefulWidget {
   final List<String> alreadySelectedGroups;
@@ -15,14 +17,21 @@ class TagSelector extends StatefulWidget {
 
 class TagSelectorState extends State<TagSelector> {
   final Set<String> groupsSelected = Set();
-  Future<QuerySnapshot> getGroupsFuture;
   
   initState() {
     super.initState();
     for (String group in widget.alreadySelectedGroups) {
       groupsSelected.add(group);
     }
-    getGroupsFuture =  Firestore.instance.collection("groups").getDocuments();
+  }
+
+  Future<QuerySnapshot> getGroupsFuture() async {
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    return Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection("groups")
+        .getDocuments();
   }
 
   Widget createChip(String group) {
@@ -122,6 +131,6 @@ class TagSelectorState extends State<TagSelector> {
               break;
           }
         },
-        future: getGroupsFuture);
+        future: getGroupsFuture());
   }
 }

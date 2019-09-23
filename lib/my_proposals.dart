@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'user_profile.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'proposal_details.dart';
+import 'helper.dart';
 
 class MyProposals extends StatefulWidget {
   MyProposalsState createState() {
@@ -20,6 +21,8 @@ class MyProposalsState extends State<MyProposals> {
   Future<QuerySnapshot> getMyProposals() async {
     currentUser = await FirebaseAuth.instance.currentUser();
     return Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
         .collection('proposals')
         .where('user_id', isEqualTo: currentUser.uid)
         .getDocuments();
@@ -60,12 +63,24 @@ class MyProposalsState extends State<MyProposals> {
     );
     if (decision) {
       final DocumentReference proposalInProposalCollection = Firestore.instance
-          .collection('proposals').document(proposalId);
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection('proposals')
+          .document(proposalId);
       final DocumentReference proposalInUsersCollection = Firestore.instance
-          .collection('users').document(currentUser.uid).collection('proposals')
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection('users')
+          .document(currentUser.uid)
+          .collection('proposals')
           .document(proposalId);
       try {
-        QuerySnapshot chatsQueryResult = await Firestore.instance.collection("chats").where("proposal_id", isEqualTo: proposalId).getDocuments();
+        QuerySnapshot chatsQueryResult = await Firestore.instance
+            .collection("kingdoms")
+            .document(getUserOrganization(currentUser) ?? "")
+            .collection("chats")
+            .where("proposal_id", isEqualTo: proposalId)
+            .getDocuments();
         List<DocumentSnapshot> chatsToDelete = [];
         chatsToDelete.addAll(chatsQueryResult.documents);
         // We are removing all the chats that don't exist to prevent doing the
@@ -249,6 +264,8 @@ class MyProposalsState extends State<MyProposals> {
                         }
                       },
                       future: Firestore.instance
+                          .collection("kingdoms")
+                          .document(getUserOrganization(currentUser) ?? "")
                           .collection("users")
                           .document(userId)
                           .get(),

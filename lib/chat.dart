@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'circular_photo.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
+import 'helper.dart';
 
 /// Represents the screen where two people talk to each other.
 /// roomId: The id of the room(in the database) that was created for each other.
@@ -40,8 +41,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     super.initState();
     _scrollController = ScrollController();
     firestore = Firestore.instance;
-    roomCollectionReference =
-        firestore.collection('chats').document(roomId).collection('chat_room');
+    initializeChatSubscription();
+  }
+  
+  // Note how we use getUserOrganization method with a parameter here.
+  void initializeChatSubscription() async {
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    roomCollectionReference = firestore
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection('chats')
+        .document(roomId)
+        .collection('chat_room');
     fireBaseSubscription = roomCollectionReference
         .limit(15) // only get last 15 for now, works with iphone
         .orderBy("timestamp", descending: true)
@@ -88,9 +99,13 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   // We keep track of timestamp of the last message the user has seen.
   // We update all the related state in the database.
   void _updateTimeSeenState(Timestamp maxTimestamp) async {
-    DocumentReference chatReference = firestore.collection("chats").document(roomId);
-    DocumentSnapshot chat = await chatReference.get();
     FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    DocumentReference chatReference = firestore
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection("chats")
+        .document(roomId);
+    DocumentSnapshot chat = await chatReference.get();
     if (chat.data['creator_id'] == currentUser.uid) {
       firestore.runTransaction((Transaction t) async {
         await t.update(chatReference, <String, dynamic>{
@@ -185,8 +200,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   // Stuff that need to happen when user presses the submit button.
   void _handleSubmitted(String text) async {
     _chatInputController.clear();
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    DocumentSnapshot userDetails = await firestore.collection("users").document(user.uid).get();
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    DocumentSnapshot userDetails = await firestore
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection("users")
+        .document(currentUser.uid).get();
     Timestamp currentTime = Timestamp.now();
     var message = {
       'sender': <String, dynamic>{'name': userDetails.data['name'], 'imageUrl': userDetails.data['photo_url']},
@@ -195,7 +214,11 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       "receiver" : widget.photoUserId
     };
     roomCollectionReference.add(message);
-    DocumentReference chatReference = firestore.collection('chats').document(roomId);
+    DocumentReference chatReference = firestore
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection('chats')
+        .document(roomId);
     // below we store the timestamp indicating when the last update to the
     // chat was made. We also store the last message which caused this update.
     String firstName;

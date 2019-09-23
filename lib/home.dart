@@ -7,6 +7,7 @@ import 'groups.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'helper.dart';
 
 class Home extends StatefulWidget {
   HomeState createState() {
@@ -47,8 +48,15 @@ class HomeState extends State<Home> {
 
   void registerToken() async {
     String token = await _fcm.getToken();
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    await Firestore.instance.collection("users").document(user.uid).collection("tokens").document(token).setData({
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    await Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection("users")
+        .document(currentUser.uid)
+        .collection("tokens")
+        .document(token)
+        .setData({
       "id": token
     });
   }

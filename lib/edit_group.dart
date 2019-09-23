@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'colors.dart';
-
+import 'helper.dart';
 
 /// Scaffolding of the add event screen
 class EditGroupScreen extends StatelessWidget {
@@ -72,15 +72,20 @@ class EditGroupFormState extends State<EditGroupForm> {
     data['title'] = _controllerTitle.text;
     data['purpose'] = _controllerPurpose.text;
     data['rules'] = _controllerRules.text;
-    FirebaseUser user =
+    FirebaseUser currentUser =
     await FirebaseAuth.instance.currentUser();
-    data['user_id'] = user.uid;
+    data['user_id'] = currentUser.uid;
     // start submitting
     setState(() {
       submitting = true;
     });
     try {
-      await _firestore.collection('groups').document(widget.groupId).setData(data);
+      await _firestore
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection('groups')
+          .document(widget.groupId)
+          .setData(data);
       var snackbar = SnackBar(
           duration: Duration(seconds: 3),
           content: const Text('Group Updated'),

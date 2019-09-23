@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'user_profile.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'proposals.dart';
+import 'helper.dart';
 
 class MyFavoriteProposals extends StatefulWidget {
   MyFavoriteProposalsState createState() {
@@ -18,8 +19,11 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
   FirebaseUser currentUser;
 
   Future<QuerySnapshot> getMyProposals() async {
+    // TODO(Harsh) : This is really confusing to read !!!!!!!!
     currentUser = await FirebaseAuth.instance.currentUser();
     return Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
         .collection("users")
         .document(currentUser.uid)
         .collection("favorites")
@@ -178,6 +182,8 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
                         }
                       },
                       future: Firestore.instance
+                          .collection("kingdoms")
+                          .document(getUserOrganization(currentUser) ?? "")
                           .collection("users")
                           .document(userId)
                           .get(),
@@ -372,6 +378,8 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
             }
           },
           future: Firestore.instance
+              .collection("kingdoms")
+              .document(getUserOrganization(currentUser) ?? "")
               .collection("proposals")
               .document(proposalId)
               .get(),

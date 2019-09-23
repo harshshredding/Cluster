@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
+import 'helper.dart';
 
 
 class UserProfile extends StatefulWidget {
@@ -50,28 +51,43 @@ class UserProfileState extends State<UserProfile> {
   }
 
   void getUserDetails() async {
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     setState(() {
       userDocument =
-          Firestore.instance.collection("users").document(user.uid).get();
+          Firestore.instance
+              .collection("kingdoms")
+              .document(getUserOrganization(currentUser) ?? "")
+              .collection("users")
+              .document(currentUser.uid)
+              .get();
     });
   }
 
   void getUserDetailsWithId(String userId) async {
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     setState(() {
       userDocument =
-          Firestore.instance.collection("users").document(userId).get();
+          Firestore.instance
+              .collection("kingdoms")
+              .document(getUserOrganization(currentUser) ?? "")
+              .collection("users")
+              .document(userId).get();
     });
   }
 
   void submitUserDetails(BuildContext context) async {
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     DocumentSnapshot document =
-        await Firestore.instance.collection("users").document(user.uid).get();
+        await Firestore.instance
+            .collection("kingdoms")
+            .document(getUserOrganization(currentUser) ?? "")
+            .collection("users")
+            .document(currentUser.uid)
+            .get();
     if (document.exists && (_selectedImage != null)) {
       final String uuid = Uuid().v1();
       StorageReference storageRef =
-      FirebaseStorage.instance.ref().child(user.uid + uuid);
+      FirebaseStorage.instance.ref().child(currentUser.uid + uuid);
       StorageUploadTask uploadTask = storageRef.putFile(_selectedImage);
 
       // Show a snackbar
@@ -108,8 +124,10 @@ class UserProfileState extends State<UserProfile> {
       document.data["name"] = _controllerName.text;
       document.data["photo_url"] = downloadUrl;
       await Firestore.instance
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
           .collection("users")
-          .document(user.uid)
+          .document(currentUser.uid)
           .setData(document.data);
       Scaffold.of(context).hideCurrentSnackBar();
       print("yoasdasda");
@@ -118,8 +136,10 @@ class UserProfileState extends State<UserProfile> {
       document.data["linkedn"] = _controllerLinkedn.text;
       document.data["name"] = _controllerName.text;
       await Firestore.instance
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
           .collection("users")
-          .document(user.uid)
+          .document(currentUser.uid)
           .setData(document.data);
     }
     var snackbar = new SnackBar(

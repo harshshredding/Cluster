@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'group_details.dart';
 import 'dart:async';
+import 'helper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Groups extends StatefulWidget {
   GroupsState createState() {
@@ -17,7 +19,14 @@ class GroupsState extends State<Groups> {
 
   initState() {
     super.initState();
+    getGroupsSubscription();
+  }
+
+  void getGroupsSubscription() async {
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
     _subscription = Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
         .collection("groups")
         .snapshots()
         .listen((QuerySnapshot snapshot) {

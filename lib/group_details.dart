@@ -6,6 +6,7 @@ import 'add_proposal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'edit_group.dart';
+import 'helper.dart';
 
 class GroupDetails extends StatefulWidget {
   final String groupId;
@@ -24,8 +25,19 @@ class GroupDetailsState extends State<GroupDetails> {
 
   void initState() {
     super.initState();
-    this.future =
-        Firestore.instance.collection("groups").document(widget.groupId).get();
+    setGroupFutureState();
+  }
+
+  setGroupFutureState() async {
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    setState(() {
+      this.future =
+          Firestore.instance
+              .collection("kingdoms")
+              .document(getUserOrganization(currentUser) ?? "")
+              .collection("groups")
+              .document(widget.groupId).get();
+    });
   }
 
   Widget build(BuildContext context) {

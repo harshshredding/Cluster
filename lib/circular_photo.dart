@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_profile.dart';
+import 'helper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// Represents the avatar photo of the user.
 /// Takes a userId and the radius of the photo
@@ -22,7 +24,19 @@ class CircularPhotoState extends State<CircularPhoto> {
 
   initState() {
     super.initState();
-    userFuture = Firestore.instance.collection("users").document(widget.userId).get();
+    getUserDetailsFuture(widget.userId);
+  }
+
+  void getUserDetailsFuture(String userId) async {
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    setState(() {
+      userFuture = Firestore.instance
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection("users")
+          .document(widget.userId)
+          .get();
+    });
   }
 
   Widget build(BuildContext context) {

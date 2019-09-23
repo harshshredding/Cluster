@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'helper.dart';
 
 //    if (user.email.length > 7) {
 //      if (user.email.substring(user.email.length - 7) == "@uw.edu") {
@@ -48,16 +49,20 @@ class LoginState extends State<Login> {
 
   _login(BuildContext context) async {
     try {
-      FirebaseUser user = await _auth.signInWithEmailAndPassword(
+      FirebaseUser currentUser = await _auth.signInWithEmailAndPassword(
           email: _controllerEmail.text, password: _controllerPassword.text);
-      if (user.isEmailVerified) {
+      if (currentUser.isEmailVerified) {
         DocumentReference document =
-            Firestore.instance.collection("users").document(user.uid);
+            Firestore.instance
+                .collection("kingdoms")
+                .document(getUserOrganization(currentUser) ?? "")
+                .collection("users")
+                .document(currentUser.uid);
         DocumentSnapshot documentSnap = await document.get();
         if (!documentSnap.exists) {
           await document.setData({
-            "id": user.uid,
-            "name": user.displayName ?? "Default Name",
+            "id": currentUser.uid,
+            "name": currentUser.displayName ?? "Default Name",
             "photo_url":
                 "https://firebasestorage.googleapis.com/v0/b/cluster-c7373.appspot.com/o/coffee-shop.jpg?alt=media&token=da9722c7-3b81-492d-be60-5dc8b5c7111e",
             "summary": ""

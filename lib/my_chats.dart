@@ -29,7 +29,11 @@ class MyChatsState extends State<MyChats> {
 
   void getSubscription() async {
     currentUser = await FirebaseAuth.instance.currentUser();
+    setState(() {
+    });
     chatsSubscription = Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
         .collection("chats")
         .where("creator_id", isEqualTo: currentUser.uid)
         .snapshots()
@@ -39,6 +43,8 @@ class MyChatsState extends State<MyChats> {
       });
     });
     chatsSubscription2 = Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
         .collection("chats")
         .where("interested_id", isEqualTo: currentUser.uid)
         .snapshots()
@@ -82,6 +88,8 @@ class MyChatsState extends State<MyChats> {
                     key: Key(chatId),
                     onDismissed: (direction) async {
                       DocumentReference chatReference = Firestore.instance
+                          .collection("kingdoms")
+                          .document(getUserOrganization(currentUser) ?? "")
                           .collection('chats')
                           .document(chatId);
                       try {
@@ -144,6 +152,8 @@ class MyChatsState extends State<MyChats> {
                 }
               },
               future: Firestore.instance
+                  .collection("kingdoms")
+                  .document(getUserOrganization(currentUser) ?? "")
                   .collection("proposals")
                   .document(proposalId)
                   .get(),

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
 import 'tag_selector.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'helper.dart';
 
 /// scaffolding of the add event screen
 class EditProposalScreen extends StatelessWidget {
@@ -51,11 +52,20 @@ class EditProposalFormState extends State<EditProposalForm> {
   }
 
   void getProposalInformation() async {
-    DocumentSnapshot proposal = await Firestore.instance.collection("proposals").document(widget.proposalId).get();
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    DocumentSnapshot proposal = await Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection("proposals")
+        .document(widget.proposalId)
+        .get();
     _controllerTitle.text = proposal.data['title'] ?? "";
     _controllerSummary.text = proposal.data['summary'] ?? "";
-    QuerySnapshot groupsQuery = await Firestore
-        .instance.collection("groups").getDocuments();
+    QuerySnapshot groupsQuery = await Firestore.instance
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection("groups")
+        .getDocuments();
     for (DocumentSnapshot groupSnap in groupsQuery.documents) {
       String groupTitle = groupSnap.data['title'];
       if (proposal.data[groupTitle] != null) {
@@ -158,13 +168,19 @@ class EditProposalFormState extends State<EditProposalForm> {
                     }
                     map["title"] = _controllerTitle.text;
                     map["summary"] = _controllerSummary.text;
-                    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-                    map["user_id"] = user.uid;
+                    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+                    map["user_id"] = currentUser.uid;
                     String proposalId = widget.proposalId;
-                    DocumentReference userProposal = _firestore.collection("users")
-                        .document(user.uid)
+                    DocumentReference userProposal = _firestore
+                        .collection("kingdoms")
+                        .document(getUserOrganization(currentUser) ?? "")
+                        .collection("users")
+                        .document(currentUser.uid)
                         .collection("proposals").document(proposalId);
-                    DocumentReference proposalEntry = _firestore.collection("proposals")
+                    DocumentReference proposalEntry = _firestore
+                        .collection("kingdoms")
+                        .document(getUserOrganization(currentUser) ?? "")
+                        .collection("proposals")
                         .document(proposalId);
                     await _firestore.runTransaction((Transaction t) async {
                       await t.set(proposalEntry, map);
