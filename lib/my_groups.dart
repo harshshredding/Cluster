@@ -15,14 +15,25 @@ class MyGroups extends StatefulWidget {
 }
 
 class MyGroupsState extends State<MyGroups> {
-  Future<QuerySnapshot> getMyGroups() async {
+  Future<QuerySnapshot> groupsFuture;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getMyGroups();
+  }
+
+  void getMyGroups() async {
     FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
-    return Firestore.instance
-        .collection("kingdoms")
-        .document(getUserOrganization(currentUser) ?? "")
-        .collection('groups')
-        .where('user_id', isEqualTo: currentUser.uid)
-        .getDocuments();
+    setState(() {
+      groupsFuture = Firestore.instance
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection('groups')
+          .where('user_id', isEqualTo: currentUser.uid)
+          .getDocuments();
+    });
   }
 
   List<Widget> getGroupTiles(List<DocumentSnapshot> groupSnaps) {
@@ -123,7 +134,7 @@ class MyGroupsState extends State<MyGroups> {
             return LoadingSpinner();
           }
         },
-          future: getMyGroups(),)
+          future: groupsFuture,)
       ]),
     );
   }

@@ -17,21 +17,25 @@ class TagSelector extends StatefulWidget {
 
 class TagSelectorState extends State<TagSelector> {
   final Set<String> groupsSelected = Set();
+  Future<QuerySnapshot> groupsFuture;
   
   initState() {
     super.initState();
     for (String group in widget.alreadySelectedGroups) {
       groupsSelected.add(group);
     }
+    getGroupsFuture();
   }
 
-  Future<QuerySnapshot> getGroupsFuture() async {
+  void getGroupsFuture() async {
     FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
-    return Firestore.instance
-        .collection("kingdoms")
-        .document(getUserOrganization(currentUser) ?? "")
-        .collection("groups")
-        .getDocuments();
+    setState(() {
+      groupsFuture = Firestore.instance
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection("groups")
+          .getDocuments();
+    });
   }
 
   Widget createChip(String group) {
@@ -131,6 +135,6 @@ class TagSelectorState extends State<TagSelector> {
               break;
           }
         },
-        future: getGroupsFuture());
+        future: groupsFuture);
   }
 }

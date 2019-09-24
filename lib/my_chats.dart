@@ -28,29 +28,30 @@ class MyChatsState extends State<MyChats> {
   }
 
   void getSubscription() async {
-    currentUser = await FirebaseAuth.instance.currentUser();
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
     setState(() {
-    });
-    chatsSubscription = Firestore.instance
-        .collection("kingdoms")
-        .document(getUserOrganization(currentUser) ?? "")
-        .collection("chats")
-        .where("creator_id", isEqualTo: currentUser.uid)
-        .snapshots()
-        .listen((QuerySnapshot queryResult) {
-      setState(() {
-        creatorSnapshots = queryResult;
+      currentUser = user;
+      chatsSubscription = Firestore.instance
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection("chats")
+          .where("creator_id", isEqualTo: currentUser.uid)
+          .snapshots()
+          .listen((QuerySnapshot queryResult) {
+        setState(() {
+          creatorSnapshots = queryResult;
+        });
       });
-    });
-    chatsSubscription2 = Firestore.instance
-        .collection("kingdoms")
-        .document(getUserOrganization(currentUser) ?? "")
-        .collection("chats")
-        .where("interested_id", isEqualTo: currentUser.uid)
-        .snapshots()
-        .listen((QuerySnapshot queryResult) {
-      setState(() {
-        interestedSnapshots = queryResult;
+      chatsSubscription2 = Firestore.instance
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection("chats")
+          .where("interested_id", isEqualTo: currentUser.uid)
+          .snapshots()
+          .listen((QuerySnapshot queryResult) {
+        setState(() {
+          interestedSnapshots = queryResult;
+        });
       });
     });
   }

@@ -17,15 +17,26 @@ class MyProposals extends StatefulWidget {
 /// Page that lists all the favorite events of the user
 class MyProposalsState extends State<MyProposals> {
   FirebaseUser currentUser;
+  Future<QuerySnapshot> proposalsFuture;
 
-  Future<QuerySnapshot> getMyProposals() async {
-    currentUser = await FirebaseAuth.instance.currentUser();
-    return Firestore.instance
-        .collection("kingdoms")
-        .document(getUserOrganization(currentUser) ?? "")
-        .collection('proposals')
-        .where('user_id', isEqualTo: currentUser.uid)
-        .getDocuments();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getMyProposals();
+  }
+
+  void getMyProposals() async {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    setState(() {
+      currentUser = user;
+      proposalsFuture = Firestore.instance
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection('proposals')
+          .where('user_id', isEqualTo: currentUser.uid)
+          .getDocuments();
+    });
   }
 
   // Deletes proposal AND all related information.
@@ -489,7 +500,7 @@ class MyProposalsState extends State<MyProposals> {
                 break;
             }
           },
-          future: getMyProposals()),
+          future: proposalsFuture),
     );
   }
 }

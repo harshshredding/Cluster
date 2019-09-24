@@ -17,17 +17,27 @@ class MyFavoriteProposals extends StatefulWidget {
 /// Page that lists all the favorite events of the user
 class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
   FirebaseUser currentUser;
+  Future<QuerySnapshot> proposalsFuture;
 
-  Future<QuerySnapshot> getMyProposals() async {
-    // TODO(Harsh) : This is really confusing to read !!!!!!!!
-    currentUser = await FirebaseAuth.instance.currentUser();
-    return Firestore.instance
-        .collection("kingdoms")
-        .document(getUserOrganization(currentUser) ?? "")
-        .collection("users")
-        .document(currentUser.uid)
-        .collection("favorites")
-        .getDocuments();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getMyProposals();
+  }
+
+  void getMyProposals() async {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    setState(() {
+      currentUser = user;
+      proposalsFuture =  Firestore.instance
+          .collection("kingdoms")
+          .document(getUserOrganization(currentUser) ?? "")
+          .collection("users")
+          .document(currentUser.uid)
+          .collection("favorites")
+          .getDocuments();
+    });
   }
 
   Widget createCard(String topic, String summary, String userId,
@@ -419,7 +429,7 @@ class MyFavoriteProposalsState extends State<MyFavoriteProposals> {
                 break;
             }
           },
-          future: getMyProposals()),
+          future: proposalsFuture),
     );
   }
 }

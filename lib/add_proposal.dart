@@ -31,7 +31,6 @@ class AddProposalForm extends StatefulWidget {
   AddProposalFormState createState() {
     return AddProposalFormState();
   }
-
   final List<String> preSelectedGroups;
 }
 
