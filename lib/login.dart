@@ -46,6 +46,7 @@ class LoginState extends State<Login> {
   TextEditingController _controllerPassword = TextEditingController(text: "");
   String _error;
   bool _passVisible = false;
+  String _kingdomValue = "UW";
 
   _login(BuildContext context) async {
     try {
@@ -120,7 +121,7 @@ class LoginState extends State<Login> {
             padding: const EdgeInsets.all(20.0),
             child: new Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+//              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 _error != null
                     ? Center(
@@ -130,6 +131,35 @@ class LoginState extends State<Login> {
                         height: 0,
                         width: 0,
                       ),
+                new FormField(
+                  builder: (FormFieldState state) {
+                    return DropdownButton<String>(
+                      value: _kingdomValue,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 18,
+                      elevation: 16,
+                      style: TextStyle(
+                          color: Colors.deepPurple
+                      ),
+                      underline: Container(
+                        height: 2,
+                        color: Colors.deepPurpleAccent,
+                      ),
+                      onChanged: (String newKingdomValue) {
+                        setState(() {
+                          _kingdomValue = newKingdomValue;
+                        });
+                      },
+                      items: <String>['UW', 'Agilysys']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
                 TextFormField(
                   decoration: new InputDecoration(
                       labelText: "UW email", hintText: "UW email"),
