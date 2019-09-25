@@ -46,9 +46,30 @@ class LoginState extends State<Login> {
   TextEditingController _controllerPassword = TextEditingController(text: "");
   String _error;
   bool _passVisible = false;
-  String _kingdomValue = "UW";
+  String _chosenOrganization = "UW";
+  Map<String, String> _orgToSuffix = {
+    "UW": "@uw.edu",
+    "Agilysys": "@agilysys.com"
+  };
+
+  String getSuffixFromEmail(String email) {
+    String userEmail = email;
+    int positionOfAt = userEmail.indexOf("@");
+    if (positionOfAt != -1) {
+      String organization = userEmail.substring(positionOfAt);
+      return organization;
+    }
+    return null;
+  }
 
   _login(BuildContext context) async {
+    String givenSuffix = getSuffixFromEmail(_controllerEmail.text);
+    if (_orgToSuffix[_chosenOrganization] != givenSuffix) {
+      setState(() {
+        _error = "Please enter email belonging to " + _chosenOrganization;
+      });
+      return;
+    }
     try {
       FirebaseUser currentUser = await _auth.signInWithEmailAndPassword(
           email: _controllerEmail.text, password: _controllerPassword.text);
@@ -131,38 +152,52 @@ class LoginState extends State<Login> {
                         height: 0,
                         width: 0,
                       ),
-                new FormField(
-                  builder: (FormFieldState state) {
-                    return DropdownButton<String>(
-                      value: _kingdomValue,
-                      icon: Icon(Icons.arrow_downward),
-                      iconSize: 18,
-                      elevation: 16,
-                      style: TextStyle(
-                          color: Colors.deepPurple
-                      ),
-                      underline: Container(
-                        height: 2,
-                        color: Colors.deepPurpleAccent,
-                      ),
-                      onChanged: (String newKingdomValue) {
-                        setState(() {
-                          _kingdomValue = newKingdomValue;
-                        });
-                      },
-                      items: <String>['UW', 'Agilysys']
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                    );
-                  },
+                Container(
+                  margin: EdgeInsets.only(bottom: 10),
+                  child:
+                  Row(
+                    children: <Widget>[
+                      Text("Choose Organization: ", style: TextStyle(color: Colors.grey, fontSize: 17),)
+                      ,
+                      Padding(
+                        padding: EdgeInsets.only(left: 10),
+                        child: FormField(
+                          builder: (FormFieldState state) {
+                            return DropdownButton<String>(
+                              value: _chosenOrganization,
+                              icon: Icon(Icons.arrow_downward),
+                              iconSize: 18,
+                              elevation: 16,
+                              style: TextStyle(
+                                  color: Colors.grey
+                              ),
+                              underline: Container(
+                                height: 2,
+                                color: Colors.deepPurpleAccent,
+                              ),
+                              onChanged: (String newKingdomValue) {
+                                setState(() {
+                                  _chosenOrganization = newKingdomValue;
+                                });
+                              },
+                              items: <String>['UW', 'Agilysys']
+                                  .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            );
+                          },
+                        ),
+                      )
+                      ],
+                  )
+                  ,
                 ),
                 TextFormField(
                   decoration: new InputDecoration(
-                      labelText: "UW email", hintText: "UW email"),
+                      labelText: "Organization email", hintText: "Organization email"),
                   controller: _controllerEmail,
                 ),
                 Row(

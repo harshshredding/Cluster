@@ -18,14 +18,19 @@ class RegisterState extends State<Register> {
   String _error;
   FirebaseUser _userToVerify;
   bool _passVisible = false;
+  String _chosenOrganization = "UW";
+  Map<String, String> _orgToSuffix = {
+    "UW": "@uw.edu",
+    "Agilysys": "@agilysys.com"
+  };
 
   void _resendVerificationEmail(BuildContext context) async {
     try {
       await _userToVerify.sendEmailVerification();
       var snackbar = new SnackBar(
-          duration: new Duration(seconds: 4),
-          content: Text("Verfication Email Sent"),
-          backgroundColor: Colors.green,
+        duration: new Duration(seconds: 4),
+        content: Text("Verfication Email Sent"),
+        backgroundColor: Colors.green,
       );
       Scaffold.of(context).showSnackBar(snackbar);
     } catch (err) {
@@ -34,15 +39,33 @@ class RegisterState extends State<Register> {
     }
   }
 
+  String getSuffixFromEmail(String email) {
+    String userEmail = email;
+    int positionOfAt = userEmail.indexOf("@");
+    if (positionOfAt != -1) {
+      String organization = userEmail.substring(positionOfAt);
+      return organization;
+    }
+    return null;
+  }
+  
+  
   void _register(BuildContext context) async {
+    String givenSuffix = getSuffixFromEmail(_controllerEmail.text);
+    if (_orgToSuffix[_chosenOrganization] != givenSuffix) {
+      setState(() {
+        _error = "Please enter email belonging to " + _chosenOrganization;
+      });
+      return;
+    }
     try {
       FirebaseUser user = await _auth.createUserWithEmailAndPassword(
           email: _controllerEmail.text, password: _controllerPassword.text);
       await user.sendEmailVerification();
       var snackbar = new SnackBar(
-          duration: new Duration(seconds: 4),
-          content: Text("Verfication Email Sent"),
-          backgroundColor: Colors.green,
+        duration: new Duration(seconds: 4),
+        content: Text("Verfication Email Sent"),
+        backgroundColor: Colors.green,
       );
       Scaffold.of(context).showSnackBar(snackbar);
       setState(() {
@@ -95,8 +118,7 @@ class RegisterState extends State<Register> {
                                 Container(
                                   child: Icon(Icons.send),
                                   margin: EdgeInsets.only(right: 10),
-                                )
-                                ,
+                                ),
                                 Text("Resend Verification Email")
                               ],
                             ),
@@ -121,6 +143,49 @@ class RegisterState extends State<Register> {
                         height: 0,
                         width: 0,
                       ),
+                Container(
+                  margin: EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        "Choose Organization: ",
+                        style: TextStyle(color: Colors.grey, fontSize: 17),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 10),
+                        child: FormField(
+                          builder: (FormFieldState state) {
+                            return DropdownButton<String>(
+                              value: _chosenOrganization,
+                              icon: Icon(Icons.arrow_downward),
+                              iconSize: 18,
+                              elevation: 16,
+                              style: TextStyle(color: Colors.grey),
+                              underline: Container(
+                                height: 2,
+                                color: Colors.deepPurpleAccent,
+                              ),
+                              onChanged: (String newKingdomValue) {
+                                setState(() {
+                                  _chosenOrganization = newKingdomValue;
+                                });
+                              },
+                              items: <String>[
+                                'UW',
+                                'Agilysys'
+                              ].map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            );
+                          },
+                        ),
+                      )
+                    ],
+                  ),
+                ),
                 TextFormField(
                   decoration: new InputDecoration(
                       labelText: "UW email", hintText: "UW email"),
@@ -129,27 +194,31 @@ class RegisterState extends State<Register> {
                 Row(
                   children: <Widget>[
                     Expanded(
-                      child:TextFormField(
+                      child: TextFormField(
                         decoration: new InputDecoration(
                             labelText: "password", hintText: "password"),
                         controller: _controllerPassword,
                         obscureText: !_passVisible,
-                      ) ,
-                    )
-                    ,
-                    _passVisible ?
-                    IconButton(
-                        icon: Icon(Icons.remove_red_eye), onPressed: () {
-                      setState(() {
-                        _passVisible = !_passVisible;
-                      });
-                    }) :
-                    IconButton(
-                        icon: Icon(Icons.remove_red_eye, color: Colors.grey,), onPressed: () {
-                      setState(() {
-                        _passVisible = !_passVisible;
-                      });
-                    })
+                      ),
+                    ),
+                    _passVisible
+                        ? IconButton(
+                            icon: Icon(Icons.remove_red_eye),
+                            onPressed: () {
+                              setState(() {
+                                _passVisible = !_passVisible;
+                              });
+                            })
+                        : IconButton(
+                            icon: Icon(
+                              Icons.remove_red_eye,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _passVisible = !_passVisible;
+                              });
+                            })
                   ],
                 ),
                 Builder(builder: (BuildContext context) {

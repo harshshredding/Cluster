@@ -268,7 +268,7 @@ class MyChatsState extends State<MyChats> {
   }
 
   Widget build(BuildContext context) {
-    Widget subTree = (creatorSnapshots != null)
+    Widget subTree = (creatorSnapshots != null && interestedSnapshots != null)
         ? buildCardsList(creatorSnapshots, interestedSnapshots, context)
         : Center(
             child: Container(width: 0, height: 0),
