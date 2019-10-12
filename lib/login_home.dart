@@ -61,31 +61,6 @@ class LoginHomeState extends State<LoginHome> {
                         height: 0,
                         width: 0,
                       ),
-                Container(
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        "Login with ",
-                        style: TextStyle(
-                            color: Colors.grey.shade300, fontSize: 20),
-                      ),
-                      Text(
-                        "UW ",
-                        style: TextStyle(
-                            color: Color.fromRGBO(245, 200, 54, 300),
-                            fontSize: 20),
-                      ),
-                      Text(
-                        "Email",
-                        style: TextStyle(
-                            color: Colors.deepPurpleAccent.shade100,
-                            fontSize: 20),
-                      )
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.only(bottom: 20),
-                ),
                 new RaisedButton(
                     elevation: 20,
                     onPressed: () => Navigator.pushNamed(context, "/login"),
