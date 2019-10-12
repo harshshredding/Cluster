@@ -47,7 +47,6 @@ class MyApp extends StatelessWidget {
       home: (_authenticatedUser != null) ? Home() : LoginHome(true),
       routes: {
         '/login': (context) => Login(),
-        '/map': (context) => MapScreen(),
         '/addProposal': (context) => AddProposalScreen(),
         '/userProfile': (context) => UserProfile(true),
         '/home': (context) => Home(),

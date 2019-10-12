@@ -48,7 +48,7 @@ class ForgotPassState extends State<ForgotPass> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Login"),
+          title: Text("Forgot Pass"),
         ),
         body: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -59,7 +59,7 @@ class ForgotPassState extends State<ForgotPass> {
                 _error != null ? Center(child: Text(_error),) : Container(height: 0, width: 0,)
                 ,
                 TextFormField(
-                  decoration: new InputDecoration(labelText: "UW email", hintText: "UW email"),
+                  decoration: new InputDecoration(labelText: "email", hintText: "email"),
                   controller: _controllerEmail,
                 ),
                 Container(

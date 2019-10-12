@@ -71,8 +71,8 @@ class LoginState extends State<Login> {
       return;
     }
     try {
-      FirebaseUser currentUser = await _auth.signInWithEmailAndPassword(
-          email: _controllerEmail.text, password: _controllerPassword.text);
+      FirebaseUser currentUser = (await _auth.signInWithEmailAndPassword(
+          email: _controllerEmail.text, password: _controllerPassword.text)).user;
       if (currentUser.isEmailVerified) {
         DocumentReference document =
             Firestore.instance
