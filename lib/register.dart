@@ -59,8 +59,9 @@ class RegisterState extends State<Register> {
       return;
     }
     try {
-      FirebaseUser user = await _auth.createUserWithEmailAndPassword(
-          email: _controllerEmail.text, password: _controllerPassword.text);
+      FirebaseUser user = (await _auth.createUserWithEmailAndPassword(
+          email: _controllerEmail.text, password: _controllerPassword.text))
+        .user;
       await user.sendEmailVerification();
       var snackbar = new SnackBar(
         duration: new Duration(seconds: 4),

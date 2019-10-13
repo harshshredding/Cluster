@@ -6,6 +6,14 @@ import 'circular_photo.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
 import 'helper.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'video-call/pages/call.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
+import 'package:random_string/random_string.dart';
+
+final String MESSAGE_TYPE_TEXT = "text";
+final String MESSAGE_TYPE_VIDEO_CALL_INVITATION = "videoCall";
 
 /// Represents the screen where two people talk to each other.
 /// roomId: The id of the room(in the database) that was created for each other.
@@ -31,10 +39,14 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   CollectionReference roomCollectionReference;
   ScrollController _scrollController;
   Function _currentScrollListener;
-  ChatScreenState(this.roomId);
   FirebaseUser currentUser;
   final FirebaseMessaging _fcm = FirebaseMessaging();
   bool _receivedMessage = false;
+
+
+
+  ChatScreenState(this.roomId);
+
 
   @override
   void initState() {
@@ -67,14 +79,20 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 name: snapshot.data['sender']['name'],
                 senderImageUrl: snapshot.data['sender']['imageUrl'],
                 text: snapshot.data['text'],
-                timestamp: newMessageTimestamp);
+                timestamp: newMessageTimestamp,
+                messageType: snapshot.data['type'],
+                channelName: snapshot.data['channel_name']
+            );
           }
         } else {
           _addMessage(
               name: snapshot.data['sender']['name'],
               senderImageUrl: snapshot.data['sender']['imageUrl'],
               text: snapshot.data['text'],
-              timestamp: newMessageTimestamp);
+              timestamp: newMessageTimestamp,
+              messageType: snapshot.data['type'],
+              channelName: snapshot.data['channel_name'],
+          );
         }
       }
       // Update the 'time_seen' state in our database
@@ -161,13 +179,16 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   // This method adds a new chat-message to the front(where most resent messages go).
   void _addMessage(
-      {String name, String text, String senderImageUrl, Timestamp timestamp}) {
+      {String name, String text, String senderImageUrl, Timestamp timestamp, String messageType, String channelName}) {
+    print("addMessage " + (channelName ?? ""));
     var animationController = AnimationController(
       duration: Duration(milliseconds: 700),
       vsync: this,
     );
     var sender = ChatUser(name: name, imageUrl: senderImageUrl);
     var message = ChatMessage(
+        messageType,
+        channelName: channelName,
         sender: sender,
         text: text,
         animationController: animationController,
@@ -180,13 +201,16 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   // This method adds a new chat-message to the end(where older messages go).
   void _addMessageAtEnd(
-      {String name, String text, String senderImageUrl, Timestamp timestamp}) {
+      {String name, String text, String senderImageUrl, String messageType, Timestamp timestamp, String channelName}) {
+    print("addMessageEnd " + (channelName ?? ""));
     var animationController = AnimationController(
       duration: Duration(milliseconds: 700),
       vsync: this,
     );
     var sender = ChatUser(name: name, imageUrl: senderImageUrl);
     var message = ChatMessage(
+        messageType,
+        channelName: channelName,
         sender: sender,
         text: text,
         animationController: animationController,
@@ -211,7 +235,8 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       'sender': <String, dynamic>{'name': userDetails.data['name'], 'imageUrl': userDetails.data['photo_url']},
       'text': text,
       'timestamp': currentTime,
-      "receiver" : widget.photoUserId
+      "receiver" : widget.photoUserId,
+      "type" : MESSAGE_TYPE_TEXT
     };
     roomCollectionReference.add(message);
     DocumentReference chatReference = firestore
@@ -230,6 +255,45 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     firestore.runTransaction((Transaction t) async {
       await t.update(chatReference, <String, dynamic>{"last_updated": currentTime});
       await t.update(chatReference, <String, dynamic>{"last_message": firstName + " : " + text});
+    });
+    setState(() {
+      _isComposing = false;
+    });
+  }
+
+  void _sendVideoCallInvite(String channelName) async {
+    FirebaseUser currentUser = await FirebaseAuth.instance.currentUser();
+    DocumentSnapshot userDetails = await firestore
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection("users")
+        .document(currentUser.uid).get();
+    Timestamp currentTime = Timestamp.now();
+    var message = {
+      'sender' : <String, dynamic>{'name': userDetails.data['name'], 'imageUrl': userDetails.data['photo_url']},
+      'channel_name' : channelName,
+      'text' : 'Video Call' + channelName,
+      'timestamp': currentTime,
+      "receiver" : widget.photoUserId,
+      "type" : MESSAGE_TYPE_VIDEO_CALL_INVITATION
+    };
+    roomCollectionReference.add(message);
+    DocumentReference chatReference = firestore
+        .collection("kingdoms")
+        .document(getUserOrganization(currentUser) ?? "")
+        .collection('chats')
+        .document(roomId);
+    // below we store the timestamp indicating when the last update to the
+    // chat was made. We also store the last message which caused this update.
+    String firstName;
+    if (userDetails.data['name'] != null) {
+      String name =  userDetails.data['name'];
+      firstName = name.split(new RegExp('\\s+'))[0];
+    }
+    firstName = (firstName ?? "");
+    firestore.runTransaction((Transaction t) async {
+      await t.update(chatReference, <String, dynamic>{"last_updated": currentTime});
+      await t.update(chatReference, <String, dynamic>{"last_message": firstName + " : " + "VIDEO CALL INVITATION"});
     });
     setState(() {
       _isComposing = false;
@@ -255,7 +319,10 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           name: docSnapshot.data['sender']['name'],
           senderImageUrl: docSnapshot.data['sender']['imageUrl'],
           text: docSnapshot.data['text'],
-          timestamp: docSnapshot.data['timestamp']);
+          timestamp: docSnapshot.data['timestamp'],
+          messageType: docSnapshot.data['type'],
+          channelName: docSnapshot.data['channel_name']
+      );
     }
   }
 
@@ -298,9 +365,18 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         title: _receivedMessage ? Text("Received Message") : Text("Chat"),
         actions: <Widget>[
           Container(
+            margin: EdgeInsets.fromLTRB(0, 5, 15, 5),
+            child: IconButton(
+                  icon: Icon(Icons.video_call, size: 35,),
+                  onPressed: () {
+                    _joinVideoCallChannel();
+                  }
+                ),
+          ),
+          Container(
             margin: EdgeInsets.fromLTRB(0, 5, 10, 5),
             child: CircularPhoto(widget.photoUserId, 20),
-          )
+          ),
         ]
       ),
       body: Center(
@@ -322,6 +398,12 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       ),
     );
   }
+
+  _joinVideoCallChannel() async {
+    // await for camera and mic permissions before pushing video page
+    String channelName = randomAlpha(15);
+    _sendVideoCallInvite(channelName);
+  }
 }
 
 /// Represents a person involved in the chat. Includes information that will
@@ -333,12 +415,13 @@ class ChatUser {
 }
 
 class ChatMessage {
-  ChatMessage(
-      {this.sender, this.text, this.animationController, this.timestamp});
+  ChatMessage(this.type, {this.sender, this.text, this.animationController, this.timestamp, this.channelName});
   final ChatUser sender;
   final Timestamp timestamp;
   final String text;
   final AnimationController animationController;
+  final String type;
+  final String channelName;
 }
 
 /// Represents the root item that holds the chat message.
@@ -384,8 +467,42 @@ class ChatMessageContent extends StatelessWidget {
 
   final ChatMessage message;
 
+  static _handleCameraAndMic() async {
+    await PermissionHandler().requestPermissions(
+        [PermissionGroup.camera, PermissionGroup.microphone]);
+  }
+
   Widget build(BuildContext context) {
     double c_width = MediaQuery.of(context).size.width * 0.8;
+
+    //print("Message type : " + message.type);
+    if ((message.type == MESSAGE_TYPE_VIDEO_CALL_INVITATION)
+        && (message.channelName != null)) {
+      return new Container(
+        width: c_width,
+        child: new Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            new RaisedButton(onPressed: () async {
+              await _handleCameraAndMic();
+              if (message.channelName != null) {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => new CallPage(
+                          channelName: message.channelName,
+                        )));
+              }
+            },
+              color: Colors.deepPurpleAccent,
+              textColor: Colors.white,
+              child: Text("Join Video Call "),
+            ),
+          ],
+        ),
+      );
+    }
+
     //80% of screen width
     return new Container(
       width: c_width,

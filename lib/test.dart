@@ -1,42 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:flutter/material.dart';
 
-class AddEventScreen extends StatefulWidget {
-  AddEventState createState() {
-    return AddEventState();
-  }
-}
-
-class AddEventState extends State<AddEventScreen> {
-  final _formKey = GlobalKey<FormState>();
-
+/// This is a class you can use to test things like new widgets, mysterious widgets etc.
+class Test extends StatelessWidget {
   Widget build(BuildContext context) {
-    final _controller = new TextEditingController(text: "");
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Make Event'),
-      ),
-      body: Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              PlacesAutocompleteField(
-                apiKey: "AIzaSyDYtG5xhm17OtZbEi1PJMLuRctVn43xvgs",
-                controller: _controller,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: RaisedButton(
-                  onPressed: () async {
-                    print(_controller.text);
-                  },
-                  child: Text('Submit'),
-                ),
-              ),
-            ],
-          )
-      ),
+    return Center(
+      child: PlacesAutocompleteField(
+          apiKey: "AIzaSyAZsIhyCaXN79lR54Yo5e313DKmJORiXyM"),
     );
+  }
+
+  void willPrint() {
+    print('hello');
   }
 }

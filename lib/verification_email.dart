@@ -23,9 +23,9 @@ class VerificationEmailState extends State<VerificationEmail> {
 
   void _login(BuildContext context) async {
     try {
-      FirebaseUser user = await _auth.signInWithEmailAndPassword(
+      FirebaseUser user = (await _auth.signInWithEmailAndPassword(
           email: _controllerEmail.text,
-          password: _controllerPassword.text);
+          password: _controllerPassword.text)).user;
       if (user.isEmailVerified) {
         setState(() {
           _error = "email is already verified";
@@ -78,7 +78,7 @@ class VerificationEmailState extends State<VerificationEmail> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Login"),
+          title: Text("Resend Verification"),
         ),
         body: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -89,7 +89,7 @@ class VerificationEmailState extends State<VerificationEmail> {
                 _error != null ? Center(child: Text(_error),) : Container(height: 0, width: 0,)
                 ,
                 TextFormField(
-                  decoration: new InputDecoration(labelText: "UW email", hintText: "UW email"),
+                  decoration: new InputDecoration(labelText: "email", hintText: "email"),
                   controller: _controllerEmail,
                 ),
                 Row(

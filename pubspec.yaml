@@ -11,7 +11,7 @@ description: A new Flutter project.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.8.10+17
+version: 0.8.11+18
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -23,14 +23,12 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
-  firebase_auth:
+  firebase_auth: ^0.14.0+5
   google_sign_in:
   google_maps_flutter:
   cloud_firestore:
   flutter_google_places:
   google_maps_webservice:
-  geoflutterfire:
-    git: https://github.com/felipecesar42/GeoFlutterFire.git
   tuple:
   flutter_lorem:
   file_picker: ^1.3.8
@@ -44,6 +42,10 @@ dependencies:
   webview_flutter: ^0.3.10+4
   firebase_messaging: ^5.1.3
   image_cropper:
+  agora_rtc_engine: 0.9.7
+  permission_handler: ^3.0.0
+  crypto: ^2.1.3
+  random_string: ^1.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
