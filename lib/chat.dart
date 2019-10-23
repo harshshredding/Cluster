@@ -473,13 +473,10 @@ class ChatMessageContent extends StatelessWidget {
   }
 
   Widget build(BuildContext context) {
-    double c_width = MediaQuery.of(context).size.width * 0.8;
-
     //print("Message type : " + message.type);
     if ((message.type == MESSAGE_TYPE_VIDEO_CALL_INVITATION)
         && (message.channelName != null)) {
       return new Container(
-        width: c_width,
         child: new Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -496,7 +493,7 @@ class ChatMessageContent extends StatelessWidget {
             },
               color: Colors.deepPurpleAccent,
               textColor: Colors.white,
-              child: Text("Join Video Call "),
+              child: Text("Join Video Call ", overflow: TextOverflow.ellipsis),
             ),
           ],
         ),
@@ -505,11 +502,10 @@ class ChatMessageContent extends StatelessWidget {
 
     //80% of screen width
     return new Container(
-      width: c_width,
       child: new Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          new Text(message.text),
+          new Text(message.text, overflow: TextOverflow.ellipsis),
         ],
       ),
     );
