@@ -17,7 +17,7 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home> {
   int _currentIndex = 0;
-
+  final Set<String> trackNewMessages = new Set<String>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<Widget> _children;
@@ -29,13 +29,16 @@ class HomeState extends State<Home> {
     super.initState();
     //Old
     _fcm.configure(
-        onMessage: (message) async {
+        onMessage: (Map<String, dynamic> message) async {
+          print('$message');
           print("onMessage");
         },
-        onResume: (message) async {
+        onResume: (Map<String, dynamic> message) async {
+          print('$message');
           print("onResume");
         },
-        onLaunch: (message) async {
+        onLaunch: (Map<String, dynamic> message) async {
+          print('$message');
           print("onLaunch");
         }
     );
@@ -67,7 +70,7 @@ class HomeState extends State<Home> {
       // We pass in null as filters to indicate this is the first time
       // proposals is being built.
       Proposals(),
-      MyChats()
+      MyChats(this)
     ];
   }
 
@@ -171,7 +174,7 @@ class HomeState extends State<Home> {
               title: Text('feed'),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline),
+              icon: trackNewMessages.isEmpty ? Icon(Icons.chat_bubble_outline) : Icon(Icons.clear),
               title: Text('chat'),
             ),
           ]

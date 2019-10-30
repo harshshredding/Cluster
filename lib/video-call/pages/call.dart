@@ -44,9 +44,9 @@ class _CallPageState extends State<CallPage> {
   void initialize() {
     if (APP_ID.isEmpty) {
       setState(() {
-        _infoStrings
-            .add("APP_ID missing, please provide your APP_ID in settings.dart");
-        _infoStrings.add("Agora Engine is not starting");
+        //_infoStrings
+         //   .add("APP_ID missing, please provide your APP_ID in settings.dart");
+        //infoStrings.add("Agora Engine is not starting");
       });
       return;
     }
@@ -73,7 +73,7 @@ class _CallPageState extends State<CallPage> {
     AgoraRtcEngine.onError = (int code) {
       setState(() {
         String info = 'onError: ' + code.toString();
-        _infoStrings.add(info);
+        //_infoStrings.add(info);
       });
     };
 
@@ -81,20 +81,20 @@ class _CallPageState extends State<CallPage> {
         (String channel, int uid, int elapsed) {
       setState(() {
         String info = 'onJoinChannel: ' + channel + ', uid: ' + uid.toString();
-        _infoStrings.add(info);
+        //_infoStrings.add(info);
       });
     };
 
     AgoraRtcEngine.onLeaveChannel = () {
       setState(() {
-        _infoStrings.add('onLeaveChannel');
+        //_infoStrings.add('onLeaveChannel');
       });
     };
 
     AgoraRtcEngine.onUserJoined = (int uid, int elapsed) {
       setState(() {
         String info = 'userJoined: ' + uid.toString();
-        _infoStrings.add(info);
+        //_infoStrings.add(info);
         _addRenderView(uid, (viewId) {
           AgoraRtcEngine.setupRemoteVideo(viewId, VideoRenderMode.Hidden, uid);
         });
@@ -104,7 +104,7 @@ class _CallPageState extends State<CallPage> {
     AgoraRtcEngine.onUserOffline = (int uid, int reason) {
       setState(() {
         String info = 'userOffline: ' + uid.toString();
-        _infoStrings.add(info);
+        //_infoStrings.add(info);
         _removeRenderView(uid);
       });
     };
@@ -118,7 +118,7 @@ class _CallPageState extends State<CallPage> {
             width.toString() +
             'x' +
             height.toString();
-        _infoStrings.add(info);
+        //_infoStrings.add(info);
       });
     };
   }

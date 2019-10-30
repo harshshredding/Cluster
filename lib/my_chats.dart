@@ -7,8 +7,14 @@ import 'circular_photo.dart';
 import 'dart:async';
 import 'chat.dart';
 import 'helper.dart';
+import 'home.dart';
+import 'package:flutter/scheduler.dart';
 
 class MyChats extends StatefulWidget {
+  HomeState homePageState;
+
+  MyChats(this.homePageState);
+
   MyChatsState createState() {
     return MyChatsState();
   }
@@ -162,6 +168,9 @@ class MyChatsState extends State<MyChats> {
           ),
         ),
         onTap: () {
+          this.widget.homePageState.setState((){
+            SchedulerBinding.instance.addPostFrameCallback((_) => this.widget.homePageState.trackNewMessages.remove(chatId));
+          });
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -238,6 +247,7 @@ class MyChatsState extends State<MyChats> {
               if (seenTimestamp == null ||
                   seenTimestamp.compareTo(updateTimestamp) < 0) {
                 newMessageReceived = true;
+                SchedulerBinding.instance.addPostFrameCallback((_) => this.widget.homePageState.trackNewMessages.add(chatId));
               }
             }
             selectedUserId = creatorId;
@@ -249,6 +259,7 @@ class MyChatsState extends State<MyChats> {
               if (seenTimestamp == null ||
                   seenTimestamp.compareTo(updateTimestamp) < 0) {
                 newMessageReceived = true;
+                SchedulerBinding.instance.addPostFrameCallback((_) => this.widget.homePageState.trackNewMessages.add(chatId));
               }
             }
             selectedUserId = interestedId;

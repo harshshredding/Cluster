@@ -160,8 +160,6 @@ class UserProfileState extends State<UserProfile> {
   void getImageAndCrop() async {
     final File unCroppedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
     final File croppedImage = await ImageCropper.cropImage(sourcePath: unCroppedImage.path,
-        ratioX: 1.0,
-        ratioY: 1.0,
         maxWidth: 512,
         maxHeight: 512);
     setState(() {
